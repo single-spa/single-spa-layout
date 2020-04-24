@@ -1,0 +1,59 @@
+{
+  "name": "single-spa-layout",
+  "version": "1.0.0",
+  "description": "Layout engine for single-spa applications",
+  "main": "dist/umd/single-spa-layout.min.js",
+  "exports": {
+    "import": "dist/esm/single-spa-layout.min.js",
+    "require": "dist/umd/single-spa-layout.min.js"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "check-format": "prettier --check './**/*'",
+    "format": "prettier --write './**/*'",
+    "test": "cross-env BABEL_ENV=test jest"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/single-spa/single-spa-layout.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/single-spa/single-spa-layout/issues"
+  },
+  "homepage": "https://github.com/single-spa/single-spa-layout#readme",
+  "browserslist": [
+    "ie >= 11",
+    "last 4 Safari major versions",
+    "last 10 Chrome major versions",
+    "last 10 Firefox major versions",
+    "last 4 Edge major versions"
+  ],
+  "peerDependencies": {
+    "single-spa": ">=5.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "@types/jest": "^25.2.1",
+    "babel-jest": "^25.4.0",
+    "cross-env": "^7.0.2",
+    "husky": "^4.2.5",
+    "jest": "^25.4.0",
+    "jest-cli": "^25.4.0",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1",
+    "rollup": "^2.7.2",
+    "rollup-cli": "^1.0.9",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-terser": "^5.3.0",
+    "single-spa": "^5.3.4"
+  }
+}
