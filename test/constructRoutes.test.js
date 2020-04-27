@@ -1,10 +1,13 @@
 import { constructRoutes } from "../src/single-spa-layout.js";
 
+jest.spyOn(console, "warn");
+
 describe("constructRoutes", () => {
   let registerApplication = jest.fn();
 
   beforeEach(() => {
     registerApplication.mockReset();
+    console.warn.mockReset();
   });
 
   describe(`input validation`, () => {
@@ -64,24 +67,18 @@ describe("constructRoutes", () => {
     }).toThrowError(/expected a plain object/);
   });
 
-  it(`throws an error if extra properties are provided`, () => {
-    expect(() => {
-      constructRoutes({
-        base: "/",
-        routes: [],
-        irrelevantProperty: "thing",
-      });
-    }).toThrowError("invalid properties");
+  it(`console.warns if extra properties are provided`, () => {
+    constructRoutes({
+      routes: [],
+      irrelevantProperty: "thing",
+    });
+    expect(console.warn).toHaveBeenCalled();
+    expect(console.warn.mock.calls[0][0].message).toEqual(
+      `Invalid routesConfig: received invalid properties 'irrelevantProperty', but valid properties are mode, base, containerEl, routes, disableWarnings`
+    );
   });
 
   it(`validates the mode correctly`, () => {
-    expect(() => {
-      constructRoutes({
-        base: "/",
-        routes: [],
-      });
-    }).toThrowError("mode");
-
     expect(() => {
       constructRoutes({
         mode: "wrong",
@@ -160,17 +157,21 @@ describe("constructRoutes", () => {
         ],
       });
 
-      expect(() => {
-        constructRoutes({
-          mode: "history",
-          routes: [
-            {
-              type: "route",
-              somethingElse: "value",
-            },
-          ],
-        });
-      }).toThrowError("invalid properties");
+      console.warn.mockReset();
+      constructRoutes({
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/",
+            somethingElse: "value",
+          },
+        ],
+      });
+      expect(console.warn).toHaveBeenCalled();
+      expect(console.warn.mock.calls[0][0].message).toEqual(
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes`
+      );
     });
 
     it(`checks for valid application objects`, () => {
@@ -184,31 +185,37 @@ describe("constructRoutes", () => {
         ],
       });
 
-      expect(() => {
-        constructRoutes({
-          mode: "history",
-          routes: [
-            {
-              type: "application",
-              name: "@org/project",
-              somethingElse: "value",
-            },
-          ],
-        });
-      }).toThrowError("invalid properties");
+      console.warn.mockReset();
+      constructRoutes({
+        mode: "history",
+        routes: [
+          {
+            type: "application",
+            name: "@org/project",
+            somethingElse: "value",
+          },
+        ],
+      });
+      expect(console.warn).toHaveBeenCalled();
+      expect(console.warn.mock.calls[0][0].message).toEqual(
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name`
+      );
 
-      expect(() => {
-        constructRoutes({
-          mode: "history",
-          routes: [
-            {
-              type: "application",
-              name: "@org/project",
-              routes: [],
-            },
-          ],
-        });
-      }).toThrowError("invalid properties");
+      console.warn.mockReset();
+      constructRoutes({
+        mode: "history",
+        routes: [
+          {
+            type: "application",
+            name: "@org/project",
+            routes: [],
+          },
+        ],
+      });
+      expect(console.warn).toHaveBeenCalled();
+      expect(console.warn.mock.calls[0][0].message).toEqual(
+        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name`
+      );
     });
 
     it(`checks subroutes`, () => {
@@ -228,25 +235,26 @@ describe("constructRoutes", () => {
         ],
       });
 
-      expect(() => {
-        constructRoutes({
-          mode: "history",
-          routes: [
-            {
-              type: "route",
-              path: "thing",
-              routes: [
-                {
-                  type: "application",
-                  name: "navbar",
-                  somethingElse: "thing",
-                },
-              ],
-            },
-          ],
-        });
-      }).toThrow(
-        `Invalid routesConfig.routes[0].routes[0]: received invalid properties somethingElse`
+      expect(console.warn).not.toHaveBeenCalled();
+      constructRoutes({
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "thing",
+            routes: [
+              {
+                type: "application",
+                name: "navbar",
+                somethingElse: "thing",
+              },
+            ],
+          },
+        ],
+      });
+      expect(console.warn).toHaveBeenCalled();
+      expect(console.warn.mock.calls[0][0].message).toEqual(
+        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name`
       );
     });
 
@@ -265,23 +273,24 @@ describe("constructRoutes", () => {
         ],
       });
 
-      expect(() => {
-        constructRoutes({
-          mode: "history",
-          routes: [
-            {
-              type: "route",
-              path: "/",
-            },
-            {
-              type: "route",
-              path: "/app1",
-              irrelevantProperty: "thing",
-            },
-          ],
-        });
-      }).toThrowError(
-        "Invalid routesConfig.routes[1]: received invalid properties irrelevantProperty"
+      expect(console.warn).not.toHaveBeenCalled();
+      constructRoutes({
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/",
+          },
+          {
+            type: "route",
+            path: "/app1",
+            irrelevantProperty: "thing",
+          },
+        ],
+      });
+      expect(console.warn).toHaveBeenCalled();
+      expect(console.warn.mock.calls[0][0].message).toEqual(
+        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes"
       );
     });
   });

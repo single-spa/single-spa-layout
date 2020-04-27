@@ -8,7 +8,11 @@ export function validateObject(propertyName, obj) {
   }
 }
 
-export function validateKeys(propertyName, obj, validKeys) {
+export function validateKeys(propertyName, obj, validKeys, disableWarnings) {
+  if (disableWarnings) {
+    return;
+  }
+
   const keys = Object.keys(obj);
   const invalidKeys = [];
   keys.forEach((key) => {
@@ -18,10 +22,12 @@ export function validateKeys(propertyName, obj, validKeys) {
   });
 
   if (invalidKeys.length > 0) {
-    throw Error(
-      `Invalid ${propertyName}: received invalid properties ${invalidKeys.join(
-        ", "
-      )}, but valid properties are ${validKeys.join(", ")}`
+    console.warn(
+      Error(
+        `Invalid ${propertyName}: received invalid properties '${invalidKeys.join(
+          ", "
+        )}', but valid properties are ${validKeys.join(", ")}`
+      )
     );
   }
 }
