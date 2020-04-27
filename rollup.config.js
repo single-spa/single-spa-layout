@@ -12,6 +12,7 @@ function createConfig(format) {
     output: {
       format,
       file: `dist/${format}/single-spa-layout.min.js`,
+      name: format === "umd" ? "singleSpaLayout" : null,
     },
     plugins: [terser()],
   };
