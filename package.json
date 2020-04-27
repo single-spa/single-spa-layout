@@ -10,12 +10,13 @@
   "scripts": {
     "build": "rollup -c",
     "check-format": "prettier --check './**/*'",
+    "lint": "eslint src",
     "format": "prettier --write './**/*'",
     "test": "cross-env BABEL_ENV=test jest"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged"
+      "pre-commit": "pretty-quick --staged && yarn lint"
     }
   },
   "repository": {
@@ -44,6 +45,8 @@
     "@types/systemjs": "^6.1.0",
     "babel-jest": "^25.4.0",
     "cross-env": "^7.0.2",
+    "eslint": "^6.8.0",
+    "eslint-config-important-stuff": "^1.1.0",
     "husky": "^4.2.5",
     "jest": "^25.4.0",
     "jest-cli": "^25.4.0",
