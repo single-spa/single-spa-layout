@@ -1,1 +1,1 @@
-console.log("hi");
+export { constructRoutes } from "./constructRoutes.js";
