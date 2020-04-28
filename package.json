@@ -4,8 +4,14 @@
   "description": "Layout engine for single-spa applications",
   "main": "dist/umd/single-spa-layout.min.js",
   "exports": {
-    "import": "dist/esm/single-spa-layout.min.js",
-    "require": "dist/umd/single-spa-layout.min.js"
+    "import": {
+      ".": "./dist/esm/single-spa-layout.min.js",
+      "./jsx-runtime": "./dist/esm/jsx-runtime.js"
+    },
+    "require": {
+      ".": "./dist/umd/single-spa-layout.min.js",
+      "./jsx-runtime": "./dist/umd/jsx-runtime.js"
+    }
   },
   "types": "dist/types/single-spa-layout.d.ts",
   "scripts": {
@@ -47,11 +53,14 @@
   ],
   "peerDependencies": {},
   "devDependencies": {
+    "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
     "@babel/plugin-transform-modules-commonjs": "^7.9.0",
+    "@babel/plugin-transform-react-jsx": "^7.9.4",
     "@babel/preset-env": "^7.9.5",
     "@types/jest": "^25.2.1",
     "@types/systemjs": "^6.1.0",
+    "babel-eslint": "^11.0.0-beta.2",
     "babel-jest": "^25.4.0",
     "concurrently": "^5.2.0",
     "cross-env": "^7.0.2",
