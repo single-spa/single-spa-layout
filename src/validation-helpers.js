@@ -67,7 +67,7 @@ export function validateContainerEl(propertyName, containerEl) {
   if (typeof containerEl === "string") {
     err = containerEl.trim() === "";
   } else if (typeof HTMLElement !== "undefined") {
-    err = containerEl instanceof HTMLElement;
+    err = !(containerEl instanceof HTMLElement);
   } else {
     err = true;
   }
