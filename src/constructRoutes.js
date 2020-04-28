@@ -6,37 +6,10 @@ import {
   validateObject,
 } from "./validation-helpers.js";
 
-/**
- * @typedef {{
- * mode?: string;
- * base?: string;
- * containerEl?: string | HTMLElement;
- * disableWarnings?: boolean;
- * routes: Array<Route>;
- * }} RoutesConfig
- *
- * @typedef {UrlRoute | Application} Route
- *
- * @typedef {{
- * type: 'route';
- * path: string;
- * routes?: Array<Route>;
- * }} UrlRoute
- *
- * @typedef {{
- * type: 'application';
- * name: string;
- * props: object;
- * }} Application
- *
- * @param {RoutesConfig} routesConfig
- * @returns {any}
- */
 export function constructRoutes(routesConfig) {
   validate(routesConfig);
 
   // TODO - construct a "resolved routes" return value
-  return routesConfig;
 }
 
 function validate(routesConfig) {
