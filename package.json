@@ -15,16 +15,11 @@
   },
   "types": "dist/types/single-spa-layout.d.ts",
   "scripts": {
-    "build": "rimraf dist && concurrently -n w: 'yarn:build:*'",
-    "build:lib": "rollup -c",
-    "build:types": "tsc",
+    "build": "rollup -c",
     "check-format": "prettier --check './**/*'",
     "lint": "eslint src",
     "format": "prettier --write './**/*'",
-    "test": "concurrently -n w: 'yarn:test:*'",
-    "test:browser": "cross-env BABEL_ENV=test jest",
-    "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node",
-    "test:types": "tsd"
+    "test": "cross-env BABEL_ENV=test jest"
   },
   "tsd": {
     "directory": "test"
@@ -62,7 +57,6 @@
     "@types/systemjs": "^6.1.0",
     "babel-eslint": "^11.0.0-beta.2",
     "babel-jest": "^25.4.0",
-    "concurrently": "^5.2.0",
     "cross-env": "^7.0.2",
     "eslint": "^6.8.0",
     "eslint-config-important-stuff": "^1.1.0",
@@ -71,12 +65,9 @@
     "jest-cli": "^25.4.0",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
-    "rimraf": "^3.0.2",
     "rollup": "^2.7.2",
     "rollup-cli": "^1.0.9",
     "rollup-plugin-babel": "^4.4.0",
-    "rollup-plugin-terser": "^5.3.0",
-    "tsd": "^0.11.0",
-    "typescript": "^3.8.3"
+    "rollup-plugin-terser": "^5.3.0"
   }
 }
