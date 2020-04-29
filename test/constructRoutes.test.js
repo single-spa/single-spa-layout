@@ -315,6 +315,51 @@ describe("constructRoutes", () => {
         "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes"
       );
     });
+
+    it(`throws when containerEl is invalid`, () => {
+      expect(() => {
+        constructRoutes({
+          containerEl: null,
+          routes: [],
+        });
+      }).toThrowError(
+        "Invalid routesConfig.containerEl: received null but expected either non-blank string or HTMLElement"
+      );
+
+      expect(() => {
+        constructRoutes({
+          containerEl: [],
+          routes: [],
+        });
+      }).toThrowError(
+        "Invalid routesConfig.containerEl: received  but expected either non-blank string or HTMLElement"
+      );
+
+      expect(() => {
+        constructRoutes({
+          containerEl: 2342,
+          routes: [],
+        });
+      }).toThrowError(
+        "Invalid routesConfig.containerEl: received 2342 but expected either non-blank string or HTMLElement"
+      );
+    });
+
+    it(`allows a string containerEl`, () => {
+      constructRoutes({
+        containerEl: "asdf",
+        routes: [],
+      });
+    });
+
+    if (typeof HTMLElement !== "undefined") {
+      it("allows an HTMLElement containerEl", () => {
+        constructRoutes({
+          containerEl: document.createElement("div"),
+          routes: [],
+        });
+      });
+    }
   });
 
   describe(`return value`, () => {
