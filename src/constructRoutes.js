@@ -4,42 +4,50 @@ import {
   validateKeys,
   validateString,
   validateObject,
+  validateContainerEl,
 } from "./validation-helpers.js";
 
 /**
  * @typedef {{
  * mode?: string;
  * base?: string;
- * containerEl?: string | HTMLElement;
+ * containerEl?: ContainerEl;
  * disableWarnings?: boolean;
  * routes: Array<Route>;
  * }} RoutesConfig
  *
+ * @typedef {{
+ * mode: string;
+ * base: string;
+ * containerEl: ContainerEl;
+ * routes: Array<Route>;
+ * }} ResolvedRoutesConfig
+ *
  * @typedef {UrlRoute | Application} Route
  *
+ * @typedef {string | HTMLElement} ContainerEl
+ *
  * @typedef {{
- * type: 'route';
+ * type: string;
  * path: string;
- * routes?: Array<Route>;
+ * routes: Array<Route>;
  * }} UrlRoute
  *
  * @typedef {{
- * type: 'application';
+ * type: string;
  * name: string;
- * props: object;
+ * props?: object;
  * }} Application
  *
  * @param {RoutesConfig} routesConfig
- * @returns {any}
+ * @returns {ResolvedRoutesConfig}
  */
 export function constructRoutes(routesConfig) {
-  validate(routesConfig);
-
-  // TODO - construct a "resolved routes" return value
+  validateAndSanitize(routesConfig);
   return routesConfig;
 }
 
-function validate(routesConfig) {
+function validateAndSanitize(routesConfig) {
   validateObject("routesConfig", routesConfig);
 
   const disableWarnings = routesConfig.disableWarnings;
@@ -51,15 +59,23 @@ function validate(routesConfig) {
     disableWarnings
   );
 
+  if (routesConfig.hasOwnProperty("containerEl")) {
+    validateContainerEl("routesConfig.containerEl", routesConfig.containerEl);
+  } else {
+    routesConfig.containerEl = "body";
+  }
+
   if (!routesConfig.hasOwnProperty("mode")) {
     routesConfig.mode = "history";
   }
   validateEnum("routesConfig.mode", routesConfig.mode, ["history", "hash"]);
 
-  if (!routesConfig.hasOwnProperty("base")) {
-    routesConfig.base = getBaseURI();
+  if (routesConfig.hasOwnProperty("base")) {
+    validateString("routesConfig.base", routesConfig.base);
+    routesConfig.base = sanitizeBase(routesConfig.base);
+  } else {
+    routesConfig.base = "/";
   }
-  validateString("routesConfig.base", routesConfig.base);
 
   validateArray("routesConfig.routes", routesConfig.routes, validateRoute);
 
@@ -78,38 +94,21 @@ function validate(routesConfig) {
         disableWarnings
       );
       validateString(`${propertyName}.path`, route.path);
-      if (route.hasOwnProperty("routes")) {
-        validateArray(`${propertyName}.routes`, route.routes, validateRoute);
-      }
+      validateArray(`${propertyName}.routes`, route.routes, validateRoute);
     }
   }
+
+  delete routesConfig.disableWarnings;
 }
 
-function getBaseURI() {
-  if (typeof document !== "undefined") {
-    if (document.baseURI) {
-      return document.baseURI;
-    } else {
-      // Our old friend, Internet Explorer 11, does not support document.baseURI
-      // This code was taken from
-      // https://github.com/systemjs/systemjs/blob/109af162d97b54a7857e693f33d47a9058f4f18d/src/common.js#L15-L26
-
-      let baseUrl;
-      const baseEl = document.querySelector("base[href]");
-      if (baseEl) baseUrl = baseEl.href;
-
-      if (!baseUrl) {
-        baseUrl = location.href.split("#")[0].split("?")[0];
-        const lastSepIndex = baseUrl.lastIndexOf("/");
-        if (lastSepIndex !== -1) {
-          baseUrl = baseUrl.slice(0, lastSepIndex + 1);
-        }
-      }
-
-      return baseUrl;
-    }
-  } else {
-    // NodeJS
-    return "/";
+function sanitizeBase(base) {
+  if (!base.startsWith("/")) {
+    base = "/" + base;
   }
+
+  if (!base.endsWith("/")) {
+    base = base + "/";
+  }
+
+  return base;
 }

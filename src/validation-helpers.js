@@ -61,3 +61,20 @@ export function validateArray(propertyName, arr, cbk) {
     cbk(val, `${propertyName}[${index}]`);
   });
 }
+
+export function validateContainerEl(propertyName, containerEl) {
+  let err;
+  if (typeof containerEl === "string") {
+    err = containerEl.trim() === "";
+  } else if (typeof HTMLElement !== "undefined") {
+    err = !(containerEl instanceof HTMLElement);
+  } else {
+    err = true;
+  }
+
+  if (err) {
+    throw Error(
+      `Invalid ${propertyName}: received ${containerEl} but expected either non-blank string or HTMLElement`
+    );
+  }
+}
