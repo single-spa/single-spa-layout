@@ -1,4 +1,11 @@
-import { registerApplication, start, Application } from "single-spa";
+import * as singleSpa from "single-spa";
+import {
+  registerApplication,
+  start,
+  Application,
+  AppProps,
+  LifeCycles,
+} from "single-spa";
 import { expectError, expectType } from "tsd";
 import {
   constructRoutes,
@@ -36,4 +43,10 @@ const applications = constructApplications({
   loadApp: (name) => System.import<Application<{}>>(name),
 });
 applications.forEach(registerApplication);
+const application = applications[0];
+application
+  .app({ name: "nav", singleSpa, mountParcel: singleSpa.mountRootParcel })
+  .then((app) => {
+    expectType<LifeCycles>(app);
+  });
 start();

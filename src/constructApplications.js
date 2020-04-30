@@ -8,8 +8,12 @@ import { resolvePath } from "./matchRoute";
  *
  * @typedef {(applicationName: string) => Promise<import('single-spa').Application>} LoadApp
  *
+ * @typedef {{
+ * app: (config: import('single-spa').AppProps) => Promise<import('single-spa').LifeCycles>
+ * }} WithLoadFunction
+ *
  * @param {ApplicationOptions} applicationOptions
- * @returns {Array<import('single-spa').RegisterApplicationConfig>}
+ * @returns {Array<import('single-spa').RegisterApplicationConfig & WithLoadFunction>}
  */
 export function constructApplications({ routes, loadApp }) {
   const applicationMap = {};
@@ -40,9 +44,7 @@ export function constructApplications({ routes, loadApp }) {
 
   return partialApplications.map((partialApp) => ({
     ...partialApp,
-    app: () => {
-      return loadApp(partialApp.name);
-    },
+    app: loadApp,
   }));
 }
 

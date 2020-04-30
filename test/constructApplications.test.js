@@ -112,14 +112,19 @@ describe(`constructApplications`, () => {
     };
 
     const loadApp = jest.fn();
-    loadApp.mockReturnValue("loadAppReturnValue");
+    const lifecycles = {
+      async bootstrap() {},
+      async mount() {},
+      async unmount() {},
+    };
+    loadApp.mockReturnValue(lifecycles);
 
     const applications = constructApplications({ routes, loadApp });
     expect(applications.length).toBe(1);
 
     expect(loadApp).not.toHaveBeenCalled();
-    const returnValue = await applications[0].app();
-    expect(loadApp).toHaveBeenCalledWith("nav");
-    expect(returnValue).toBe("loadAppReturnValue");
+    const returnValue = await applications[0].app({ name: "nav" });
+    expect(loadApp).toHaveBeenCalledWith({ name: "nav" });
+    expect(returnValue).toBe(lifecycles);
   });
 });
