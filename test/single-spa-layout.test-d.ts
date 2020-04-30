@@ -3,7 +3,6 @@ import {
   registerApplication,
   start,
   Application,
-  AppProps,
   LifeCycles,
 } from "single-spa";
 import { expectError, expectType } from "tsd";
@@ -11,6 +10,7 @@ import {
   constructRoutes,
   matchRoute,
   constructApplications,
+  constructLayoutEngine,
 } from "../src/single-spa-layout";
 
 // test constructRoutes
@@ -43,10 +43,21 @@ const applications = constructApplications({
   loadApp: (name) => System.import<Application<{}>>(name),
 });
 applications.forEach(registerApplication);
+
 const application = applications[0];
 application
   .app({ name: "nav", singleSpa, mountParcel: singleSpa.mountRootParcel })
   .then((app) => {
     expectType<LifeCycles>(app);
   });
+
+// test constructLayoutEngine
+const layoutEngine = constructLayoutEngine(routes, applications);
+
+expectType<boolean>(layoutEngine.isActive());
+
+expectType<void>(layoutEngine.activate());
+
 start();
+
+expectType<void>(layoutEngine.deactivate());
