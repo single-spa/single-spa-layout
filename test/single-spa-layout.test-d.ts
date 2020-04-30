@@ -6,6 +6,7 @@ import {
   constructApplications,
 } from "../src/single-spa-layout";
 
+// test constructRoutes
 expectError(constructRoutes());
 
 expectError(constructRoutes({}));
