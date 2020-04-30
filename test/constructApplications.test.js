@@ -40,6 +40,8 @@ describe(`constructApplications`, () => {
       ],
     };
 
+    const loadApp = jest.fn();
+
     const applications = constructApplications({ routes, loadApp });
 
     const activeWhens = applications.map((app) => ({
@@ -100,8 +102,24 @@ describe(`constructApplications`, () => {
       count: 2,
     });
   });
-});
 
-function loadApp(name) {
-  return { async bootstrap() {}, async mount() {}, async unmount() {} };
-}
+  it(`creates a loading function using the loadApp function`, async () => {
+    const routes = {
+      mode: "history",
+      base: "/",
+      containerEl: "body",
+      routes: [{ type: "application", name: "nav" }],
+    };
+
+    const loadApp = jest.fn();
+    loadApp.mockReturnValue("loadAppReturnValue");
+
+    const applications = constructApplications({ routes, loadApp });
+    expect(applications.length).toBe(1);
+
+    expect(loadApp).not.toHaveBeenCalled();
+    const returnValue = await applications[0].app();
+    expect(loadApp).toHaveBeenCalledWith("nav");
+    expect(returnValue).toBe("loadAppReturnValue");
+  });
+});

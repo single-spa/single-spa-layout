@@ -26,7 +26,7 @@ export function constructApplications({ routes, loadApp }) {
     const resolvedRoutes = applicationMap[name];
     return {
       name,
-      customProps: (n, location) => {
+      customProps: (_name, location) => {
         const route = resolvedRoutes.find((route) =>
           location[routes.mode === "hash" ? "hash" : "pathname"].startsWith(
             route.path
@@ -40,7 +40,9 @@ export function constructApplications({ routes, loadApp }) {
 
   return partialApplications.map((partialApp) => ({
     ...partialApp,
-    app: loadApp(partialApp.name),
+    app: () => {
+      return loadApp(partialApp.name);
+    },
   }));
 }
 
