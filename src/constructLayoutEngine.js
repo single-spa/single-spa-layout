@@ -1,4 +1,5 @@
-import { matchRoute, resolvePath } from "./matchRoute";
+import { matchRoute } from "./matchRoute";
+import { inBrowser } from "./environment-helpers";
 
 /**
  * @typedef {{
@@ -21,7 +22,7 @@ export function constructLayoutEngine({
 }) {
   let active = false;
 
-  return {
+  const layoutEngine = {
     isActive: () => active,
     activate() {
       if (active) {
@@ -29,12 +30,15 @@ export function constructLayoutEngine({
       } else {
         active = true;
       }
-      window.addEventListener(
-        "single-spa:before-mount-routing-event",
-        arrangeDomElements
-      );
 
-      arrangeDomElements();
+      if (inBrowser) {
+        window.addEventListener(
+          "single-spa:before-mount-routing-event",
+          arrangeDomElements
+        );
+
+        arrangeDomElements();
+      }
     },
     deactivate() {
       if (!active) {
@@ -42,12 +46,19 @@ export function constructLayoutEngine({
       } else {
         active = false;
       }
-      window.removeEventListener(
-        "single-spa:before-mount-routing-event",
-        arrangeDomElements
-      );
+
+      if (inBrowser) {
+        window.removeEventListener(
+          "single-spa:before-mount-routing-event",
+          arrangeDomElements
+        );
+      }
     },
   };
+
+  layoutEngine.activate();
+
+  return layoutEngine;
 
   function arrangeDomElements() {
     const path = location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
@@ -77,23 +88,15 @@ function recurseRoutes(routes, parentContainer, previousSibling) {
       const applicationContainer = getContainerEl(parentContainer, route);
       const applicationElement = getApplicationElement(route);
 
-      // console.log('applicationContainer', applicationContainer)
-      // console.log('element', applicationElement.id)
-      // console.log('sibling', previousSibling && previousSibling.id)
-
       if (
         previousSibling &&
         previousSibling.parentNode === applicationContainer
       ) {
-        // console.log('adjacent')
         // move to be immediately after previousSibling
         previousSibling.insertAdjacentElement("afterend", applicationElement);
       } else if (applicationElement.parentNode !== applicationContainer) {
-        // console.log('append')
         // append to end of the container
         applicationContainer.appendChild(applicationElement);
-      } else {
-        // console.log('nothing')
       }
 
       // Only use this as the reference sibling node if it's within the parent container
