@@ -4,6 +4,7 @@ import {
   start,
   Application,
   LifeCycles,
+  AppProps,
 } from "single-spa";
 import { expectError, expectType } from "tsd";
 import {
@@ -40,7 +41,10 @@ expectType<Array<import("../src/constructRoutes").Route>>(matchedRoutes.routes);
 // test constructApplication
 const applications = constructApplications({
   routes,
-  loadApp: (name) => System.import<Application<{}>>(name),
+  loadApp: (props) => {
+    expectType<AppProps>(props);
+    return System.import<Application<{}>>(props.name);
+  },
 });
 applications.forEach(registerApplication);
 const application = applications[0];
