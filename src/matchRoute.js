@@ -52,7 +52,7 @@ function recurseRoutes(pathMatch, startPath, routes) {
   return result;
 }
 
-function resolvePath(prefix, path) {
+export function resolvePath(prefix, path) {
   if (prefix.endsWith("/")) {
     if (path.startsWith("/")) {
       return prefix + path.slice(1);

@@ -1,5 +1,17 @@
+import * as singleSpa from "single-spa";
+import {
+  registerApplication,
+  start,
+  Application,
+  AppProps,
+  LifeCycles,
+} from "single-spa";
 import { expectError, expectType } from "tsd";
-import { constructRoutes, matchRoute } from "../src/single-spa-layout";
+import {
+  constructRoutes,
+  matchRoute,
+  constructApplications,
+} from "../src/single-spa-layout";
 
 // test constructRoutes
 expectError(constructRoutes());
@@ -24,3 +36,17 @@ expectType<import("../src/constructRoutes").ContainerEl>(
 );
 expectType<string>(matchedRoutes.mode);
 expectType<Array<import("../src/constructRoutes").Route>>(matchedRoutes.routes);
+
+// test constructApplication
+const applications = constructApplications({
+  routes,
+  loadApp: (name) => System.import<Application<{}>>(name),
+});
+applications.forEach(registerApplication);
+const application = applications[0];
+application
+  .app({ name: "nav", singleSpa, mountParcel: singleSpa.mountRootParcel })
+  .then((app) => {
+    expectType<LifeCycles>(app);
+  });
+start();
