@@ -22,8 +22,8 @@
     "lint": "eslint src",
     "format": "prettier --write './**/*'",
     "test": "concurrently -n w: 'yarn:test:*'",
-    "test:browser": "cross-env BABEL_ENV=test jest",
-    "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node",
+    "test:browser": "cross-env BABEL_ENV=test jest --config jest-browser.config.js",
+    "test:node": "cross-env BABEL_ENV=test jest --config jest-node.config.js",
     "test:types": "tsd"
   },
   "tsd": {
