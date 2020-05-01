@@ -3,7 +3,6 @@ import {
   registerApplication,
   start,
   Application,
-  AppProps,
   LifeCycles,
 } from "single-spa";
 import { expectError, expectType } from "tsd";
@@ -11,6 +10,7 @@ import {
   constructRoutes,
   matchRoute,
   constructApplications,
+  constructLayoutEngine,
 } from "../src/single-spa-layout";
 
 // test constructRoutes
@@ -51,7 +51,7 @@ application
   });
 
 // test constructLayoutEngine
-const layoutEngine = constructLayoutEngine(routes, applications);
+const layoutEngine = constructLayoutEngine({ routes, applications });
 
 expectType<boolean>(layoutEngine.isActive());
 
