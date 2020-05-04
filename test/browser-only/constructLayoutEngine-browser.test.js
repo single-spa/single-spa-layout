@@ -55,7 +55,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(layoutEngine.isActive()).toBe(true);
   });
 
-  fit(`can successfully construct a layout engine and respond to routing events`, () => {
+  it(`can successfully construct a layout engine and respond to routing events`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = {
       containerEl: "body",
