@@ -55,7 +55,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(layoutEngine.isActive()).toBe(true);
   });
 
-  it(`can successfully construct a layout engine and respond to routing events`, () => {
+  fit(`can successfully construct a layout engine and respond to routing events`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = {
       containerEl: "body",
@@ -126,6 +126,12 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to / route
+    console.log("Transitioning to /");
+    history.pushState(history.state, document.title, "/");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
     );

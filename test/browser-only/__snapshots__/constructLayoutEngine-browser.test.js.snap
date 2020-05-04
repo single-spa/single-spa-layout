@@ -31,10 +31,10 @@ exports[`constructLayoutEngine browser can successfully construct a layout engin
     id="single-spa-application:@org-name/header"
   />
   <div
-    id="single-spa-application:@org-name/app1"
+    id="single-spa-application:@org-name/footer"
   />
   <div
-    id="single-spa-application:@org-name/footer"
+    id="single-spa-application:@org-name/app1"
   />
 </body>
 `;
