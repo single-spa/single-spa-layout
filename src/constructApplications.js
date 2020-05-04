@@ -6,7 +6,7 @@ import { resolvePath } from "./matchRoute";
  * loadApp: LoadApp;
  * }} ApplicationOptions
  *
- * @typedef {(applicationName: string) => Promise<import('single-spa').Application>} LoadApp
+ * @typedef {(config: import('single-spa').AppProps) => Promise<import('single-spa').Application>} LoadApp
  *
  * @typedef {{
  * app: (config: import('single-spa').AppProps) => Promise<import('single-spa').LifeCycles>

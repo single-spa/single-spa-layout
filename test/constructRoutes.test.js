@@ -1,3 +1,4 @@
+import { inBrowser } from "../src/environment-helpers.js";
 import { constructRoutes } from "../src/single-spa-layout.js";
 
 jest.spyOn(console, "warn");
@@ -352,7 +353,7 @@ describe("constructRoutes", () => {
       });
     });
 
-    if (typeof HTMLElement !== "undefined") {
+    if (inBrowser) {
       it("allows an HTMLElement containerEl", () => {
         constructRoutes({
           containerEl: document.createElement("div"),

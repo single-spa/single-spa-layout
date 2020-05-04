@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`constructLayoutEngine browser can successfully construct a layout engine and respond to routing events 1`] = `
+<body>
+  <div
+    id="single-spa-application:@org-name/header"
+  />
+  <div
+    id="single-spa-application:@org-name/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can successfully construct a layout engine and respond to routing events 2`] = `
+<body>
+  <div
+    id="single-spa-application:@org-name/header"
+  />
+  <div
+    id="single-spa-application:@org-name/app1"
+  />
+  <div
+    id="single-spa-application:@org-name/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can successfully construct a layout engine and respond to routing events 3`] = `
+<body>
+  <div
+    id="single-spa-application:@org-name/header"
+  />
+  <div
+    id="single-spa-application:@org-name/footer"
+  />
+  <div
+    id="single-spa-application:@org-name/app1"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can successfully rearrange dom elements during route transitions 1`] = `
+<body>
+  <div
+    id="single-spa-application:@org-name/header"
+  />
+  <div
+    id="single-spa-application:@org-name/app1"
+  />
+  <div
+    id="single-spa-application:@org-name/app2"
+  />
+  <div
+    id="single-spa-application:@org-name/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can successfully rearrange dom elements during route transitions 2`] = `
+<body>
+  <div
+    id="single-spa-application:@org-name/header"
+  />
+  <div
+    id="single-spa-application:@org-name/app2"
+  />
+  <div
+    id="single-spa-application:@org-name/app1"
+  />
+  <div
+    id="single-spa-application:@org-name/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can successfully rearrange dom elements during route transitions 3`] = `
+<body>
+  <div
+    id="single-spa-application:@org-name/header"
+  />
+  <div
+    id="single-spa-application:@org-name/app1"
+  />
+  <div
+    id="single-spa-application:@org-name/app2"
+  />
+  <div
+    id="single-spa-application:@org-name/footer"
+  />
+</body>
+`;

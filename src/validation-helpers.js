@@ -1,3 +1,5 @@
+import { inBrowser } from "./environment-helpers.js";
+
 export function validateObject(propertyName, obj) {
   if (typeof obj !== "object" || Array.isArray(obj) || obj === null) {
     throw Error(
@@ -66,7 +68,7 @@ export function validateContainerEl(propertyName, containerEl) {
   let err;
   if (typeof containerEl === "string") {
     err = containerEl.trim() === "";
-  } else if (typeof HTMLElement !== "undefined") {
+  } else if (inBrowser) {
     err = !(containerEl instanceof HTMLElement);
   } else {
     err = true;
