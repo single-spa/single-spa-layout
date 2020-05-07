@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <single-spa-router mode="history" base="/">
+      <application name="@org/navbar"></application>
+      <route path="app1">
+        <aside>
+          <application name="@org/main-sidenav"></application>
+        </aside>
+        <application name="@org/app1"></application>
+      </route>
+      <route path="app2">
+        <aside>
+          <application name="@org/main-sidenav"></application>
+        </aside>
+        <application name="@org/app2"></application>
+      </route>
+      <route path="settings">
+        <application name="@org/settings"></application>
+      </route>
+      <application name="@org/footer"></application>
+    </single-spa-router>
+  </body>
+</html>

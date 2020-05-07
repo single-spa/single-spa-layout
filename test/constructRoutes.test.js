@@ -1,14 +1,77 @@
 import { inBrowser } from "../src/environment-helpers.js";
 import { constructRoutes } from "../src/single-spa-layout.js";
+import fs from "fs";
+import path from "path";
+import { screen } from "@testing-library/dom";
+import parse5 from "parse5";
 
 jest.spyOn(console, "warn");
 
 describe("constructRoutes", () => {
-  let registerApplication = jest.fn();
-
   beforeEach(() => {
-    registerApplication.mockReset();
     console.warn.mockReset();
+  });
+
+  describe(`HTML parsing`, () => {
+    it(`can parse a medium complexity HTML routes definition`, () => {
+      const document = parseHTML(
+        fs.readFileSync(
+          path.resolve(__dirname, "./fixtures/medium.html"),
+          "utf-8"
+        )
+      );
+      const routerElement = document.childNodes[1].childNodes[2].childNodes[1];
+      const routes = constructRoutes(routerElement);
+
+      expect(routes.mode).toBe("history");
+      expect(routes.base).toBe("/");
+      expect(routes.routes.length).toBe(5);
+      expect(routes.sourceElement).toBe(routerElement);
+
+      expect(routes.routes[0].type).toBe("application");
+      expect(routes.routes[0].name).toBe("@org/navbar");
+      expect(routes.routes[0].containerEl.nodeName.toLowerCase()).toBe("body");
+
+      expect(routes.routes[1].type).toBe("route");
+      expect(routes.routes[1].path).toBe("app1");
+      expect(routes.routes[1].routes.length).toBe(2);
+      expect(routes.routes[1].routes[0].type).toBe("application");
+      expect(routes.routes[1].routes[0].name).toBe("@org/main-sidenav");
+      expect(
+        routes.routes[1].routes[0].containerEl.nodeName.toLowerCase()
+      ).toBe("aside");
+      expect(routes.routes[1].routes[1].type).toBe("application");
+      expect(routes.routes[1].routes[1].name).toBe("@org/app1");
+      expect(
+        routes.routes[1].routes[1].containerEl.nodeName.toLowerCase()
+      ).toBe("body");
+
+      expect(routes.routes[2].type).toBe("route");
+      expect(routes.routes[2].path).toBe("app2");
+      expect(routes.routes[2].routes.length).toBe(2);
+      expect(routes.routes[2].routes[0].type).toBe("application");
+      expect(routes.routes[2].routes[0].name).toBe("@org/main-sidenav");
+      expect(
+        routes.routes[2].routes[0].containerEl.nodeName.toLowerCase()
+      ).toBe("aside");
+      expect(routes.routes[2].routes[1].type).toBe("application");
+      expect(routes.routes[2].routes[1].name).toBe("@org/app2");
+      expect(
+        routes.routes[2].routes[1].containerEl.nodeName.toLowerCase()
+      ).toBe("body");
+
+      expect(routes.routes[3].type).toBe("route");
+      expect(routes.routes[3].path).toBe("settings");
+      expect(routes.routes[3].routes.length).toBe(1);
+      expect(routes.routes[3].routes[0].type).toBe("application");
+      expect(routes.routes[3].routes[0].name).toBe("@org/settings");
+      expect(
+        routes.routes[3].routes[0].containerEl.nodeName.toLowerCase()
+      ).toBe("body");
+
+      expect(routes.routes[4].type).toBe("application");
+      expect(routes.routes[4].name).toBe("@org/footer");
+    });
   });
 
   describe(`validates top level properties`, () => {
@@ -410,3 +473,11 @@ describe("constructRoutes", () => {
     });
   });
 });
+
+function parseHTML(str) {
+  if (inBrowser) {
+    return new DOMParser().parseFromString(str, "text/html").documentElement;
+  } else {
+    return parse5.parse(str);
+  }
+}

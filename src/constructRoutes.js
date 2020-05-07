@@ -8,19 +8,22 @@ import {
 } from "./validation-helpers.js";
 
 /**
+ * @typedef {InputRoutesConfigObject | HTMLElement} RoutesConfig
+ *
  * @typedef {{
  * mode?: string;
  * base?: string;
  * containerEl?: ContainerEl;
  * disableWarnings?: boolean;
  * routes: Array<Route>;
- * }} RoutesConfig
+ * }} InputRoutesConfigObject
  *
  * @typedef {{
  * mode: string;
  * base: string;
  * containerEl: ContainerEl;
  * routes: Array<Route>;
+ * sourceElement?: HTMLElement;
  * }} ResolvedRoutesConfig
  *
  * @typedef {UrlRoute | Application} Route
@@ -43,8 +46,122 @@ import {
  * @returns {ResolvedRoutesConfig}
  */
 export function constructRoutes(routesConfig) {
+  if (routesConfig && routesConfig.nodeName) {
+    routesConfig = domToRoutesConfig(routesConfig);
+  }
+
   validateAndSanitize(routesConfig);
   return routesConfig;
+}
+
+/**
+ * @param {HTMLElement} domElement
+ * @returns
+ */
+function domToRoutesConfig(domElement) {
+  if (domElement.nodeName.toLowerCase() !== "single-spa-router") {
+    throw Error(
+      `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router>. Received ${domElement.nodeName}`
+    );
+  }
+
+  const result = {
+    sourceElement: domElement,
+    routes: [],
+  };
+
+  if (getAttribute(domElement, "mode")) {
+    result.mode = getAttribute(domElement, "mode");
+  }
+
+  if (getAttribute(domElement, "base")) {
+    result.base = getAttribute(domElement, "base");
+  }
+
+  for (let i = 0; i < domElement.childNodes.length; i++) {
+    result.routes.push(
+      ...elementToJson(domElement.childNodes[i], domElement.parentNode)
+    );
+  }
+
+  return result;
+}
+
+function getAttribute(element, attrName) {
+  if (element.getAttribute) {
+    // browser
+    return element.getAttribute(name);
+  } else {
+    // NodeJS with parse5
+    const attr = element.attrs.find((attr) => attr.name === attrName);
+    return attr ? attr.value : null;
+  }
+}
+
+/**
+ * @param {HTMLElement} element
+ * @param {HTMLElement} parentElement
+ * @returns {Array<Route>}
+ */
+function elementToJson(element, parentElement) {
+  if (element.nodeName.toLowerCase() === "application") {
+    if (element.childNodes.length > 0) {
+      throw Error(
+        `<application> elements must not have childNodes. You must put in a closing </application> - self closing is not allowed`
+      );
+    }
+    const application = {
+      type: "application",
+      containerEl: parentElement,
+      name: getAttribute(element, "name"),
+    };
+    setProps(element, application, ["name"]);
+    return [application];
+  } else if (element.nodeName.toLowerCase() === "route") {
+    const route = {
+      type: "route",
+      path: getAttribute(element, "path"),
+      routes: [],
+      containerEl: parentElement,
+    };
+    setProps(element, route, ["path"]);
+    for (let i = 0; i < element.childNodes.length; i++) {
+      route.routes.push(...elementToJson(element.childNodes[i], parentElement));
+    }
+    return [route];
+  } else if (element.childNodes) {
+    const result = [];
+    for (let i = 0; i < element.childNodes.length; i++) {
+      result.push(...elementToJson(element.childNodes[i], element));
+    }
+    return result;
+  } else {
+    return [];
+  }
+}
+
+/**
+ * @param {HTMLElement} element
+ * @param {Route} route
+ * @param {string[]} ignoredAttributes
+ */
+function setProps(element, route, ignoredAttributes) {
+  const attributes = element.attributes || entries(element.attrs);
+  for (let i = 0; i < attributes.length; i++) {
+    const { name, value } = attributes[i];
+    if (ignoredAttributes.includes(name)) {
+      continue;
+    } else {
+      if (!route.props) {
+        route.props = {};
+      }
+      route.props[name] = value;
+    }
+  }
+}
+
+function entries(obj) {
+  return Object.keys(obj).map((key) => ({ name: key, value: obj[key] }));
 }
 
 function validateAndSanitize(routesConfig) {
