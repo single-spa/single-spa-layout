@@ -81,5 +81,8 @@
     "single-spa": "^5.4.0",
     "tsd": "^0.11.0",
     "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@types/parse5": "^5.0.2"
   }
 }

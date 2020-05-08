@@ -20,7 +20,10 @@ describe("constructRoutes", () => {
           "utf-8"
         )
       );
-      const routerElement = document.childNodes[1].childNodes[2].childNodes[1];
+      // In browser we can use querySelector, otherwise the more manual lookup
+      const routerElement = inBrowser
+        ? document.querySelector("single-spa-router")
+        : document.childNodes[1].childNodes[2].childNodes[1];
       const routes = constructRoutes(routerElement);
 
       expect(routes.mode).toBe("history");

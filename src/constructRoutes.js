@@ -6,9 +6,10 @@ import {
   validateObject,
   validateContainerEl,
 } from "./validation-helpers.js";
+import { inBrowser } from "./environment-helpers.js";
 
 /**
- * @typedef {InputRoutesConfigObject | HTMLElement} RoutesConfig
+ * @typedef {InputRoutesConfigObject | HTMLElement | import('parse5').DefaultTreeDocument} RoutesConfig
  *
  * @typedef {{
  * mode?: string;
@@ -23,12 +24,12 @@ import {
  * base: string;
  * containerEl: ContainerEl;
  * routes: Array<Route>;
- * sourceElement?: HTMLElement;
+ * sourceElement?: HTMLElement | import('parse5').DefaultTreeDocument;
  * }} ResolvedRoutesConfig
  *
  * @typedef {UrlRoute | Application} Route
  *
- * @typedef {string | HTMLElement} ContainerEl
+ * @typedef {string | HTMLElement | import('parse5').Element} ContainerEl
  *
  * @typedef {{
  * type: string;
@@ -55,8 +56,10 @@ export function constructRoutes(routesConfig) {
 }
 
 /**
+ * Converts a domElement to a json object routes config
+ *
  * @param {HTMLElement} domElement
- * @returns
+ * @returns {InputRoutesConfigObject}
  */
 function domToRoutesConfig(domElement) {
   if (domElement.nodeName.toLowerCase() !== "single-spa-router") {
@@ -88,9 +91,9 @@ function domToRoutesConfig(domElement) {
 }
 
 function getAttribute(element, attrName) {
-  if (element.getAttribute) {
+  if (inBrowser) {
     // browser
-    return element.getAttribute(name);
+    return element.getAttribute(attrName);
   } else {
     // NodeJS with parse5
     const attr = element.attrs.find((attr) => attr.name === attrName);
