@@ -2,7 +2,6 @@ import { inBrowser } from "../src/environment-helpers.js";
 import { constructRoutes } from "../src/single-spa-layout.js";
 import fs from "fs";
 import path from "path";
-import { screen } from "@testing-library/dom";
 import parse5 from "parse5";
 
 jest.spyOn(console, "warn");
