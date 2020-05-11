@@ -13,9 +13,12 @@ import {
   constructApplications,
   constructLayoutEngine,
 } from "../src/single-spa-layout";
+import { parse, Element, DefaultTreeDocument } from "parse5";
 
 // test constructRoutes
 expectError(constructRoutes());
+
+expectError(constructRoutes([]));
 
 expectError(constructRoutes({}));
 
@@ -28,6 +31,15 @@ const routes = constructRoutes({
     },
   ],
 });
+
+const parse5Doc = parse(
+  `<single-spa-router></single-spa-router>`
+) as DefaultTreeDocument;
+
+const routes2 = constructRoutes(parse5Doc);
+expectType<HTMLElement | DefaultTreeDocument | undefined>(
+  routes2.sourceElement
+);
 
 // test matchRoute
 const matchedRoutes = matchRoute(routes, "/");

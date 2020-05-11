@@ -70,6 +70,7 @@
     "husky": "^4.2.5",
     "jest": "^25.5.3",
     "jest-cli": "^25.5.3",
+    "parse5": "^6.0.0",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.2",
@@ -80,5 +81,8 @@
     "single-spa": "^5.4.0",
     "tsd": "^0.11.0",
     "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@types/parse5": "^5.0.2"
   }
 }
