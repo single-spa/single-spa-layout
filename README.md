@@ -39,7 +39,7 @@ single-spa-layout supports two different sytanxes defining applications and rout
 - JSX (compiles to JSON syntax)
 - JSON
 
-### JSX
+#### JSX
 ```jsx
 <router mode='history' base='/' containerEl='#selector'>
   <application name="@org/navbar" />
@@ -58,7 +58,7 @@ single-spa-layout supports two different sytanxes defining applications and rout
 </router>
 ```
 
-### JSON
+#### JSON
 ```js
 const routes = {
   mode: "history",
