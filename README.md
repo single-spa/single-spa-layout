@@ -5,7 +5,7 @@
 Layout engine for single-spa applications
 
 ## Project Goal
-Single-spa layout is trying to solve the following problems:
+Single-spa layout attempts to solve the following problems:
 - Controlling where each single-spa application is rendered in the DOM
 - Reordering the single-spa applications during route changes
 - Embracing a more familiar route based registration of applications
@@ -16,7 +16,7 @@ Single-spa layout is trying to solve the following problems:
 ## API
 
 ### Overview
-1. contstruct routes
+[1. contstruct routes](#Constructing-Routes)
 2. construct applications from routes
 3. register applications
 4. construct layout engine
