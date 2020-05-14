@@ -36,8 +36,8 @@ start()
 
 ### Constructing Routes
 single-spa-layout supports two different sytanxes defining applications and routes at this time:
-- JSX (compiles to JSON syntax)
-- JSON
+- [JSX](#JSX) (compiles to JSON syntax)
+- [JSON](#JSON)
 
 #### JSX
 ```jsx
