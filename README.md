@@ -16,7 +16,7 @@ Single-spa layout attempts to solve the following problems:
 ## API
 
 ### Overview
-[1. contstruct routes](#Constructing-Routes)
+1. [contstruct routes](#Constructing-Routes)
 2. construct applications from routes
 3. register applications
 4. construct layout engine
