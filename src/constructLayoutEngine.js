@@ -1,4 +1,4 @@
-import { matchRoute } from "./matchRoute";
+import { matchRoute, resolvePath } from "./matchRoute";
 import { inBrowser } from "./environment-helpers";
 
 /**
@@ -22,6 +22,11 @@ export function constructLayoutEngine({
 }) {
   let active = false;
 
+  const baseWithoutSlash = resolvedRoutes.base.slice(
+    0,
+    resolvedRoutes.base.length - 1
+  );
+
   const layoutEngine = {
     isActive: () => active,
     activate() {
@@ -36,6 +41,8 @@ export function constructLayoutEngine({
           "single-spa:before-mount-routing-event",
           arrangeDomElements
         );
+
+        window.addEventListener("single-spa:app-change", handleAppChange);
 
         arrangeDomElements();
       }
@@ -52,6 +59,8 @@ export function constructLayoutEngine({
           "single-spa:before-mount-routing-event",
           arrangeDomElements
         );
+
+        window.removeEventListener("single-spa:app-change", handleAppChange);
       }
     },
   };
@@ -63,56 +72,97 @@ export function constructLayoutEngine({
   function arrangeDomElements() {
     const path = location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
 
-    // TODO memoize this for perf
-    const matchedRoutes = matchRoute(resolvedRoutes, path);
+    if (!path.startsWith(baseWithoutSlash)) {
+      // Base URL doesn't match, no need to recurse routes
+      return;
+    }
 
-    const initialContainer =
+    const parentContainer =
       typeof resolvedRoutes.containerEl === "string"
         ? document.querySelector(resolvedRoutes.containerEl)
         : resolvedRoutes.containerEl;
 
-    recurseRoutes(matchedRoutes.routes, initialContainer);
+    recurseRoutes({
+      path,
+      pathMatch: baseWithoutSlash,
+      routes: resolvedRoutes.routes,
+      parentContainer,
+      shouldMount: true,
+    });
+  }
+
+  function handleAppChange({ detail: { appsByNewStatus } }) {
+    appsByNewStatus.NOT_MOUNTED.concat(appsByNewStatus.NOT_LOADED).forEach(
+      (name) => {
+        const applicationElement = getApplicationElement(name);
+        if (applicationElement.isConnected) {
+          applicationElement.parentNode.removeChild(applicationElement);
+        }
+      }
+    );
   }
 }
 
 /**
+ * @typedef {{
+ * path: string,
+ * pathMatch: string,
+ * routes: Array<import('./constructRoutes').Route>,
+ * parentContainer: HTMLElement,
+ * previousSibling?: HTMLElement,
+ * shouldMount: boolean;
+ * }} DomChangeInput
  *
- * @param {Array<import('./constructRoutes').Route>} routes
- * @param {HTMLElement} parentContainer
- * @param {HTMLElement=} previousSibling
+ * We do all of this in a single recursive pass for performance, even though
+ * it makes the code a bit messier
+ *
+ * @param {DomChangeInput} input
  * @returns {HTMLElement}
  */
-function recurseRoutes(routes, parentContainer, previousSibling) {
+function recurseRoutes({
+  path,
+  pathMatch,
+  routes,
+  parentContainer,
+  previousSibling,
+  shouldMount,
+}) {
   routes.forEach((route) => {
     if (route.type === "application") {
       const applicationContainer = getContainerEl(parentContainer, route);
-      const applicationElement = getApplicationElement(route);
+      const applicationElement = getApplicationElement(route.name);
 
-      if (
-        previousSibling &&
-        previousSibling.parentNode === applicationContainer
-      ) {
-        // move to be immediately after previousSibling
-        previousSibling.insertAdjacentElement("afterend", applicationElement);
-      } else if (applicationElement.parentNode !== applicationContainer) {
-        // append to end of the container
-        applicationContainer.appendChild(applicationElement);
-      }
+      if (shouldMount) {
+        if (
+          previousSibling &&
+          previousSibling.parentNode === applicationContainer
+        ) {
+          // move to be immediately after previousSibling
+          previousSibling.insertAdjacentElement("afterend", applicationElement);
+        } else if (applicationElement.parentNode !== applicationContainer) {
+          // append to end of the container
+          applicationContainer.appendChild(applicationElement);
+        }
 
-      // Only use this as the reference sibling node if it's within the parent container
-      if (applicationContainer === parentContainer) {
-        previousSibling = applicationElement;
+        // Only use this as the reference sibling node if it's within the parent container
+        if (applicationContainer === parentContainer) {
+          previousSibling = applicationElement;
+        }
       }
     } else {
-      previousSibling = recurseRoutes(
-        route.routes,
-        getContainerEl(parentContainer, route),
-        previousSibling
-      );
+      const childPathMatch = resolvePath(pathMatch, route.path);
+      previousSibling = recurseRoutes({
+        path,
+        pathMatch: childPathMatch,
+        routes: route.routes,
+        parentContainer: getContainerEl(parentContainer, route),
+        previousSibling,
+        shouldMount: shouldMount && path.startsWith(childPathMatch),
+      });
     }
-
-    return previousSibling;
   });
+
+  return previousSibling;
 }
 
 /**
@@ -150,8 +200,8 @@ function getContainerEl(parentContainer, route) {
  * @param {import('./constructRoutes').Route} route
  * @returns {HTMLElement}
  */
-function getApplicationElement(route) {
-  const htmlId = `single-spa-application:${route.name}`;
+function getApplicationElement(name) {
+  const htmlId = `single-spa-application:${name}`;
 
   let element = document.getElementById(htmlId);
 

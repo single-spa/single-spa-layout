@@ -101,6 +101,17 @@ describe(`constructLayoutEngine browser`, () => {
     window.dispatchEvent(
       new CustomEvent("single-spa:before-mount-routing-event")
     );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["@org-name/app1"],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -126,10 +137,20 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to / route
-    console.log("Transitioning to /");
     history.pushState(history.state, document.title, "/");
     window.dispatchEvent(
       new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: [],
+            NOT_MOUNTED: ["@org-name/app1"],
+            NOT_LOADED: [],
+          },
+        },
+      })
     );
 
     headerEl = document.getElementById(
@@ -141,8 +162,7 @@ describe(`constructLayoutEngine browser`, () => {
     );
 
     expect(headerEl).toBeInTheDocument();
-    // app1El is now in the document, even though it's not active
-    expect(app1El).toBeInTheDocument();
+    expect(app1El).not.toBeInTheDocument();
     expect(footerEl).toBeInTheDocument();
 
     expect(headerEl.compareDocumentPosition(footerEl)).toBe(
@@ -190,6 +210,17 @@ describe(`constructLayoutEngine browser`, () => {
     window.dispatchEvent(
       new CustomEvent("single-spa:before-mount-routing-event")
     );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: [],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -221,6 +252,17 @@ describe(`constructLayoutEngine browser`, () => {
     history.pushState(history.state, document.title, "/settings");
     window.dispatchEvent(
       new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: [],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
     );
 
     headerEl = document.getElementById(
