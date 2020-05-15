@@ -23,11 +23,11 @@ expectError(constructRoutes([]));
 expectError(constructRoutes({}));
 
 const routes = constructRoutes({
-  routes: [
+  children: [
     {
       type: "route",
       path: "/app1",
-      routes: [{ type: "application", name: "app1" }],
+      children: [{ type: "application", name: "app1" }],
     },
   ],
 });
@@ -48,7 +48,9 @@ expectType<import("../src/constructRoutes").ContainerEl>(
   matchedRoutes.containerEl
 );
 expectType<string>(matchedRoutes.mode);
-expectType<Array<import("../src/constructRoutes").Route>>(matchedRoutes.routes);
+expectType<Array<import("../src/constructRoutes").RouteChild>>(
+  matchedRoutes.children
+);
 
 // test constructApplication
 const applications = constructApplications({
