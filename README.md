@@ -61,7 +61,7 @@ The root object/node. Router can have the following options:
 
 ##### Route
 
-A routing point where all children will be conditionally rendered when the url matches. Suppors the following options
+A routing point where all children will be conditionally rendered when the url matches. Supports the following options
 
 - path: string to evaluate against the URL. _required_
 - chilren: Array of routes or Application objects. _required_
