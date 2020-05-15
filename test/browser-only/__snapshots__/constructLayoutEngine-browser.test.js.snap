@@ -33,9 +33,6 @@ exports[`constructLayoutEngine browser can successfully construct a layout engin
   <div
     id="single-spa-application:@org-name/footer"
   />
-  <div
-    id="single-spa-application:@org-name/app1"
-  />
 </body>
 `;
 
