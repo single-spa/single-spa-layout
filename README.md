@@ -2,7 +2,11 @@
 
 [![Build Status](https://travis-ci.com/single-spa/single-spa-layout.svg?branch=master)](https://travis-ci.com/single-spa/single-spa-layout)
 
-Layout engine for single-spa applications
+An experimental Layout engine for single-spa applications
+
+## Project status (WARNING)
+
+_Experimentation_ NOT PRODUCTION READY. We are still discussing internal implementation details and refining scope. All documentation below is subject to change.
 
 ## Project Goal
 
