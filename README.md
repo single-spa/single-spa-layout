@@ -57,14 +57,14 @@ The root object/node. Router can have the following options:
 - mode: 'history' | 'hash'
 - base: base url where the router is active
 - containerEl: which cssSelector is where the routing should take place (inferred in HTML syntax)
-- routes: Array of routes or Application objects
+- children: Array of routes or Application objects
 
 ##### Route
 
 A routing point where all children will be conditionally rendered when the url matches. Suppors the following options
 
 - path: string to evaluate against the URL
-- routes: Array of routes or Application objects
+- children: Array of routes or Application objects
 
 ##### Application
 
@@ -76,9 +76,13 @@ A placeholder for where a microfrontend application will render. Application obj
 
 #### JSX
 
+JSX syntax compiles to JSON syntax and just offers an alternate syntax to represent the layout of `single-spa` registered applications. It will create the larger JSON syntax in a smaller footprint and map values to more complex objects.
+
+- custom props can be set on the application JSX directly without wrapping them in a props object.
+
 ```jsx
 <router mode="history" base="/" containerEl="#selector">
-  <application name="@org/navbar" />
+  <application name="@org/navbar" myColor="green" nodeName="nav" />
   <route path="/app1">
     <application name="@org/main-sidenav" />
     <application name="@org/app1" />
@@ -102,7 +106,12 @@ const routes = {
   base: "/",
   containerEl: "#selector",
   children: [
-    { type: "application", name: "@org/navbar" },
+    {
+      type: "application",
+      name: "@org/navbar",
+      nodeName: "nav",
+      props: { myColor: "green" },
+    },
     {
       type: "route",
       path: "app1",
