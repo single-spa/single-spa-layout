@@ -70,7 +70,7 @@ export function constructLayoutEngine({
   return layoutEngine;
 
   function arrangeDomElements() {
-    let path = location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
+    const path = location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
 
     if (!path.startsWith(baseWithoutSlash)) {
       // Base URL doesn't match, no need to recurse routes
@@ -94,7 +94,10 @@ export function constructLayoutEngine({
   function handleAppChange({ detail: { appsByNewStatus } }) {
     appsByNewStatus.NOT_MOUNTED.concat(appsByNewStatus.NOT_LOADED).forEach(
       (name) => {
-        remove(getApplicationElement(name))();
+        const applicationElement = getApplicationElement(name);
+        if (applicationElement.isConnected) {
+          applicationElement.parentNode.removeChild(applicationElement);
+        }
       }
     );
   }
@@ -208,25 +211,4 @@ function getApplicationElement(name) {
   }
 
   return element;
-}
-
-function append(element, parent) {
-  return () => {
-    parent.appendChild(element);
-  };
-}
-
-function insertAfter(element, sibling) {
-  return () => {
-    sibling.insertAdjacentElement("afterend", element);
-  };
-}
-
-function remove(element) {
-  return () => {
-    if (element.isConnected) {
-      // IE11 doesn't support .remove()
-      element.parentNode.removeChild(element);
-    }
-  };
 }
