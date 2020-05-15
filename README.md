@@ -44,6 +44,36 @@ single-spa-layout supports two different sytanxes defining applications and rout
 - [JSX](#JSX) (compiles to JSON syntax)
 - [JSON](#JSON)
 
+#### Route Object types
+
+1. Router
+2. Application
+3. Route
+
+##### Router
+
+The root object/node. Router can have the following options:
+
+- mode: 'history' | 'hash'
+- base: base url where the router is active
+- containerEl: which cssSelector is where the routing should take place (inferred in HTML syntax)
+- routes: Array of routes or Application objects
+
+##### Route
+
+A routing point where all children will be conditionally rendered when the url matches. Suppors the following options
+
+- path: string to evaluate against the URL
+- routes: Array of routes or Application objects
+
+##### Application
+
+A placeholder for where a microfrontend application will render. Application objects support the following objects
+
+- name: Name of the application (will be used to registerApplications in single-spa)
+- props: object of custom props to pass down to the application (this object is constructed from all non-matching attributes in HTML and JSX syntax)
+- nodeName: The name of the HTML node that should be used to contain the application. ex: 'nav' || 'div' || 'section'
+
 #### JSX
 
 ```jsx
