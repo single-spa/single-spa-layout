@@ -6,7 +6,7 @@ An experimental Layout engine for single-spa applications
 
 ## Project status (WARNING)
 
-_Experimentation_ NOT PRODUCTION READY. We are still discussing internal implementation details and refining scope. All documentation below is subject to change.
+**Experimentation** NOT PRODUCTION READY. We are still discussing internal implementation details and refining scope. All documentation below is subject to change.
 
 ## Project Goal
 
