@@ -5,7 +5,9 @@
 Layout engine for single-spa applications
 
 ## Project Goal
+
 Single-spa layout attempts to solve the following problems:
+
 - Controlling where each single-spa application is rendered in the DOM
 - Reordering the single-spa applications during route changes
 - Embracing a more familiar route based registration of applications
@@ -16,11 +18,13 @@ Single-spa layout attempts to solve the following problems:
 ## API
 
 ### Overview
+
 1. [contstruct routes](#Constructing-Routes)
 2. construct applications from routes
 3. register applications
 4. construct layout engine
 5. call `start()` from the `single-spa` package
+
 ```js
 // root-config.js
 import { registerApplication, start } from 'single-spa';
@@ -33,15 +37,17 @@ const layoutEngine = constructLayoutEngine({routes, applications})
 start()
 ```
 
-
 ### Constructing Routes
+
 single-spa-layout supports two different sytanxes defining applications and routes at this time:
+
 - [JSX](#JSX) (compiles to JSON syntax)
 - [JSON](#JSON)
 
 #### JSX
+
 ```jsx
-<router mode='history' base='/' containerEl='#selector'>
+<router mode="history" base="/" containerEl="#selector">
   <application name="@org/navbar" />
   <route path="/app1">
     <application name="@org/main-sidenav" />
@@ -59,17 +65,18 @@ single-spa-layout supports two different sytanxes defining applications and rout
 ```
 
 #### JSON
+
 ```js
 const routes = {
   mode: "history",
   base: "/",
   containerEl: "#selector",
-  routes: [
+  children: [
     { type: "application", name: "@org/navbar" },
     {
       type: "route",
       path: "app1",
-      routes: [
+      children: [
         { type: "application", name: "@org/main-sidenav" },
         { type: "application", name: "@org/app1" },
       ],
@@ -77,7 +84,7 @@ const routes = {
     {
       type: "route",
       path: "app2",
-      routes: [
+      children: [
         { type: "application", name: "@org/main-sidenav" },
         { type: "application", name: "@org/app2" },
       ],
@@ -85,9 +92,9 @@ const routes = {
     {
       type: "route",
       path: "settings",
-      routes: [{ type: "application", name: "@org/settings" }],
+      children: [{ type: "application", name: "@org/settings" }],
     },
     { type: "application", name: "@org/footer" },
   ],
-}
+};
 ```
