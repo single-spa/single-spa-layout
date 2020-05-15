@@ -64,7 +64,7 @@ The root object/node. Router can have the following options:
 A routing point where all children will be conditionally rendered when the url matches. Supports the following options
 
 - path: string to evaluate against the URL. _required_
-- chilren: Array of routes or Application objects. _required_
+- children: Array of routes or Application objects. _required_
 - type: 'route'. In JSON syntax `type` is what tells `single-spa-layout` if an object is meant to be a route or an application. _required_
 
 ##### Application
