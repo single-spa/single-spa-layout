@@ -37,9 +37,6 @@ const parse5Doc = parse(
 ) as DefaultTreeDocument;
 
 const routes2 = constructRoutes(parse5Doc);
-expectType<HTMLElement | DefaultTreeDocument | undefined>(
-  routes2.sourceElement
-);
 
 // test matchRoute
 const matchedRoutes = matchRoute(routes, "/");
@@ -48,7 +45,9 @@ expectType<import("../src/constructRoutes").ContainerEl>(
   matchedRoutes.containerEl
 );
 expectType<string>(matchedRoutes.mode);
-expectType<Array<import("../src/constructRoutes").Route>>(matchedRoutes.routes);
+expectType<Array<import("../src/constructRoutes").RouteChild>>(
+  matchedRoutes.routes
+);
 
 // test constructApplication
 const applications = constructApplications({

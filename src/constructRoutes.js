@@ -23,11 +23,15 @@ import { inBrowser } from "./environment-helpers.js";
  * mode: string;
  * base: string;
  * containerEl: ContainerEl;
- * routes: Array<Route>;
- * sourceElement?: HTMLElement | import('parse5').DefaultTreeDocument;
+ * routes: Array<RouteChild>;
  * }} ResolvedRoutesConfig
  *
- * @typedef {UrlRoute | Application} Route
+ * @typedef {UrlRoute | Application | Node | HTMLElementDescription} RouteChild
+ *
+ * @typedef {{
+ * type: string;
+ * [attributeName: string]: string;
+ * }} HTMLElementDescription
  *
  * @typedef {string | HTMLElement | import('parse5').Element} ContainerEl
  *
@@ -69,7 +73,6 @@ function domToRoutesConfig(domElement) {
   }
 
   const result = {
-    sourceElement: domElement,
     routes: [],
   };
 
@@ -103,10 +106,9 @@ function getAttribute(element, attrName) {
 
 /**
  * @param {HTMLElement} element
- * @param {HTMLElement} parentElement
  * @returns {Array<Route>}
  */
-function elementToJson(element, parentElement) {
+function elementToJson(element) {
   if (element.nodeName.toLowerCase() === "application") {
     if (element.childNodes.length > 0) {
       throw Error(
@@ -115,7 +117,6 @@ function elementToJson(element, parentElement) {
     }
     const application = {
       type: "application",
-      containerEl: parentElement,
       name: getAttribute(element, "name"),
     };
     setProps(element, application, ["name"]);
@@ -125,19 +126,36 @@ function elementToJson(element, parentElement) {
       type: "route",
       path: getAttribute(element, "path"),
       routes: [],
-      containerEl: parentElement,
     };
     setProps(element, route, ["path"]);
     for (let i = 0; i < element.childNodes.length; i++) {
-      route.routes.push(...elementToJson(element.childNodes[i], parentElement));
+      route.routes.push(...elementToJson(element.childNodes[i]));
     }
     return [route];
-  } else if (element.childNodes) {
-    const result = [];
-    for (let i = 0; i < element.childNodes.length; i++) {
-      result.push(...elementToJson(element.childNodes[i], element));
+  } else if (typeof Node !== "undefined" && element instanceof Node) {
+    if (
+      element.nodeType === Node.TEXT_NODE &&
+      element.textContent.trim() === ""
+    ) {
+      return [];
+    } else {
+      if (element.childNodes && element.childNodes.length > 0) {
+        element.routes = [];
+        for (let i = 0; i < element.childNodes.length; i++) {
+          element.routes.push(...elementToJson(element.childNodes[i]));
+        }
+      }
+      return [element];
     }
-    return result;
+  } else if (element.childNodes) {
+    const result = {
+      type: element.nodeName.toLowerCase(),
+      routes: [],
+    };
+    for (let i = 0; i < element.childNodes.length; i++) {
+      result.routes.push(...elementToJson(element.childNodes[i]));
+    }
+    return [result];
   } else {
     return [];
   }
@@ -201,12 +219,11 @@ function validateAndSanitize(routesConfig) {
 
   function validateRoute(route, propertyName) {
     validateObject(propertyName, route);
-    validateEnum(propertyName, route.type, ["application", "route"]);
 
     if (route.type === "application") {
       validateKeys(propertyName, route, ["type", "name"], disableWarnings);
       validateString(`${propertyName}.name`, route.name);
-    } else {
+    } else if (route.type === "route") {
       validateKeys(
         propertyName,
         route,
@@ -214,7 +231,20 @@ function validateAndSanitize(routesConfig) {
         disableWarnings
       );
       validateString(`${propertyName}.path`, route.path);
-      validateArray(`${propertyName}.routes`, route.routes, validateRoute);
+      if (route.routes)
+        validateArray(`${propertyName}.routes`, route.routes, validateRoute);
+    } else {
+      if (typeof Node !== "undefined" && route instanceof Node) {
+        // HTMLElements are allowed
+      } else {
+        for (let key in route) {
+          if (key !== "routes") {
+            validateString(`${propertyName}['${key}']`, route[key]);
+          }
+        }
+      }
+      if (route.routes)
+        validateArray(`${propertyName}.routes`, route.routes, validateRoute);
     }
   }
 

@@ -20,59 +20,17 @@ describe("constructRoutes", () => {
         )
       );
       // In browser we can use querySelector, otherwise the more manual lookup
-      const routerElement = inBrowser
-        ? document.querySelector("single-spa-router")
-        : document.childNodes[1].childNodes[2].childNodes[1];
-      const routes = constructRoutes(routerElement);
+      const routes = constructRoutes(findRouterElement(document));
+    });
 
-      expect(routes.mode).toBe("history");
-      expect(routes.base).toBe("/");
-      expect(routes.routes.length).toBe(5);
-      expect(routes.sourceElement).toBe(routerElement);
-
-      expect(routes.routes[0].type).toBe("application");
-      expect(routes.routes[0].name).toBe("@org/navbar");
-      expect(routes.routes[0].containerEl.nodeName.toLowerCase()).toBe("body");
-
-      expect(routes.routes[1].type).toBe("route");
-      expect(routes.routes[1].path).toBe("app1");
-      expect(routes.routes[1].routes.length).toBe(2);
-      expect(routes.routes[1].routes[0].type).toBe("application");
-      expect(routes.routes[1].routes[0].name).toBe("@org/main-sidenav");
-      expect(
-        routes.routes[1].routes[0].containerEl.nodeName.toLowerCase()
-      ).toBe("aside");
-      expect(routes.routes[1].routes[1].type).toBe("application");
-      expect(routes.routes[1].routes[1].name).toBe("@org/app1");
-      expect(
-        routes.routes[1].routes[1].containerEl.nodeName.toLowerCase()
-      ).toBe("body");
-
-      expect(routes.routes[2].type).toBe("route");
-      expect(routes.routes[2].path).toBe("app2");
-      expect(routes.routes[2].routes.length).toBe(2);
-      expect(routes.routes[2].routes[0].type).toBe("application");
-      expect(routes.routes[2].routes[0].name).toBe("@org/main-sidenav");
-      expect(
-        routes.routes[2].routes[0].containerEl.nodeName.toLowerCase()
-      ).toBe("aside");
-      expect(routes.routes[2].routes[1].type).toBe("application");
-      expect(routes.routes[2].routes[1].name).toBe("@org/app2");
-      expect(
-        routes.routes[2].routes[1].containerEl.nodeName.toLowerCase()
-      ).toBe("body");
-
-      expect(routes.routes[3].type).toBe("route");
-      expect(routes.routes[3].path).toBe("settings");
-      expect(routes.routes[3].routes.length).toBe(1);
-      expect(routes.routes[3].routes[0].type).toBe("application");
-      expect(routes.routes[3].routes[0].name).toBe("@org/settings");
-      expect(
-        routes.routes[3].routes[0].containerEl.nodeName.toLowerCase()
-      ).toBe("body");
-
-      expect(routes.routes[4].type).toBe("application");
-      expect(routes.routes[4].name).toBe("@org/footer");
+    it(`can parse a layout with arbitrary dom element children`, () => {
+      const document = parseHTML(
+        fs.readFileSync(
+          path.resolve(__dirname, "./fixtures/dom-elements.html"),
+          "utf-8"
+        )
+      );
+      const routes = constructRoutes(findRouterElement(document));
     });
   });
 
@@ -210,22 +168,6 @@ describe("constructRoutes", () => {
           routes: "str",
         });
       }).toThrowError("array");
-    });
-
-    it(`checks for presence of route array`, () => {
-      expect(() => {
-        constructRoutes({
-          mode: "history",
-          routes: [
-            {
-              type: "route",
-              path: "/",
-            },
-          ],
-        });
-      }).toThrowError(
-        `Invalid routesConfig.routes[0].routes: received 'undefined', but expected an array`
-      );
     });
 
     it(`checks for valid route objects`, () => {
@@ -482,4 +424,10 @@ function parseHTML(str) {
   } else {
     return parse5.parse(str);
   }
+}
+
+function findRouterElement(document) {
+  return inBrowser
+    ? document.querySelector("single-spa-router")
+    : document.childNodes[1].childNodes[2].childNodes[1];
 }

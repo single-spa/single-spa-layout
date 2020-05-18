@@ -53,15 +53,18 @@ export function validateString(propertyName, val) {
 }
 
 export function validateArray(propertyName, arr, cbk) {
-  if (!Array.isArray(arr)) {
+  if (
+    !Array.isArray(arr) &&
+    (typeof typeof arr !== "object" || arr.length !== "number")
+  ) {
     throw Error(
       `Invalid ${propertyName}: received '${arr}', but expected an array`
     );
   }
 
-  arr.forEach((val, index) => {
-    cbk(val, `${propertyName}[${index}]`);
-  });
+  for (let i = 0; i < arr.length; i++) {
+    cbk(arr[i], `${propertyName}[${i}]`);
+  }
 }
 
 export function validateContainerEl(propertyName, containerEl) {
