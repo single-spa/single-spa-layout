@@ -27,54 +27,52 @@ describe("constructRoutes", () => {
 
       expect(routes.mode).toBe("history");
       expect(routes.base).toBe("/");
-      expect(routes.children.length).toBe(5);
+      expect(routes.routes.length).toBe(5);
       expect(routes.sourceElement).toBe(routerElement);
 
-      expect(routes.children[0].type).toBe("application");
-      expect(routes.children[0].name).toBe("@org/navbar");
-      expect(routes.children[0].containerEl.nodeName.toLowerCase()).toBe(
-        "body"
-      );
+      expect(routes.routes[0].type).toBe("application");
+      expect(routes.routes[0].name).toBe("@org/navbar");
+      expect(routes.routes[0].containerEl.nodeName.toLowerCase()).toBe("body");
 
-      expect(routes.children[1].type).toBe("route");
-      expect(routes.children[1].path).toBe("app1");
-      expect(routes.children[1].children.length).toBe(2);
-      expect(routes.children[1].children[0].type).toBe("application");
-      expect(routes.children[1].children[0].name).toBe("@org/main-sidenav");
+      expect(routes.routes[1].type).toBe("route");
+      expect(routes.routes[1].path).toBe("app1");
+      expect(routes.routes[1].routes.length).toBe(2);
+      expect(routes.routes[1].routes[0].type).toBe("application");
+      expect(routes.routes[1].routes[0].name).toBe("@org/main-sidenav");
       expect(
-        routes.children[1].children[0].containerEl.nodeName.toLowerCase()
+        routes.routes[1].routes[0].containerEl.nodeName.toLowerCase()
       ).toBe("aside");
-      expect(routes.children[1].children[1].type).toBe("application");
-      expect(routes.children[1].children[1].name).toBe("@org/app1");
+      expect(routes.routes[1].routes[1].type).toBe("application");
+      expect(routes.routes[1].routes[1].name).toBe("@org/app1");
       expect(
-        routes.children[1].children[1].containerEl.nodeName.toLowerCase()
+        routes.routes[1].routes[1].containerEl.nodeName.toLowerCase()
       ).toBe("body");
 
-      expect(routes.children[2].type).toBe("route");
-      expect(routes.children[2].path).toBe("app2");
-      expect(routes.children[2].children.length).toBe(2);
-      expect(routes.children[2].children[0].type).toBe("application");
-      expect(routes.children[2].children[0].name).toBe("@org/main-sidenav");
+      expect(routes.routes[2].type).toBe("route");
+      expect(routes.routes[2].path).toBe("app2");
+      expect(routes.routes[2].routes.length).toBe(2);
+      expect(routes.routes[2].routes[0].type).toBe("application");
+      expect(routes.routes[2].routes[0].name).toBe("@org/main-sidenav");
       expect(
-        routes.children[2].children[0].containerEl.nodeName.toLowerCase()
+        routes.routes[2].routes[0].containerEl.nodeName.toLowerCase()
       ).toBe("aside");
-      expect(routes.children[2].children[1].type).toBe("application");
-      expect(routes.children[2].children[1].name).toBe("@org/app2");
+      expect(routes.routes[2].routes[1].type).toBe("application");
+      expect(routes.routes[2].routes[1].name).toBe("@org/app2");
       expect(
-        routes.children[2].children[1].containerEl.nodeName.toLowerCase()
+        routes.routes[2].routes[1].containerEl.nodeName.toLowerCase()
       ).toBe("body");
 
-      expect(routes.children[3].type).toBe("route");
-      expect(routes.children[3].path).toBe("settings");
-      expect(routes.children[3].children.length).toBe(1);
-      expect(routes.children[3].children[0].type).toBe("application");
-      expect(routes.children[3].children[0].name).toBe("@org/settings");
+      expect(routes.routes[3].type).toBe("route");
+      expect(routes.routes[3].path).toBe("settings");
+      expect(routes.routes[3].routes.length).toBe(1);
+      expect(routes.routes[3].routes[0].type).toBe("application");
+      expect(routes.routes[3].routes[0].name).toBe("@org/settings");
       expect(
-        routes.children[3].children[0].containerEl.nodeName.toLowerCase()
+        routes.routes[3].routes[0].containerEl.nodeName.toLowerCase()
       ).toBe("body");
 
-      expect(routes.children[4].type).toBe("application");
-      expect(routes.children[4].name).toBe("@org/footer");
+      expect(routes.routes[4].type).toBe("application");
+      expect(routes.routes[4].name).toBe("@org/footer");
     });
   });
 
@@ -84,12 +82,12 @@ describe("constructRoutes", () => {
         mode: "history",
         base: "/",
         containerEl: "#selector",
-        children: [
+        routes: [
           { type: "application", name: "@org/navbar" },
           {
             type: "route",
             path: "app1",
-            children: [
+            routes: [
               { type: "application", name: "@org/main-sidenav" },
               { type: "application", name: "@org/app1" },
             ],
@@ -97,7 +95,7 @@ describe("constructRoutes", () => {
           {
             type: "route",
             path: "app2",
-            children: [
+            routes: [
               { type: "application", name: "@org/main-sidenav" },
               { type: "application", name: "@org/app2" },
             ],
@@ -105,7 +103,7 @@ describe("constructRoutes", () => {
           {
             type: "route",
             path: "settings",
-            children: [{ type: "application", name: "@org/settings" }],
+            routes: [{ type: "application", name: "@org/settings" }],
           },
           { type: "application", name: "@org/footer" },
         ],
@@ -136,12 +134,12 @@ describe("constructRoutes", () => {
 
     it(`console.warns if extra properties are provided`, () => {
       constructRoutes({
-        children: [],
+        routes: [],
         irrelevantProperty: "thing",
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig: received invalid properties 'irrelevantProperty', but valid properties are mode, base, containerEl, children, disableWarnings`
+        `Invalid routesConfig: received invalid properties 'irrelevantProperty', but valid properties are mode, base, containerEl, routes, disableWarnings`
       );
     });
 
@@ -149,18 +147,18 @@ describe("constructRoutes", () => {
       expect(() => {
         constructRoutes({
           mode: "wrong",
-          children: [],
+          routes: [],
         });
       }).toThrowError("mode");
 
       constructRoutes({
         mode: "hash",
-        children: [],
+        routes: [],
       });
 
       constructRoutes({
         mode: "history",
-        children: [],
+        routes: [],
       });
     });
 
@@ -168,14 +166,14 @@ describe("constructRoutes", () => {
       constructRoutes({
         base: "/",
         mode: "history",
-        children: [],
+        routes: [],
       });
 
       expect(() => {
         constructRoutes({
           base: "",
           mode: "history",
-          children: [],
+          routes: [],
         });
       }).toThrowError("non-blank string");
 
@@ -183,7 +181,7 @@ describe("constructRoutes", () => {
         constructRoutes({
           base: "  ",
           mode: "history",
-          children: [],
+          routes: [],
         });
       }).toThrowError("non-blank string");
 
@@ -191,7 +189,7 @@ describe("constructRoutes", () => {
         constructRoutes({
           base: null,
           mode: "history",
-          children: [],
+          routes: [],
         });
       }).toThrowError("non-blank string");
     });
@@ -202,14 +200,14 @@ describe("constructRoutes", () => {
       expect(() => {
         constructRoutes({
           mode: "history",
-          children: {},
+          routes: {},
         });
       }).toThrowError("array");
 
       expect(() => {
         constructRoutes({
           mode: "history",
-          children: "str",
+          routes: "str",
         });
       }).toThrowError("array");
     });
@@ -218,7 +216,7 @@ describe("constructRoutes", () => {
       expect(() => {
         constructRoutes({
           mode: "history",
-          children: [
+          routes: [
             {
               type: "route",
               path: "/",
@@ -226,18 +224,18 @@ describe("constructRoutes", () => {
           ],
         });
       }).toThrowError(
-        `Invalid routesConfig.children[0].children: received 'undefined', but expected an array`
+        `Invalid routesConfig.routes[0].routes: received 'undefined', but expected an array`
       );
     });
 
     it(`checks for valid route objects`, () => {
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "route",
             path: "/",
-            children: [],
+            routes: [],
           },
         ],
       });
@@ -245,25 +243,25 @@ describe("constructRoutes", () => {
       console.warn.mockReset();
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "route",
             path: "/",
-            children: [],
+            routes: [],
             somethingElse: "value",
           },
         ],
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.children[0]: received invalid properties 'somethingElse', but valid properties are type, path, children`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes`
       );
     });
 
     it(`checks for valid application objects`, () => {
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "application",
             name: "@org/project",
@@ -274,7 +272,7 @@ describe("constructRoutes", () => {
       console.warn.mockReset();
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "application",
             name: "@org/project",
@@ -284,34 +282,34 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.children[0]: received invalid properties 'somethingElse', but valid properties are type, name`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name`
       );
 
       console.warn.mockReset();
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "application",
             name: "@org/project",
-            children: [],
+            routes: [],
           },
         ],
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.children[0]: received invalid properties 'children', but valid properties are type, name`
+        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name`
       );
     });
 
     it(`checks subroutes`, () => {
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "route",
             path: "thing",
-            children: [
+            routes: [
               {
                 type: "application",
                 name: "navbar",
@@ -324,11 +322,11 @@ describe("constructRoutes", () => {
       expect(console.warn).not.toHaveBeenCalled();
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "route",
             path: "thing",
-            children: [
+            routes: [
               {
                 type: "application",
                 name: "navbar",
@@ -340,23 +338,23 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.children[0].children[0]: received invalid properties 'somethingElse', but valid properties are type, name`
+        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name`
       );
     });
 
     it(`checks all routes when there are multiple`, () => {
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "route",
             path: "/",
-            children: [],
+            routes: [],
           },
           {
             type: "route",
             path: "/app1",
-            children: [],
+            routes: [],
           },
         ],
       });
@@ -364,23 +362,23 @@ describe("constructRoutes", () => {
       expect(console.warn).not.toHaveBeenCalled();
       constructRoutes({
         mode: "history",
-        children: [
+        routes: [
           {
             type: "route",
             path: "/",
-            children: [],
+            routes: [],
           },
           {
             type: "route",
             path: "/app1",
-            children: [],
+            routes: [],
             irrelevantProperty: "thing",
           },
         ],
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        "Invalid routesConfig.children[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, children"
+        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes"
       );
     });
 
@@ -388,7 +386,7 @@ describe("constructRoutes", () => {
       expect(() => {
         constructRoutes({
           containerEl: null,
-          children: [],
+          routes: [],
         });
       }).toThrowError(
         "Invalid routesConfig.containerEl: received null but expected either non-blank string or HTMLElement"
@@ -397,7 +395,7 @@ describe("constructRoutes", () => {
       expect(() => {
         constructRoutes({
           containerEl: [],
-          children: [],
+          routes: [],
         });
       }).toThrowError(
         "Invalid routesConfig.containerEl: received  but expected either non-blank string or HTMLElement"
@@ -406,7 +404,7 @@ describe("constructRoutes", () => {
       expect(() => {
         constructRoutes({
           containerEl: 2342,
-          children: [],
+          routes: [],
         });
       }).toThrowError(
         "Invalid routesConfig.containerEl: received 2342 but expected either non-blank string or HTMLElement"
@@ -416,7 +414,7 @@ describe("constructRoutes", () => {
     it(`allows a string containerEl`, () => {
       constructRoutes({
         containerEl: "asdf",
-        children: [],
+        routes: [],
       });
     });
 
@@ -424,7 +422,7 @@ describe("constructRoutes", () => {
       it("allows an HTMLElement containerEl", () => {
         constructRoutes({
           containerEl: document.createElement("div"),
-          children: [],
+          routes: [],
         });
       });
     }
@@ -436,13 +434,13 @@ describe("constructRoutes", () => {
         constructRoutes({
           containerEl: "body",
           mode: "history",
-          children: [{ type: "application", name: "nav" }],
+          routes: [{ type: "application", name: "nav" }],
         })
       ).toEqual({
         base: "/",
         containerEl: "body",
         mode: "history",
-        children: [{ type: "application", name: "nav" }],
+        routes: [{ type: "application", name: "nav" }],
       });
     });
 
@@ -451,13 +449,13 @@ describe("constructRoutes", () => {
         constructRoutes({
           containerEl: "body",
           base: "/",
-          children: [{ type: "application", name: "nav" }],
+          routes: [{ type: "application", name: "nav" }],
         })
       ).toEqual({
         base: "/",
         containerEl: "body",
         mode: "history",
-        children: [{ type: "application", name: "nav" }],
+        routes: [{ type: "application", name: "nav" }],
       });
     });
 
@@ -466,13 +464,13 @@ describe("constructRoutes", () => {
         constructRoutes({
           base: "/",
           mode: "history",
-          children: [{ type: "application", name: "nav" }],
+          routes: [{ type: "application", name: "nav" }],
         })
       ).toEqual({
         base: "/",
         containerEl: "body",
         mode: "history",
-        children: [{ type: "application", name: "nav" }],
+        routes: [{ type: "application", name: "nav" }],
       });
     });
   });

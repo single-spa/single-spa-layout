@@ -13,13 +13,13 @@ export function matchRoute(resolvedRoutesConfig, pathMatch) {
   );
 
   if (pathMatch.startsWith(baseWithoutSlash)) {
-    result.children = recurseRoutes(
+    result.routes = recurseRoutes(
       pathMatch,
       resolvedRoutesConfig.base,
-      resolvedRoutesConfig.children
+      resolvedRoutesConfig.routes
     );
   } else {
-    result.children = [];
+    result.routes = [];
   }
 
   return result;
@@ -29,21 +29,21 @@ export function matchRoute(resolvedRoutesConfig, pathMatch) {
  *
  * @param {string} pathMatch
  * @param {string} startPath
- * @param {Array<import('./constructRoutes').Route>} children
+ * @param {Array<import('./constructRoutes').Route>} routes
  */
-function recurseRoutes(pathMatch, startPath, children) {
+function recurseRoutes(pathMatch, startPath, routes) {
   const result = [];
 
-  children.forEach((child) => {
-    if (child.type === "application") {
-      result.push(child);
+  routes.forEach((route) => {
+    if (route.type === "application") {
+      result.push(route);
     } else {
-      const resolvedPath = resolvePath(startPath, child.path);
+      const resolvedPath = resolvePath(startPath, route.path);
 
       if (pathMatch.startsWith(resolvedPath)) {
         result.push({
-          ...child,
-          children: recurseRoutes(pathMatch, resolvedPath, child.children),
+          ...route,
+          routes: recurseRoutes(pathMatch, resolvedPath, route.routes),
         });
       }
     }

@@ -1,4 +1,4 @@
-import { resolvePath } from "./matchRoute";
+import { matchRoute, resolvePath } from "./matchRoute";
 import { inBrowser } from "./environment-helpers";
 
 /**
@@ -82,10 +82,10 @@ export function constructLayoutEngine({
         ? document.querySelector(resolvedRoutes.containerEl)
         : resolvedRoutes.containerEl;
 
-    recurseChildren({
+    recurseRoutes({
       path,
       pathMatch: baseWithoutSlash,
-      children: resolvedRoutes.children,
+      routes: resolvedRoutes.routes,
       parentContainer,
       shouldMount: true,
     });
@@ -107,7 +107,7 @@ export function constructLayoutEngine({
  * @typedef {{
  * path: string,
  * pathMatch: string,
- * children: Array<import('./constructRoutes').RouteChild>,
+ * routes: Array<import('./constructRoutes').Route>,
  * parentContainer: HTMLElement,
  * previousSibling?: HTMLElement,
  * shouldMount: boolean;
@@ -119,18 +119,18 @@ export function constructLayoutEngine({
  * @param {DomChangeInput} input
  * @returns {HTMLElement}
  */
-function recurseChildren({
+function recurseRoutes({
   path,
   pathMatch,
-  children,
+  routes,
   parentContainer,
   previousSibling,
   shouldMount,
 }) {
-  children.forEach((child) => {
-    if (child.type === "application") {
-      const applicationContainer = getContainerEl(parentContainer, child);
-      const applicationElement = getApplicationElement(child.name);
+  routes.forEach((route) => {
+    if (route.type === "application") {
+      const applicationContainer = getContainerEl(parentContainer, route);
+      const applicationElement = getApplicationElement(route.name);
 
       if (shouldMount) {
         if (
@@ -150,12 +150,12 @@ function recurseChildren({
         }
       }
     } else {
-      const childPathMatch = resolvePath(pathMatch, child.path);
-      previousSibling = recurseChildren({
+      const childPathMatch = resolvePath(pathMatch, route.path);
+      previousSibling = recurseRoutes({
         path,
         pathMatch: childPathMatch,
-        children: child.children,
-        parentContainer: getContainerEl(parentContainer, child),
+        routes: route.routes,
+        parentContainer: getContainerEl(parentContainer, route),
         previousSibling,
         shouldMount: shouldMount && path.startsWith(childPathMatch),
       });
@@ -168,23 +168,23 @@ function recurseChildren({
 /**
  *
  * @param {HTMLElement} parentContainer
- * @param {import('./constructRoutes').RouteChild} child
+ * @param {import('./constructRoutes').Route} route
  * @returns {HTMLElement}
  */
-function getContainerEl(parentContainer, child) {
+function getContainerEl(parentContainer, route) {
   let container;
 
-  if (child.containerEl) {
-    if (typeof child.containerEl === "string") {
+  if (route.containerEl) {
+    if (typeof route.containerEl === "string") {
       // try scoped/nested within parentContainer
-      container = parentContainer.querySelector(child.containerEl);
+      container = parentContainer.querySelector(route.containerEl);
 
       if (!container) {
         // otherwise allow for reaching outside of parentContainer
-        container = document.querySelector(child.containerEl);
+        container = document.querySelector(route.containerEl);
       }
     } else {
-      container = child.containerEl;
+      container = route.containerEl;
     }
   }
 
@@ -197,7 +197,7 @@ function getContainerEl(parentContainer, child) {
 
 /**
  *
- * @param {import('./constructRoutes').RouteChild} child
+ * @param {import('./constructRoutes').Route} route
  * @returns {HTMLElement}
  */
 function getApplicationElement(name) {

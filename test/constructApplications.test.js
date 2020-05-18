@@ -6,17 +6,17 @@ describe(`constructApplications`, () => {
       mode: "history",
       base: "/",
       containerEl: "body",
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         {
           type: "route",
           path: "app1",
-          children: [
+          routes: [
             { type: "application", name: "app1", props: { primary: true } },
             {
               type: "route",
               path: "subroute",
-              children: [
+              routes: [
                 { type: "application", name: "subroute", props: { count: 1 } },
               ],
             },
@@ -25,12 +25,12 @@ describe(`constructApplications`, () => {
         {
           type: "route",
           path: "app2",
-          children: [
+          routes: [
             { type: "application", name: "app2" },
             {
               type: "route",
               path: "subroute",
-              children: [
+              routes: [
                 { type: "application", name: "subroute", props: { count: 2 } },
               ],
             },
@@ -108,7 +108,7 @@ describe(`constructApplications`, () => {
       mode: "history",
       base: "/",
       containerEl: "body",
-      children: [{ type: "application", name: "nav" }],
+      routes: [{ type: "application", name: "nav" }],
     };
 
     const loadApp = jest.fn();

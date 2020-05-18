@@ -8,29 +8,29 @@ describe(`matchRoute`, () => {
       mode: "history",
       base: "/",
       containerEl: "body",
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         {
           type: "route",
           path: "app1",
-          children: [
+          routes: [
             { type: "application", name: "app1" },
             {
               type: "route",
               path: "subroute",
-              children: [{ type: "application", name: "subroute" }],
+              routes: [{ type: "application", name: "subroute" }],
             },
           ],
         },
         {
           type: "route",
           path: "app2",
-          children: [
+          routes: [
             { type: "application", name: "app2" },
             {
               type: "route",
               path: "subroute",
-              children: [{ type: "application", name: "subroute" }],
+              routes: [{ type: "application", name: "subroute" }],
             },
           ],
         },
@@ -42,7 +42,7 @@ describe(`matchRoute`, () => {
   it(`returns a filtered routes array`, () => {
     expect(matchRoute(routesConfig, "/")).toEqual({
       ...routesConfig,
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         { type: "application", name: "footer" },
       ],
@@ -52,12 +52,12 @@ describe(`matchRoute`, () => {
   it(`matches nested routes`, () => {
     expect(matchRoute(routesConfig, "/app1")).toEqual({
       ...routesConfig,
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         {
           type: "route",
           path: "app1",
-          children: [{ type: "application", name: "app1" }],
+          routes: [{ type: "application", name: "app1" }],
         },
         { type: "application", name: "footer" },
       ],
@@ -65,12 +65,12 @@ describe(`matchRoute`, () => {
 
     expect(matchRoute(routesConfig, "/app2")).toEqual({
       ...routesConfig,
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         {
           type: "route",
           path: "app2",
-          children: [{ type: "application", name: "app2" }],
+          routes: [{ type: "application", name: "app2" }],
         },
         { type: "application", name: "footer" },
       ],
@@ -80,17 +80,17 @@ describe(`matchRoute`, () => {
   it(`matches deeply nested routes`, () => {
     expect(matchRoute(routesConfig, "/app1/subroute")).toEqual({
       ...routesConfig,
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         {
           type: "route",
           path: "app1",
-          children: [
+          routes: [
             { type: "application", name: "app1" },
             {
               type: "route",
               path: "subroute",
-              children: [{ type: "application", name: "subroute" }],
+              routes: [{ type: "application", name: "subroute" }],
             },
           ],
         },
@@ -104,12 +104,12 @@ describe(`matchRoute`, () => {
 
     expect(matchRoute(routesConfig, "/")).toEqual({
       ...routesConfig,
-      children: [],
+      routes: [],
     });
 
     expect(matchRoute(routesConfig, "/base/")).toEqual({
       ...routesConfig,
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         { type: "application", name: "footer" },
       ],
@@ -117,7 +117,7 @@ describe(`matchRoute`, () => {
 
     expect(matchRoute(routesConfig, "/base")).toEqual({
       ...routesConfig,
-      children: [
+      routes: [
         { type: "application", name: "nav" },
         { type: "application", name: "footer" },
       ],

@@ -16,25 +16,25 @@ import { inBrowser } from "./environment-helpers.js";
  * base?: string;
  * containerEl?: ContainerEl;
  * disableWarnings?: boolean;
- * children: Array<RouteChild>;
+ * routes: Array<Route>;
  * }} InputRoutesConfigObject
  *
  * @typedef {{
  * mode: string;
  * base: string;
  * containerEl: ContainerEl;
- * children: Array<RouteChild>;
+ * routes: Array<Route>;
  * sourceElement?: HTMLElement | import('parse5').DefaultTreeDocument;
  * }} ResolvedRoutesConfig
  *
- * @typedef {UrlRoute | Application} RouteChild
+ * @typedef {UrlRoute | Application} Route
  *
  * @typedef {string | HTMLElement | import('parse5').Element} ContainerEl
  *
  * @typedef {{
  * type: string;
  * path: string;
- * children: Array<RouteChild>;
+ * routes: Array<Route>;
  * }} UrlRoute
  *
  * @typedef {{
@@ -70,7 +70,7 @@ function domToRoutesConfig(domElement) {
 
   const result = {
     sourceElement: domElement,
-    children: [],
+    routes: [],
   };
 
   if (getAttribute(domElement, "mode")) {
@@ -82,7 +82,7 @@ function domToRoutesConfig(domElement) {
   }
 
   for (let i = 0; i < domElement.childNodes.length; i++) {
-    result.children.push(
+    result.routes.push(
       ...elementToJson(domElement.childNodes[i], domElement.parentNode)
     );
   }
@@ -124,14 +124,12 @@ function elementToJson(element, parentElement) {
     const route = {
       type: "route",
       path: getAttribute(element, "path"),
-      children: [],
+      routes: [],
       containerEl: parentElement,
     };
     setProps(element, route, ["path"]);
     for (let i = 0; i < element.childNodes.length; i++) {
-      route.children.push(
-        ...elementToJson(element.childNodes[i], parentElement)
-      );
+      route.routes.push(...elementToJson(element.childNodes[i], parentElement));
     }
     return [route];
   } else if (element.childNodes) {
@@ -177,7 +175,7 @@ function validateAndSanitize(routesConfig) {
   validateKeys(
     "routesConfig",
     routesConfig,
-    ["mode", "base", "containerEl", "children", "disableWarnings"],
+    ["mode", "base", "containerEl", "routes", "disableWarnings"],
     disableWarnings
   );
 
@@ -199,9 +197,9 @@ function validateAndSanitize(routesConfig) {
     routesConfig.base = "/";
   }
 
-  validateArray("routesConfig.children", routesConfig.children, validateChild);
+  validateArray("routesConfig.routes", routesConfig.routes, validateRoute);
 
-  function validateChild(route, propertyName) {
+  function validateRoute(route, propertyName) {
     validateObject(propertyName, route);
     validateEnum(propertyName, route.type, ["application", "route"]);
 
@@ -212,11 +210,11 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "path", "children"],
+        ["type", "path", "routes"],
         disableWarnings
       );
       validateString(`${propertyName}.path`, route.path);
-      validateArray(`${propertyName}.children`, route.children, validateChild);
+      validateArray(`${propertyName}.routes`, route.routes, validateRoute);
     }
   }
 

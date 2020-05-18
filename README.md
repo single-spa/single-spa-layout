@@ -61,14 +61,14 @@ The root object/node. Router can have the following options:
 - mode: 'history' | 'hash'
 - base: base url where the router is active
 - containerEl: which cssSelector is where the routing should take place (inferred in HTML syntax)
-- children: Array of routes or Application objects. _required_
+- routes: Array of routes or Application objects. _required_
 
 ##### Route
 
 A routing point where all children will be conditionally rendered when the url matches. Supports the following options
 
 - path: string to evaluate against the URL. _required_
-- children: Array of routes or Application objects. _required_
+- routes: Array of routes or Application objects. _required_
 - type: 'route'. In JSON syntax `type` is what tells `single-spa-layout` if an object is meant to be a route or an application. _required_
 
 ##### Application
@@ -85,7 +85,7 @@ A placeholder for where a microfrontend application will render. Application obj
 JSX syntax compiles to JSON syntax and offers an alternate syntax to represent the layout of `single-spa` registered applications. It will create the larger JSON syntax in a smaller footprint and map values to more complex objects.
 
 - custom props can be set on the application JSX directly without wrapping them in a props object.
-- children of a `<route>` are automatically converted into `routes`
+- routes of a `<route>` are automatically converted into `routes`
 - type is inferred from JSX
 
 ```jsx
@@ -113,7 +113,7 @@ const routes = {
   mode: "history",
   base: "/",
   containerEl: "#selector",
-  children: [
+  routes: [
     {
       type: "application",
       name: "@org/navbar",
@@ -123,7 +123,7 @@ const routes = {
     {
       type: "route",
       path: "app1",
-      children: [
+      routes: [
         { type: "application", name: "@org/main-sidenav" },
         { type: "application", name: "@org/app1" },
       ],
@@ -131,7 +131,7 @@ const routes = {
     {
       type: "route",
       path: "app2",
-      children: [
+      routes: [
         { type: "application", name: "@org/main-sidenav" },
         { type: "application", name: "@org/app2" },
       ],
@@ -139,7 +139,7 @@ const routes = {
     {
       type: "route",
       path: "settings",
-      children: [{ type: "application", name: "@org/settings" }],
+      routes: [{ type: "application", name: "@org/settings" }],
     },
     { type: "application", name: "@org/footer" },
   ],

@@ -18,7 +18,7 @@ describe(`constructLayoutEngine browser`, () => {
       containerEl: "body",
       base: "/",
       mode: "history",
-      children: [{ type: "application", name: "@org-name/header" }],
+      routes: [{ type: "application", name: "@org-name/header" }],
     };
 
     layoutEngine = constructLayoutEngine({
@@ -34,7 +34,7 @@ describe(`constructLayoutEngine browser`, () => {
       containerEl: "body",
       base: "/",
       mode: "history",
-      children: [{ type: "application", name: "@org-name/header" }],
+      routes: [{ type: "application", name: "@org-name/header" }],
     };
 
     layoutEngine = constructLayoutEngine({
@@ -61,12 +61,12 @@ describe(`constructLayoutEngine browser`, () => {
       containerEl: "body",
       base: "/",
       mode: "history",
-      children: [
+      routes: [
         { type: "application", name: "@org-name/header" },
         {
           type: "route",
           path: "app1",
-          children: [{ type: "application", name: "@org-name/app1" }],
+          routes: [{ type: "application", name: "@org-name/app1" }],
         },
         { type: "application", name: "@org-name/footer" },
       ],
@@ -179,12 +179,12 @@ describe(`constructLayoutEngine browser`, () => {
       containerEl: "body",
       base: "/",
       mode: "history",
-      children: [
+      routes: [
         { type: "application", name: "@org-name/header" },
         {
           type: "route",
           path: "cart",
-          children: [
+          routes: [
             { type: "application", name: "@org-name/app1" },
             { type: "application", name: "@org-name/app2" },
           ],
@@ -192,7 +192,7 @@ describe(`constructLayoutEngine browser`, () => {
         {
           type: "route",
           path: "settings",
-          children: [
+          routes: [
             { type: "application", name: "@org-name/app2" },
             { type: "application", name: "@org-name/app1" },
           ],

@@ -17,7 +17,7 @@ import { resolvePath } from "./matchRoute";
  */
 export function constructApplications({ routes, loadApp }) {
   const applicationMap = {};
-  recurseRoutes(applicationMap, routes.base, {}, routes.children);
+  recurseRoutes(applicationMap, routes.base, {}, routes.routes);
 
   /**
    * @type {Array<{
@@ -61,27 +61,27 @@ export function constructApplications({ routes, loadApp }) {
  * @param {ApplicationMap} applicationMap
  * @param {string} path
  * @param {object} props
- * @param {Array<import('./constructRoutes').RouteChild>} children
+ * @param {Array<import('./constructRoutes').Route>} routes
  * @returns void
  */
-function recurseRoutes(applicationMap, path, props, children) {
-  children.forEach((child) => {
-    if (child.type === "application") {
-      if (!applicationMap[child.name]) {
-        applicationMap[child.name] = [];
+function recurseRoutes(applicationMap, path, props, routes) {
+  routes.forEach((route) => {
+    if (route.type === "application") {
+      if (!applicationMap[route.name]) {
+        applicationMap[route.name] = [];
       }
 
-      applicationMap[child.name].push({
+      applicationMap[route.name].push({
         path,
-        props: mergeProps(props, child.props),
+        props: mergeProps(props, route.props),
       });
     } else {
-      const resolvedPath = resolvePath(path, child.path);
+      const resolvedPath = resolvePath(path, route.path);
       recurseRoutes(
         applicationMap,
         resolvedPath,
-        mergeProps(props, child.props),
-        child.children
+        mergeProps(props, route.props),
+        route.routes
       );
     }
   });
