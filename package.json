@@ -5,12 +5,10 @@
   "main": "dist/umd/single-spa-layout.min.js",
   "exports": {
     "import": {
-      ".": "./dist/esm/single-spa-layout.min.js",
-      "./jsx-runtime": "./dist/esm/jsx-runtime.js"
+      ".": "./dist/esm/single-spa-layout.min.js"
     },
     "require": {
-      ".": "./dist/umd/single-spa-layout.min.js",
-      "./jsx-runtime": "./dist/umd/jsx-runtime.js"
+      ".": "./dist/umd/single-spa-layout.min.js"
     }
   },
   "types": "dist/types/single-spa-layout.d.ts",
@@ -55,7 +53,6 @@
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/plugin-transform-modules-commonjs": "^7.9.6",
-    "@babel/plugin-transform-react-jsx": "^7.9.4",
     "@babel/preset-env": "^7.9.6",
     "@testing-library/dom": "^7.2.2",
     "@testing-library/jest-dom": "^5.5.0",
