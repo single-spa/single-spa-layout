@@ -336,7 +336,6 @@ describe(`constructLayoutEngine browser`, () => {
     const applications = constructApplications({ routes, loadApp });
     const layoutEngine = constructLayoutEngine({ routes, applications });
 
-    // At / route, navbar and footer are mounted
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /settings route
@@ -374,7 +373,6 @@ describe(`constructLayoutEngine browser`, () => {
         },
       })
     );
-    // At / route, settings should have been removed from dom
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
@@ -393,7 +391,6 @@ describe(`constructLayoutEngine browser`, () => {
         },
       })
     );
-    // At /app1 route, settings should have been removed from dom
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
@@ -412,7 +409,6 @@ describe(`constructLayoutEngine browser`, () => {
         },
       })
     );
-    // At / route, settings should have been removed from dom
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app2 route
@@ -431,7 +427,6 @@ describe(`constructLayoutEngine browser`, () => {
         },
       })
     );
-    // At /app2 route, settings should have been removed from dom
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
@@ -450,7 +445,6 @@ describe(`constructLayoutEngine browser`, () => {
         },
       })
     );
-    // At /app2 route, settings should have been removed from dom
     expect(document.querySelector("body")).toMatchSnapshot();
   });
 });
