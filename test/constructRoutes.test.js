@@ -1,8 +1,6 @@
 import { inBrowser } from "../src/environment-helpers.js";
 import { constructRoutes } from "../src/single-spa-layout.js";
-import fs from "fs";
-import path from "path";
-import parse5 from "parse5";
+import { parseFixture } from "./html-utils";
 
 jest.spyOn(console, "warn");
 
@@ -13,24 +11,14 @@ describe("constructRoutes", () => {
 
   describe(`HTML parsing`, () => {
     it(`can parse a medium complexity HTML routes definition`, () => {
-      const document = parseHTML(
-        fs.readFileSync(
-          path.resolve(__dirname, "./fixtures/medium.html"),
-          "utf-8"
-        )
-      );
+      const { document, routerElement } = parseFixture("medium.html");
       // In browser we can use querySelector, otherwise the more manual lookup
-      const routes = constructRoutes(findRouterElement(document));
+      const routes = constructRoutes(routerElement);
     });
 
     it(`can parse a layout with arbitrary dom element children`, () => {
-      const document = parseHTML(
-        fs.readFileSync(
-          path.resolve(__dirname, "./fixtures/dom-elements.html"),
-          "utf-8"
-        )
-      );
-      const routes = constructRoutes(findRouterElement(document));
+      const { document, routerElement } = parseFixture("dom-elements.html");
+      const routes = constructRoutes(routerElement);
     });
   });
 
@@ -417,17 +405,3 @@ describe("constructRoutes", () => {
     });
   });
 });
-
-function parseHTML(str) {
-  if (inBrowser) {
-    return new DOMParser().parseFromString(str, "text/html").documentElement;
-  } else {
-    return parse5.parse(str);
-  }
-}
-
-function findRouterElement(document) {
-  return inBrowser
-    ? document.querySelector("single-spa-router")
-    : document.childNodes[1].childNodes[2].childNodes[1];
-}

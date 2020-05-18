@@ -1,4 +1,8 @@
-import { constructApplications } from "../src/single-spa-layout.js";
+import {
+  constructApplications,
+  constructRoutes,
+} from "../src/single-spa-layout.js";
+import { parseFixture } from "./html-utils.js";
 
 describe(`constructApplications`, () => {
   it(`can handle a medium complexity case`, () => {
@@ -126,5 +130,25 @@ describe(`constructApplications`, () => {
     const returnValue = await applications[0].app({ name: "nav" });
     expect(loadApp).toHaveBeenCalledWith({ name: "nav" });
     expect(returnValue).toBe(lifecycles);
+  });
+
+  it(`can construct applications from dom elements`, () => {
+    const { document, routerElement } = parseFixture("dom-elements.html");
+    const routes = constructRoutes(routerElement);
+
+    const loadApp = jest.fn();
+    const lifecycles = {
+      async bootstrap() {},
+      async mount() {},
+      async unmount() {},
+    };
+    loadApp.mockReturnValue(lifecycles);
+
+    const applications = constructApplications({ routes, loadApp });
+    expect(applications.length).toBe(2);
+    expect(applications[0].name).toBe("header");
+    expect(applications[0].activeWhen).toEqual(["/"]);
+    expect(applications[1].name).toBe("app1");
+    expect(applications[1].activeWhen).toEqual(["/app1"]);
   });
 });

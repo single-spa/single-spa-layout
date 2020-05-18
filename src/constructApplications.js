@@ -75,7 +75,7 @@ function recurseRoutes(applicationMap, path, props, routes) {
         path,
         props: mergeProps(props, route.props),
       });
-    } else {
+    } else if (route.type === "route") {
       const resolvedPath = resolvePath(path, route.path);
       recurseRoutes(
         applicationMap,
@@ -83,6 +83,8 @@ function recurseRoutes(applicationMap, path, props, routes) {
         mergeProps(props, route.props),
         route.routes
       );
+    } else if (route.routes) {
+      recurseRoutes(applicationMap, path, props, route.routes);
     }
   });
 }
