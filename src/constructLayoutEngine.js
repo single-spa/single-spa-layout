@@ -21,6 +21,7 @@ export function constructLayoutEngine({
   applications,
 }) {
   let active = false;
+  let pendingRemovals = [];
 
   const baseWithoutSlash = resolvedRoutes.base.slice(
     0,
@@ -88,14 +89,20 @@ export function constructLayoutEngine({
       routes: resolvedRoutes.routes,
       parentContainer,
       shouldMount: true,
+      pendingRemovals,
     });
   }
 
   function handleAppChange({ detail: { appsByNewStatus } }) {
+    pendingRemovals.forEach((remove) => remove());
+    pendingRemovals = [];
+
     appsByNewStatus.NOT_MOUNTED.concat(appsByNewStatus.NOT_LOADED).forEach(
       (name) => {
-        const applicationElement = getApplicationElement(name);
-        if (applicationElement.isConnected) {
+        const applicationElement = document.getElementById(
+          applicationElementId(name)
+        );
+        if (applicationElement && applicationElement.isConnected) {
           applicationElement.parentNode.removeChild(applicationElement);
         }
       }
@@ -111,6 +118,7 @@ export function constructLayoutEngine({
  * parentContainer: HTMLElement,
  * previousSibling?: HTMLElement,
  * shouldMount: boolean;
+ * pendingRemovals: Array<Function>;
  * }} DomChangeInput
  *
  * We do all of this in a single recursive pass for performance, even though
@@ -126,39 +134,58 @@ function recurseRoutes({
   parentContainer,
   previousSibling,
   shouldMount,
+  pendingRemovals,
 }) {
-  routes.forEach((route) => {
+  routes.forEach((route, index) => {
     if (route.type === "application") {
-      const applicationContainer = getContainerEl(parentContainer, route);
-      const applicationElement = getApplicationElement(route.name);
+      const htmlId = applicationElementId(route.name);
+      let applicationElement = document.getElementById(htmlId);
 
       if (shouldMount) {
-        if (
-          previousSibling &&
-          previousSibling.parentNode === applicationContainer
-        ) {
-          // move to be immediately after previousSibling
-          previousSibling.insertAdjacentElement("afterend", applicationElement);
-        } else if (applicationElement.parentNode !== applicationContainer) {
-          // append to end of the container
-          applicationContainer.appendChild(applicationElement);
+        if (!applicationElement) {
+          applicationElement = document.createElement("div");
+          applicationElement.id = htmlId;
         }
-
-        // Only use this as the reference sibling node if it's within the parent container
-        if (applicationContainer === parentContainer) {
-          previousSibling = applicationElement;
-        }
+        insertNode(applicationElement, parentContainer, previousSibling);
+        previousSibling = applicationElement;
       }
-    } else {
+    } else if (route.type === "route") {
       const childPathMatch = resolvePath(pathMatch, route.path);
       previousSibling = recurseRoutes({
         path,
         pathMatch: childPathMatch,
         routes: route.routes,
-        parentContainer: getContainerEl(parentContainer, route),
+        parentContainer,
         previousSibling,
         shouldMount: shouldMount && path.startsWith(childPathMatch),
+        pendingRemovals,
       });
+    } else if (route instanceof Node) {
+      if (shouldMount) {
+        if (!route.connectedNode) {
+          const newNode = route.cloneNode(false);
+          insertNode(newNode, parentContainer, previousSibling);
+          route.connectedNode = newNode;
+        }
+
+        recurseRoutes({
+          path,
+          pathMatch,
+          routes: route.routes,
+          parentContainer: route.connectedNode,
+          previousSibling: null,
+          shouldMount,
+          pendingRemovals,
+        });
+
+        previousSibling = route.connectedNode;
+      } else {
+        // we should remove this dom element at the next single-spa:routing-event
+        pendingRemovals.push(() => {
+          removeNode(route.connectedNode);
+          delete route.connectedNode;
+        });
+      }
     }
   });
 
@@ -167,48 +194,30 @@ function recurseRoutes({
 
 /**
  *
- * @param {HTMLElement} parentContainer
- * @param {import('./constructRoutes').Route} route
- * @returns {HTMLElement}
+ * @param {Node} node
+ * @param {Node} container
+ * @param {Node=} previousSibling
  */
-function getContainerEl(parentContainer, route) {
-  let container;
-
-  if (route.containerEl) {
-    if (typeof route.containerEl === "string") {
-      // try scoped/nested within parentContainer
-      container = parentContainer.querySelector(route.containerEl);
-
-      if (!container) {
-        // otherwise allow for reaching outside of parentContainer
-        container = document.querySelector(route.containerEl);
-      }
-    } else {
-      container = route.containerEl;
-    }
+function insertNode(node, container, previousSibling) {
+  if (previousSibling) {
+    // move to be immediately after previousSibling
+    previousSibling.insertAdjacentElement("afterend", node);
+  } else if (node.parentNode !== container) {
+    // append to end of the container
+    container.appendChild(node);
   }
-
-  if (!container) {
-    container = parentContainer;
-  }
-
-  return container;
 }
 
 /**
  *
- * @param {import('./constructRoutes').Route} route
- * @returns {HTMLElement}
+ * @param {Node} node
  */
-function getApplicationElement(name) {
-  const htmlId = `single-spa-application:${name}`;
-
-  let element = document.getElementById(htmlId);
-
-  if (!element) {
-    element = document.createElement("div");
-    element.id = htmlId;
+function removeNode(node) {
+  if (node) {
+    node.remove ? node.remove() : node.parentNode.removeChild(node);
   }
+}
 
-  return element;
+function applicationElementId(name) {
+  return `single-spa-application:${name}`;
 }

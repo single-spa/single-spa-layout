@@ -1,5 +1,10 @@
-import { constructLayoutEngine } from "../../src/single-spa-layout.js";
+import {
+  constructLayoutEngine,
+  constructRoutes,
+  constructApplications,
+} from "../../src/single-spa-layout.js";
 import { screen } from "@testing-library/dom";
+import { parseFixture } from "../html-utils.js";
 
 describe(`constructLayoutEngine browser`, () => {
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
@@ -322,5 +327,130 @@ describe(`constructLayoutEngine browser`, () => {
     );
 
     expect(document.body).toMatchSnapshot();
+  });
+
+  it(`can process the layout in the medium.html fixture`, () => {
+    const { routerElement } = parseFixture("medium.html");
+    const loadApp = jest.fn();
+    const routes = constructRoutes(routerElement);
+    const applications = constructApplications({ routes, loadApp });
+    const layoutEngine = constructLayoutEngine({ routes, applications });
+
+    // At / route, navbar and footer are mounted
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to /settings route
+    history.pushState(history.state, document.title, "/settings");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["@org/settings"],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    // At /settings route: navbar, settings, and footer are mounted
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to / route
+    history.pushState(history.state, document.title, "/");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: [],
+            NOT_MOUNTED: ["@org/settings"],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    // At / route, settings should have been removed from dom
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to /app1 route
+    history.pushState(history.state, document.title, "/app1");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["@org/main-sidenav", "@org/app1"],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    // At /app1 route, settings should have been removed from dom
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to / route
+    history.pushState(history.state, document.title, "/");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: [],
+            NOT_MOUNTED: ["@org/main-sidenav", "@org/app1"],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    // At / route, settings should have been removed from dom
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to /app2 route
+    history.pushState(history.state, document.title, "/app2");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["@org/main-sidenav", "@org/app2"],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    // At /app2 route, settings should have been removed from dom
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to /app1 route
+    history.pushState(history.state, document.title, "/app1");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["@org/app1"],
+            NOT_MOUNTED: ["@org/app2"],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    // At /app2 route, settings should have been removed from dom
+    expect(document.querySelector("body")).toMatchSnapshot();
   });
 });

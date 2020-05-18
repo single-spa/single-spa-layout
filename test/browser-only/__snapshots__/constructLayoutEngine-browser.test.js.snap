@@ -1,5 +1,109 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 1`] = `
+<body>
+  <div
+    id="single-spa-application:@org/navbar"
+  />
+  <div
+    id="single-spa-application:@org/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 2`] = `
+<body>
+  <div
+    id="single-spa-application:@org/navbar"
+  />
+  <div
+    id="single-spa-application:@org/settings"
+  />
+  <div
+    id="single-spa-application:@org/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 3`] = `
+<body>
+  <div
+    id="single-spa-application:@org/navbar"
+  />
+  <div
+    id="single-spa-application:@org/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 4`] = `
+<body>
+  <div
+    id="single-spa-application:@org/navbar"
+  />
+  <aside>
+    <div
+      id="single-spa-application:@org/main-sidenav"
+    />
+  </aside>
+  <div
+    id="single-spa-application:@org/app1"
+  />
+  <div
+    id="single-spa-application:@org/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 5`] = `
+<body>
+  <div
+    id="single-spa-application:@org/navbar"
+  />
+  <div
+    id="single-spa-application:@org/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 6`] = `
+<body>
+  <div
+    id="single-spa-application:@org/navbar"
+  />
+  <aside>
+    <div
+      id="single-spa-application:@org/main-sidenav"
+    />
+  </aside>
+  <div
+    id="single-spa-application:@org/app2"
+  />
+  <div
+    id="single-spa-application:@org/footer"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 7`] = `
+<body>
+  <div
+    id="single-spa-application:@org/navbar"
+  />
+  <aside>
+    <div
+      id="single-spa-application:@org/main-sidenav"
+    />
+  </aside>
+  <div
+    id="single-spa-application:@org/app1"
+  />
+  <div
+    id="single-spa-application:@org/footer"
+  />
+</body>
+`;
+
 exports[`constructLayoutEngine browser can successfully construct a layout engine and respond to routing events 1`] = `
 <body>
   <div
