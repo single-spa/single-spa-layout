@@ -1,5 +1,79 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`constructLayoutEngine browser can process the dom elements fixture 1`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  />
+  <div
+    class="main-content"
+  />
+  <span>
+    <!-- The footer -->
+    <footer>
+      <a
+        href="/about"
+      >
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the dom elements fixture 2`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  />
+  <div
+    class="main-content"
+  >
+    <button>
+      Top level content
+    </button>
+    <div
+      id="single-spa-application:app1"
+    />
+    <!-- Comments and raw text should work -->
+    
+          Some raw text
+        
+  </div>
+  <span>
+    <!-- The footer -->
+    <footer>
+      <a
+        href="/about"
+      >
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the dom elements fixture 3`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  />
+  <div
+    class="main-content"
+  />
+  <span>
+    <!-- The footer -->
+    <footer>
+      <a
+        href="/about"
+      >
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;
+
 exports[`constructLayoutEngine browser can process the layout in the medium.html fixture 1`] = `
 <body>
   <div
