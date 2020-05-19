@@ -9,6 +9,7 @@ exports[`constructLayoutEngine browser can process the dom elements fixture 1`] 
     class="main-content"
   />
   <span>
+    <!-- The footer -->
     <footer>
       <a
         href="/about"
@@ -34,11 +35,13 @@ exports[`constructLayoutEngine browser can process the dom elements fixture 2`] 
     <div
       id="single-spa-application:app1"
     />
+    <!-- Comments and raw text should work -->
     
           Some raw text
         
   </div>
   <span>
+    <!-- The footer -->
     <footer>
       <a
         href="/about"
@@ -59,6 +62,7 @@ exports[`constructLayoutEngine browser can process the dom elements fixture 3`] 
     class="main-content"
   />
   <span>
+    <!-- The footer -->
     <footer>
       <a
         href="/about"
