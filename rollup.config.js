@@ -1,4 +1,7 @@
 import { terser } from "rollup-plugin-terser";
+import fs from "fs";
+
+const packageJson = JSON.parse(fs.readFileSync("./package.json"));
 
 export default [
   createConfig("esm"),
@@ -13,7 +16,19 @@ function createConfig(format) {
       format,
       file: `dist/${format}/single-spa-layout.min.js`,
       name: format === "umd" ? "singleSpaLayout" : null,
+      banner: `/* single-spa-layout@${packageJson.version} - ${format} */`,
     },
-    plugins: [terser()],
+    plugins: [
+      terser({
+        compress: {
+          passes: 2,
+        },
+        output: {
+          comments(node, comment) {
+            return comment.value.trim().startsWith("single-spa-layout@");
+          },
+        },
+      }),
+    ],
   };
 }
