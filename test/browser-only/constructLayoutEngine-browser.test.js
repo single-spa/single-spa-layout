@@ -11,6 +11,7 @@ describe(`constructLayoutEngine browser`, () => {
   let layoutEngine;
 
   afterEach(() => {
+    history.pushState(history.state, document.title, "/");
     document.body.innerHTML = "";
     if (layoutEngine) {
       layoutEngine.deactivate();
@@ -334,7 +335,7 @@ describe(`constructLayoutEngine browser`, () => {
     const loadApp = jest.fn();
     const routes = constructRoutes(routerElement);
     const applications = constructApplications({ routes, loadApp });
-    const layoutEngine = constructLayoutEngine({ routes, applications });
+    layoutEngine = constructLayoutEngine({ routes, applications });
 
     expect(document.querySelector("body")).toMatchSnapshot();
 
@@ -440,6 +441,67 @@ describe(`constructLayoutEngine browser`, () => {
           appsByNewStatus: {
             MOUNTED: ["@org/app1"],
             NOT_MOUNTED: ["@org/app2"],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    expect(document.querySelector("body")).toMatchSnapshot();
+  });
+
+  it(`can process the dom elements fixture`, () => {
+    const { routerElement } = parseFixture("dom-elements.html");
+    const loadApp = jest.fn();
+    const routes = constructRoutes(routerElement);
+    const applications = constructApplications({ routes, loadApp });
+    layoutEngine = constructLayoutEngine({ routes, applications });
+
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["header"],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to /app1 route
+    history.pushState(history.state, document.title, "/app1");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["app1"],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    expect(document.querySelector("body")).toMatchSnapshot();
+
+    // transition to / route
+    history.pushState(history.state, document.title, "/");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: [],
+            NOT_MOUNTED: ["app1"],
             NOT_LOADED: [],
           },
         },
