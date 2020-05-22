@@ -163,14 +163,16 @@ function recurseRoutes({
           route.connectedNode = newNode;
         }
 
-        recurseRoutes({
-          location,
-          routes: route.routes,
-          parentContainer: route.connectedNode,
-          previousSibling: null,
-          shouldMount,
-          pendingRemovals,
-        });
+        if (route.routes) {
+          recurseRoutes({
+            location,
+            routes: route.routes,
+            parentContainer: route.connectedNode,
+            previousSibling: null,
+            shouldMount,
+            pendingRemovals,
+          });
+        }
 
         previousSibling = route.connectedNode;
       } else {
@@ -193,9 +195,9 @@ function recurseRoutes({
  * @param {Node=} previousSibling
  */
 function insertNode(node, container, previousSibling) {
-  if (previousSibling) {
+  if (previousSibling && previousSibling.nextSibling) {
     // move to be immediately after previousSibling
-    previousSibling.insertAdjacentElement("afterend", node);
+    previousSibling.parentNode.insertBefore(node, previousSibling.nextSibling);
   } else if (node.parentNode !== container) {
     // append to end of the container
     container.appendChild(node);
