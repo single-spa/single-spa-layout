@@ -19,12 +19,12 @@ describe(`constructLayoutEngine browser`, () => {
 
   it(`starts out activated`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
-    const routes = {
+    const routes = constructRoutes({
       containerEl: "body",
       base: "/",
       mode: "history",
       routes: [{ type: "application", name: "@org-name/header" }],
-    };
+    });
 
     layoutEngine = constructLayoutEngine({
       routes,
@@ -35,12 +35,12 @@ describe(`constructLayoutEngine browser`, () => {
 
   it(`can handle any calls to activate() / deactivate()`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
-    const routes = {
+    const routes = constructRoutes({
       containerEl: "body",
       base: "/",
       mode: "history",
       routes: [{ type: "application", name: "@org-name/header" }],
-    };
+    });
 
     layoutEngine = constructLayoutEngine({
       routes,
@@ -62,7 +62,7 @@ describe(`constructLayoutEngine browser`, () => {
 
   it(`can successfully construct a layout engine and respond to routing events`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
-    const routes = {
+    const routes = constructRoutes({
       containerEl: "body",
       base: "/",
       mode: "history",
@@ -75,7 +75,7 @@ describe(`constructLayoutEngine browser`, () => {
         },
         { type: "application", name: "@org-name/footer" },
       ],
-    };
+    });
 
     layoutEngine = constructLayoutEngine({
       routes,
@@ -180,7 +180,7 @@ describe(`constructLayoutEngine browser`, () => {
     let headerEl, footerEl, app1El, app2El;
 
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
-    const routes = {
+    const routes = constructRoutes({
       containerEl: "body",
       base: "/",
       mode: "history",
@@ -204,7 +204,7 @@ describe(`constructLayoutEngine browser`, () => {
         },
         { type: "application", name: "@org-name/footer" },
       ],
-    };
+    });
 
     layoutEngine = constructLayoutEngine({
       routes,

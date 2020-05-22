@@ -6,7 +6,7 @@ import { parseFixture } from "./html-utils.js";
 
 describe(`constructApplications`, () => {
   it(`can handle a medium complexity case`, () => {
-    const routes = {
+    const routes = constructRoutes({
       mode: "history",
       base: "/",
       containerEl: "body",
@@ -42,39 +42,72 @@ describe(`constructApplications`, () => {
         },
         { type: "application", name: "footer" },
       ],
-    };
+    });
 
     const loadApp = jest.fn();
 
     const applications = constructApplications({ routes, loadApp });
 
-    const activeWhens = applications.map((app) => ({
-      name: app.name,
-      activeWhen: app.activeWhen,
-    }));
+    expect(applications.length).toBe(5);
+    expect(applications[0].name).toBe("nav");
+    expect(
+      applications[0].activeWhen.some((fn) => fn(new URL("http://localhost")))
+    ).toBe(true);
+    expect(
+      applications[0].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app1"))
+      )
+    ).toBe(true);
 
-    expect(activeWhens).toEqual([
-      {
-        name: "nav",
-        activeWhen: ["/"],
-      },
-      {
-        name: "app1",
-        activeWhen: ["/app1"],
-      },
-      {
-        name: "subroute",
-        activeWhen: ["/app1/subroute", "/app2/subroute"],
-      },
-      {
-        name: "app2",
-        activeWhen: ["/app2"],
-      },
-      {
-        name: "footer",
-        activeWhen: ["/"],
-      },
-    ]);
+    expect(applications[1].name).toBe("app1");
+    expect(
+      applications[1].activeWhen.some((fn) => fn(new URL("http://localhost")))
+    ).toBe(false);
+    expect(
+      applications[1].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app1"))
+      )
+    ).toBe(true);
+
+    expect(applications[2].name).toBe("subroute");
+    expect(
+      applications[2].activeWhen.some((fn) => fn(new URL("http://localhost")))
+    ).toBe(false);
+    expect(
+      applications[2].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app1"))
+      )
+    ).toBe(false);
+    expect(
+      applications[2].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app1/subroute"))
+      )
+    ).toBe(true);
+    expect(
+      applications[2].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app2/subroute"))
+      )
+    ).toBe(true);
+
+    expect(applications[3].name).toBe("app2");
+    expect(
+      applications[3].activeWhen.some((fn) => fn(new URL("http://localhost")))
+    ).toBe(false);
+    expect(
+      applications[3].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app2"))
+      )
+    ).toBe(true);
+
+    expect(applications[4].name).toBe("footer");
+    expect(
+      applications[4].activeWhen.some((fn) => fn(new URL("http://localhost")))
+    ).toBe(true);
+    expect(
+      applications[4].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app2"))
+      )
+    ).toBe(true);
 
     expect(
       applications
@@ -147,8 +180,23 @@ describe(`constructApplications`, () => {
     const applications = constructApplications({ routes, loadApp });
     expect(applications.length).toBe(2);
     expect(applications[0].name).toBe("header");
-    expect(applications[0].activeWhen).toEqual(["/"]);
+    expect(
+      applications[0].activeWhen.some((fn) => fn(new URL("http://localhost/")))
+    ).toBe(true);
+    expect(
+      applications[0].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app1"))
+      )
+    ).toBe(true);
+
     expect(applications[1].name).toBe("app1");
-    expect(applications[1].activeWhen).toEqual(["/app1"]);
+    expect(
+      applications[1].activeWhen.some((fn) => fn(new URL("http://localhost/")))
+    ).toBe(false);
+    expect(
+      applications[1].activeWhen.some((fn) =>
+        fn(new URL("http://localhost/app1"))
+      )
+    ).toBe(true);
   });
 });

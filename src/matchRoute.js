@@ -1,3 +1,5 @@
+import { inBrowser } from "./environment-helpers";
+
 /**
  *
  * @param {import('./constructRoutes').ResolvedRoutesConfig} resolvedRoutesConfig
@@ -12,12 +14,11 @@ export function matchRoute(resolvedRoutesConfig, pathMatch) {
     resolvedRoutesConfig.base.length - 1
   );
 
-  if (pathMatch.startsWith(baseWithoutSlash)) {
-    result.routes = recurseRoutes(
-      pathMatch,
-      resolvedRoutesConfig.base,
-      resolvedRoutesConfig.routes
-    );
+  if (pathMatch.indexOf(baseWithoutSlash) === 0) {
+    const origin = inBrowser ? window.location.origin : "http://localhost";
+    const location = new URL(resolvePath(origin, pathMatch));
+
+    result.routes = recurseRoutes(location, resolvedRoutesConfig.routes);
   } else {
     result.routes = [];
   }
@@ -27,25 +28,27 @@ export function matchRoute(resolvedRoutesConfig, pathMatch) {
 
 /**
  *
- * @param {string} pathMatch
- * @param {string} startPath
- * @param {Array<import('./constructRoutes').Route>} routes
+ * @param {URL} location
+ * @param {Array<import('./constructRoutes').ResolvedRouteChild>} routes
  */
-function recurseRoutes(pathMatch, startPath, routes) {
+function recurseRoutes(location, routes) {
   const result = [];
 
   routes.forEach((route) => {
     if (route.type === "application") {
       result.push(route);
-    } else {
-      const resolvedPath = resolvePath(startPath, route.path);
-
-      if (pathMatch.startsWith(resolvedPath)) {
+    } else if (route.type === "route") {
+      if (route.activeWhen(location)) {
         result.push({
           ...route,
-          routes: recurseRoutes(pathMatch, resolvedPath, route.routes),
+          routes: recurseRoutes(location, route.routes),
         });
       }
+    } else if (Array.isArray(route.routes)) {
+      result.push({
+        ...route,
+        routes: recurseRoutes(location, route.routes),
+      });
     }
   });
 
@@ -53,14 +56,14 @@ function recurseRoutes(pathMatch, startPath, routes) {
 }
 
 export function resolvePath(prefix, path) {
-  if (prefix.endsWith("/")) {
-    if (path.startsWith("/")) {
+  if (prefix.substr(-1) === "/") {
+    if (path[0] === "/") {
       return prefix + path.slice(1);
     } else {
       return prefix + path;
     }
   } else {
-    if (path.startsWith("/")) {
+    if (path[0] === "/") {
       return prefix + path;
     } else {
       return prefix + "/" + path;

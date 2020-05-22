@@ -7,6 +7,8 @@ import {
   validateContainerEl,
 } from "./validation-helpers.js";
 import { inBrowser } from "./environment-helpers.js";
+import { pathToActiveWhen } from "single-spa";
+import { resolvePath } from "./matchRoute.js";
 
 /**
  * @typedef {InputRoutesConfigObject | HTMLElement | import('parse5').DefaultTreeDocument} RoutesConfig
@@ -23,17 +25,21 @@ import { inBrowser } from "./environment-helpers.js";
  * mode: string;
  * base: string;
  * containerEl: ContainerEl;
- * routes: Array<RouteChild>;
+ * routes: Array<ResolvedRouteChild>;
  * }} ResolvedRoutesConfig
  *
- * @typedef {UrlRoute | Application | Node | HTMLElementDescription} RouteChild
+ * @typedef {UrlRoute | Application | Node} RouteChild
+ *
+ * @typedef {ResolvedUrlRoute | Application | Node} ResolvedRouteChild
+ *
+ * @typedef {string | HTMLElement | import('parse5').Element} ContainerEl
  *
  * @typedef {{
  * type: string;
- * [attributeName: string]: string;
- * }} HTMLElementDescription
- *
- * @typedef {string | HTMLElement | import('parse5').Element} ContainerEl
+ * path: string;
+ * routes: Array<Route>;
+ * activeWhen: import('single-spa').ActivityFn;
+ * }} ResolvedUrlRoute
  *
  * @typedef {{
  * type: string;
@@ -215,24 +221,47 @@ function validateAndSanitize(routesConfig) {
     routesConfig.base = "/";
   }
 
-  validateArray("routesConfig.routes", routesConfig.routes, validateRoute);
+  const pathname = inBrowser ? window.location.pathname : "/";
+  const hashPrefix = routesConfig.mode === "hash" ? pathname + "#" : "";
 
-  function validateRoute(route, propertyName) {
+  validateArray(
+    "routesConfig.routes",
+    routesConfig.routes,
+    validateRoute,
+    hashPrefix + routesConfig.base
+  );
+
+  function validateRoute(route, propertyName, parentPath) {
     validateObject(propertyName, route);
 
     if (route.type === "application") {
-      validateKeys(propertyName, route, ["type", "name"], disableWarnings);
+      validateKeys(
+        propertyName,
+        route,
+        ["type", "name", "props"],
+        disableWarnings
+      );
+      if (route.props) {
+        validateObject(`${propertyName}.props`, route.props);
+      }
       validateString(`${propertyName}.name`, route.name);
     } else if (route.type === "route") {
       validateKeys(
         propertyName,
         route,
-        ["type", "path", "routes"],
+        ["type", "path", "routes", "props"],
         disableWarnings
       );
       validateString(`${propertyName}.path`, route.path);
+      const fullPath = resolvePath(parentPath, route.path);
+      route.activeWhen = pathToActiveWhen(fullPath);
       if (route.routes)
-        validateArray(`${propertyName}.routes`, route.routes, validateRoute);
+        validateArray(
+          `${propertyName}.routes`,
+          route.routes,
+          validateRoute,
+          fullPath
+        );
     } else {
       if (typeof Node !== "undefined" && route instanceof Node) {
         // HTMLElements are allowed
@@ -244,7 +273,12 @@ function validateAndSanitize(routesConfig) {
         }
       }
       if (route.routes)
-        validateArray(`${propertyName}.routes`, route.routes, validateRoute);
+        validateArray(
+          `${propertyName}.routes`,
+          route.routes,
+          validateRoute,
+          parentPath
+        );
     }
   }
 
@@ -252,11 +286,11 @@ function validateAndSanitize(routesConfig) {
 }
 
 function sanitizeBase(base) {
-  if (!base.startsWith("/")) {
+  if (base.indexOf("/") !== 0) {
     base = "/" + base;
   }
 
-  if (!base.endsWith("/")) {
+  if (base[base.length - 1] !== "/") {
     base = base + "/";
   }
 

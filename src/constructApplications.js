@@ -1,5 +1,3 @@
-import { resolvePath } from "./matchRoute";
-
 /**
  * @typedef {{
  * routes: import('./constructRoutes').ResolvedRoutesConfig;
@@ -12,12 +10,24 @@ import { resolvePath } from "./matchRoute";
  * app: (config: import('single-spa').AppProps) => Promise<import('single-spa').LifeCycles>
  * }} WithLoadFunction
  *
+ * @typedef {{
+ * [name]: Array<AppRoute>
+ * }} ApplicationMap
+ *
+ * @typedef {{
+ * props: object;
+ * activeWhen: import('single-spa').ActivityFn;
+ * }} AppRoute
+ *
  * @param {ApplicationOptions} applicationOptions
  * @returns {Array<import('single-spa').RegisterApplicationConfig & WithLoadFunction>}
  */
 export function constructApplications({ routes, loadApp }) {
+  /** @type {ApplicationMap} */
   const applicationMap = {};
-  recurseRoutes(applicationMap, routes.base, {}, routes.routes);
+
+  const topLevelActiveWhen = () => true;
+  recurseRoutes(applicationMap, topLevelActiveWhen, {}, routes.routes);
 
   /**
    * @type {Array<{
@@ -27,18 +37,17 @@ export function constructApplications({ routes, loadApp }) {
    * }>}
    */
   const partialApplications = Object.keys(applicationMap).map((name) => {
-    const resolvedRoutes = applicationMap[name];
+    /** @type {AppRoute} */
+    const appRoutes = applicationMap[name];
     return {
       name,
       customProps: (_name, location) => {
-        const route = resolvedRoutes.find((route) =>
-          location[routes.mode === "hash" ? "hash" : "pathname"].startsWith(
-            route.path
-          )
+        const appRoute = appRoutes.find((appRoute) =>
+          appRoute.activeWhen(location)
         );
-        return route ? route.props : {};
+        return appRoute ? appRoute.props : {};
       },
-      activeWhen: resolvedRoutes.map((r) => r.path),
+      activeWhen: appRoutes.map((appRoute) => appRoute.activeWhen),
     };
   });
 
@@ -49,22 +58,14 @@ export function constructApplications({ routes, loadApp }) {
 }
 
 /**
- * @typedef {{
- * path: string;
- * props: object;
- * }} ResolvedRoute
- *
- * @typedef {{
- * [name]: Array<ResolvedRoute>
- * }} ApplicationMap
  *
  * @param {ApplicationMap} applicationMap
- * @param {string} path
+ * @param {import('single-spa').ActivityFn} activeWhen
  * @param {object} props
  * @param {Array<import('./constructRoutes').Route>} routes
  * @returns void
  */
-function recurseRoutes(applicationMap, path, props, routes) {
+function recurseRoutes(applicationMap, activeWhen, props, routes) {
   routes.forEach((route) => {
     if (route.type === "application") {
       if (!applicationMap[route.name]) {
@@ -72,19 +73,18 @@ function recurseRoutes(applicationMap, path, props, routes) {
       }
 
       applicationMap[route.name].push({
-        path,
+        activeWhen,
         props: mergeProps(props, route.props),
       });
     } else if (route.type === "route") {
-      const resolvedPath = resolvePath(path, route.path);
       recurseRoutes(
         applicationMap,
-        resolvedPath,
+        route.activeWhen,
         mergeProps(props, route.props),
         route.routes
       );
     } else if (route.routes) {
-      recurseRoutes(applicationMap, path, props, route.routes);
+      recurseRoutes(applicationMap, activeWhen, props, route.routes);
     }
   });
 }
