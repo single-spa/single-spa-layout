@@ -26,7 +26,6 @@ export function constructApplications({ routes, loadApp }) {
   /** @type {ApplicationMap} */
   const applicationMap = {};
 
-  const topLevelActiveWhen = () => true;
   recurseRoutes(applicationMap, topLevelActiveWhen, {}, routes.routes);
 
   /**
@@ -91,4 +90,9 @@ function recurseRoutes(applicationMap, activeWhen, props, routes) {
 
 function mergeProps(originalProps, newProps = {}) {
   return { ...originalProps, ...newProps };
+}
+
+function topLevelActiveWhen() {
+  // All applications not under routes are active
+  return true;
 }
