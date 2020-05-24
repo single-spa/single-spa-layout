@@ -52,7 +52,7 @@ export function validateString(propertyName, val) {
   }
 }
 
-export function validateArray(propertyName, arr, cbk) {
+export function validateArray(propertyName, arr, cbk, ...extraArgs) {
   if (
     !Array.isArray(arr) &&
     (typeof typeof arr !== "object" || arr.length !== "number")
@@ -63,7 +63,7 @@ export function validateArray(propertyName, arr, cbk) {
   }
 
   for (let i = 0; i < arr.length; i++) {
-    cbk(arr[i], `${propertyName}[${i}]`);
+    cbk(arr[i], `${propertyName}[${i}]`, ...extraArgs);
   }
 }
 

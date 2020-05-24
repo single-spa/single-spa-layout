@@ -1,10 +1,10 @@
-import { matchRoute } from "../src/single-spa-layout.js";
+import { matchRoute, constructRoutes } from "../src/single-spa-layout.js";
 
 describe(`matchRoute`, () => {
   let routesConfig;
 
   beforeEach(() => {
-    routesConfig = {
+    routesConfig = constructRoutes({
       mode: "history",
       base: "/",
       containerEl: "body",
@@ -34,9 +34,21 @@ describe(`matchRoute`, () => {
             },
           ],
         },
+        {
+          type: "route",
+          path: "users/:id",
+          routes: [
+            { type: "application", name: "user-home" },
+            {
+              type: "route",
+              path: "settings",
+              routes: [{ type: "application", name: "user-settings" }],
+            },
+          ],
+        },
         { type: "application", name: "footer" },
       ],
-    };
+    });
   });
 
   it(`returns a filtered routes array`, () => {
@@ -50,7 +62,7 @@ describe(`matchRoute`, () => {
   });
 
   it(`matches nested routes`, () => {
-    expect(matchRoute(routesConfig, "/app1")).toEqual({
+    expect(matchRoute(routesConfig, "/app1")).toMatchObject({
       ...routesConfig,
       routes: [
         { type: "application", name: "nav" },
@@ -63,7 +75,7 @@ describe(`matchRoute`, () => {
       ],
     });
 
-    expect(matchRoute(routesConfig, "/app2")).toEqual({
+    expect(matchRoute(routesConfig, "/app2")).toMatchObject({
       ...routesConfig,
       routes: [
         { type: "application", name: "nav" },
@@ -78,7 +90,7 @@ describe(`matchRoute`, () => {
   });
 
   it(`matches deeply nested routes`, () => {
-    expect(matchRoute(routesConfig, "/app1/subroute")).toEqual({
+    expect(matchRoute(routesConfig, "/app1/subroute")).toMatchObject({
       ...routesConfig,
       routes: [
         { type: "application", name: "nav" },
@@ -119,6 +131,41 @@ describe(`matchRoute`, () => {
       ...routesConfig,
       routes: [
         { type: "application", name: "nav" },
+        { type: "application", name: "footer" },
+      ],
+    });
+  });
+
+  it(`matches dynamic paths`, () => {
+    expect(matchRoute(routesConfig, "users/123")).toMatchObject({
+      ...routesConfig,
+      routes: [
+        { type: "application", name: "nav" },
+        {
+          type: "route",
+          path: "users/:id",
+          routes: [{ type: "application", name: "user-home" }],
+        },
+        { type: "application", name: "footer" },
+      ],
+    });
+
+    expect(matchRoute(routesConfig, "users/123/settings")).toMatchObject({
+      ...routesConfig,
+      routes: [
+        { type: "application", name: "nav" },
+        {
+          type: "route",
+          path: "users/:id",
+          routes: [
+            { type: "application", name: "user-home" },
+            {
+              type: "route",
+              path: "settings",
+              routes: [{ type: "application", name: "user-settings" }],
+            },
+          ],
+        },
         { type: "application", name: "footer" },
       ],
     });

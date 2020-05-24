@@ -73,7 +73,7 @@ export function constructLayoutEngine({
   function arrangeDomElements() {
     const path = location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
 
-    if (!path.startsWith(baseWithoutSlash)) {
+    if (path.indexOf(baseWithoutSlash) !== 0) {
       // Base URL doesn't match, no need to recurse routes
       return;
     }
@@ -84,8 +84,7 @@ export function constructLayoutEngine({
         : resolvedRoutes.containerEl;
 
     recurseRoutes({
-      path,
-      pathMatch: baseWithoutSlash,
+      location: window.location,
       routes: resolvedRoutes.routes,
       parentContainer,
       shouldMount: true,
@@ -112,8 +111,7 @@ export function constructLayoutEngine({
 
 /**
  * @typedef {{
- * path: string,
- * pathMatch: string,
+ * location: URL,
  * routes: Array<import('./constructRoutes').Route>,
  * parentContainer: HTMLElement,
  * previousSibling?: HTMLElement,
@@ -128,8 +126,7 @@ export function constructLayoutEngine({
  * @returns {HTMLElement}
  */
 function recurseRoutes({
-  path,
-  pathMatch,
+  location,
   routes,
   parentContainer,
   previousSibling,
@@ -150,14 +147,12 @@ function recurseRoutes({
         previousSibling = applicationElement;
       }
     } else if (route.type === "route") {
-      const childPathMatch = resolvePath(pathMatch, route.path);
       previousSibling = recurseRoutes({
-        path,
-        pathMatch: childPathMatch,
+        location,
         routes: route.routes,
         parentContainer,
         previousSibling,
-        shouldMount: shouldMount && path.startsWith(childPathMatch),
+        shouldMount: shouldMount && route.activeWhen(location),
         pendingRemovals,
       });
     } else if (route instanceof Node) {
@@ -170,8 +165,7 @@ function recurseRoutes({
 
         if (route.routes) {
           recurseRoutes({
-            path,
-            pathMatch,
+            location,
             routes: route.routes,
             parentContainer: route.connectedNode,
             previousSibling: null,

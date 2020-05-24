@@ -14,6 +14,7 @@ import {
   constructLayoutEngine,
 } from "../src/single-spa-layout";
 import { parse, Element, DefaultTreeDocument } from "parse5";
+import { ResolvedUrlRoute } from "../src/constructRoutes";
 
 // test constructRoutes
 expectError(constructRoutes());
@@ -32,6 +33,8 @@ const routes = constructRoutes({
   ],
 });
 
+(routes.routes[0] as ResolvedUrlRoute).activeWhen(window.location);
+
 const parse5Doc = parse(
   `<single-spa-router></single-spa-router>`
 ) as DefaultTreeDocument;
@@ -45,7 +48,7 @@ expectType<import("../src/constructRoutes").ContainerEl>(
   matchedRoutes.containerEl
 );
 expectType<string>(matchedRoutes.mode);
-expectType<Array<import("../src/constructRoutes").RouteChild>>(
+expectType<Array<import("../src/constructRoutes").ResolvedRouteChild>>(
   matchedRoutes.routes
 );
 

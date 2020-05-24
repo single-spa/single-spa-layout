@@ -184,7 +184,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes, props`
       );
     });
 
@@ -212,7 +212,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props`
       );
 
       console.warn.mockReset();
@@ -228,7 +228,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name`
+        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props`
       );
     });
 
@@ -268,7 +268,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name`
+        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props`
       );
     });
 
@@ -308,7 +308,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes"
+        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes, props"
       );
     });
 
@@ -402,6 +402,173 @@ describe("constructRoutes", () => {
         mode: "history",
         routes: [{ type: "application", name: "nav" }],
       });
+    });
+
+    it(`constructs an activeWhen for all routes`, () => {
+      const resolvedRoutes = constructRoutes({
+        routes: [
+          {
+            type: "route",
+            path: "/settings",
+            routes: [{ type: "route", path: "users", routes: [] }],
+          },
+          { type: "route", path: "/clients", routes: [] },
+        ],
+      });
+
+      const settingsActiveWhen = resolvedRoutes.routes[0].activeWhen;
+      const usersActiveWhen = resolvedRoutes.routes[0].routes[0].activeWhen;
+      const clientsActiveWhen = resolvedRoutes.routes[1].activeWhen;
+
+      expect(settingsActiveWhen).toBeDefined();
+      expect(usersActiveWhen).toBeDefined();
+      expect(clientsActiveWhen).toBeDefined();
+
+      expect(settingsActiveWhen(new URL("http://localhost/"))).toBe(false);
+      expect(settingsActiveWhen(new URL("http://localhost/clients"))).toBe(
+        false
+      );
+      expect(settingsActiveWhen(new URL("http://localhost/other"))).toBe(false);
+      expect(settingsActiveWhen(new URL("http://localhost/settings"))).toBe(
+        true
+      );
+      expect(settingsActiveWhen(new URL("http://localhost/settings/"))).toBe(
+        true
+      );
+      expect(
+        settingsActiveWhen(new URL("http://localhost/settings/users"))
+      ).toBe(true);
+      expect(
+        settingsActiveWhen(new URL("http://localhost/settings/other"))
+      ).toBe(true);
+
+      expect(usersActiveWhen(new URL("http://localhost/"))).toBe(false);
+      expect(usersActiveWhen(new URL("http://localhost/clients"))).toBe(false);
+      expect(usersActiveWhen(new URL("http://localhost/other"))).toBe(false);
+      expect(usersActiveWhen(new URL("http://localhost/settings"))).toBe(false);
+      expect(usersActiveWhen(new URL("http://localhost/settings/"))).toBe(
+        false
+      );
+      expect(usersActiveWhen(new URL("http://localhost/settings/users"))).toBe(
+        true
+      );
+      expect(
+        usersActiveWhen(new URL("http://localhost/settings/users/1"))
+      ).toBe(true);
+      expect(usersActiveWhen(new URL("http://localhost/settings/other"))).toBe(
+        false
+      );
+
+      expect(clientsActiveWhen(new URL("http://localhost/"))).toBe(false);
+      expect(clientsActiveWhen(new URL("http://localhost/clients"))).toBe(true);
+      expect(clientsActiveWhen(new URL("http://localhost/other"))).toBe(false);
+      expect(clientsActiveWhen(new URL("http://localhost/settings"))).toBe(
+        false
+      );
+      expect(clientsActiveWhen(new URL("http://localhost/settings/"))).toBe(
+        false
+      );
+      expect(
+        clientsActiveWhen(new URL("http://localhost/settings/users"))
+      ).toBe(false);
+      expect(
+        clientsActiveWhen(new URL("http://localhost/settings/other"))
+      ).toBe(false);
+    });
+
+    it(`constructs an activeWhen that works with hash routing`, () => {
+      const resolvedRoutes = constructRoutes({
+        mode: "hash",
+        routes: [
+          {
+            type: "route",
+            path: "settings",
+            routes: [{ type: "route", path: "users", routes: [] }],
+          },
+          { type: "route", path: "clients", routes: [] },
+        ],
+      });
+
+      const settingsActiveWhen = resolvedRoutes.routes[0].activeWhen;
+      const usersActiveWhen = resolvedRoutes.routes[0].routes[0].activeWhen;
+      const clientsActiveWhen = resolvedRoutes.routes[1].activeWhen;
+
+      expect(settingsActiveWhen).toBeDefined();
+      expect(usersActiveWhen).toBeDefined();
+      expect(clientsActiveWhen).toBeDefined();
+
+      expect(settingsActiveWhen(new URL("http://localhost#/"))).toBe(false);
+      expect(settingsActiveWhen(new URL("http://localhost#/clients"))).toBe(
+        false
+      );
+      expect(settingsActiveWhen(new URL("http://localhost#/other"))).toBe(
+        false
+      );
+      expect(settingsActiveWhen(new URL("http://localhost#/settings"))).toBe(
+        true
+      );
+      expect(settingsActiveWhen(new URL("http://localhost#/settings/"))).toBe(
+        true
+      );
+      expect(
+        settingsActiveWhen(new URL("http://localhost#/settings/users"))
+      ).toBe(true);
+      expect(
+        settingsActiveWhen(new URL("http://localhost#/settings/other"))
+      ).toBe(true);
+
+      expect(usersActiveWhen(new URL("http://localhost#/"))).toBe(false);
+      expect(usersActiveWhen(new URL("http://localhost#/clients"))).toBe(false);
+      expect(usersActiveWhen(new URL("http://localhost#/other"))).toBe(false);
+      expect(usersActiveWhen(new URL("http://localhost#/settings"))).toBe(
+        false
+      );
+      expect(usersActiveWhen(new URL("http://localhost#/settings/"))).toBe(
+        false
+      );
+      expect(usersActiveWhen(new URL("http://localhost#/settings/users"))).toBe(
+        true
+      );
+      expect(
+        usersActiveWhen(new URL("http://localhost#/settings/users/1"))
+      ).toBe(true);
+      expect(usersActiveWhen(new URL("http://localhost#/settings/other"))).toBe(
+        false
+      );
+
+      expect(clientsActiveWhen(new URL("http://localhost#/"))).toBe(false);
+      expect(clientsActiveWhen(new URL("http://localhost#/clients"))).toBe(
+        true
+      );
+      expect(clientsActiveWhen(new URL("http://localhost#/other"))).toBe(false);
+      expect(clientsActiveWhen(new URL("http://localhost#/settings"))).toBe(
+        false
+      );
+      expect(clientsActiveWhen(new URL("http://localhost#/settings/"))).toBe(
+        false
+      );
+      expect(
+        clientsActiveWhen(new URL("http://localhost#/settings/users"))
+      ).toBe(false);
+      expect(
+        clientsActiveWhen(new URL("http://localhost#/settings/other"))
+      ).toBe(false);
+    });
+
+    it(`constructs routes that allow for dynamic paths in the URLs`, () => {
+      const resolvedRoutes = constructRoutes({
+        routes: [{ type: "route", path: "/users/:id/permissions", routes: [] }],
+      });
+
+      const activeWhen = resolvedRoutes.routes[0].activeWhen;
+      expect(activeWhen(new URL("http://localhost/"))).toBe(false);
+      expect(activeWhen(new URL("http://localhost/users/1/permissions"))).toBe(
+        true
+      );
+      expect(
+        activeWhen(new URL("http://localhost/users/asdf/permissions"))
+      ).toBe(true);
+      expect(activeWhen(new URL("http://localhost/users/new"))).toBe(false);
     });
   });
 });
