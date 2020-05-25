@@ -1,173 +1,348 @@
 import { matchRoute, constructRoutes } from "../src/single-spa-layout.js";
+import { parseFixture } from "./html-utils.js";
 
 describe(`matchRoute`, () => {
   let routesConfig;
 
-  beforeEach(() => {
-    routesConfig = constructRoutes({
-      mode: "history",
-      base: "/",
-      containerEl: "body",
-      routes: [
-        { type: "application", name: "nav" },
-        {
-          type: "route",
-          path: "app1",
-          routes: [
-            { type: "application", name: "app1" },
-            {
-              type: "route",
-              path: "subroute",
-              routes: [{ type: "application", name: "subroute" }],
-            },
-          ],
-        },
-        {
-          type: "route",
-          path: "app2",
-          routes: [
-            { type: "application", name: "app2" },
-            {
-              type: "route",
-              path: "subroute",
-              routes: [{ type: "application", name: "subroute" }],
-            },
-          ],
-        },
-        {
-          type: "route",
-          path: "users/:id",
-          routes: [
-            { type: "application", name: "user-home" },
-            {
-              type: "route",
-              path: "settings",
-              routes: [{ type: "application", name: "user-settings" }],
-            },
-          ],
-        },
-        { type: "application", name: "footer" },
-      ],
+  afterEach(() => {
+    routesConfig = null;
+  });
+
+  describe(`json config`, () => {
+    beforeEach(() => {
+      routesConfig = constructRoutes({
+        mode: "history",
+        base: "/",
+        containerEl: "body",
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            path: "app1",
+            routes: [
+              { type: "application", name: "app1" },
+              {
+                type: "route",
+                path: "subroute",
+                routes: [{ type: "application", name: "subroute" }],
+              },
+            ],
+          },
+          {
+            type: "route",
+            path: "app2",
+            routes: [
+              { type: "application", name: "app2" },
+              {
+                type: "route",
+                path: "subroute",
+                routes: [{ type: "application", name: "subroute" }],
+              },
+            ],
+          },
+          {
+            type: "route",
+            path: "users/:id",
+            routes: [
+              { type: "application", name: "user-home" },
+              {
+                type: "route",
+                path: "settings",
+                routes: [{ type: "application", name: "user-settings" }],
+              },
+            ],
+          },
+          {
+            type: "route",
+            default: true,
+            routes: [{ type: "application", name: "not-found" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+    });
+
+    it(`returns a filtered routes array`, () => {
+      expect(matchRoute(routesConfig, "/")).toMatchObject({
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            default: true,
+            routes: [{ type: "application", name: "not-found" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+    });
+
+    it(`matches nested routes`, () => {
+      expect(matchRoute(routesConfig, "/app1")).toMatchObject({
+        ...routesConfig,
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            path: "app1",
+            routes: [{ type: "application", name: "app1" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+
+      expect(matchRoute(routesConfig, "/app2")).toMatchObject({
+        ...routesConfig,
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            path: "app2",
+            routes: [{ type: "application", name: "app2" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+    });
+
+    it(`matches deeply nested routes`, () => {
+      expect(matchRoute(routesConfig, "/app1/subroute")).toMatchObject({
+        ...routesConfig,
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            path: "app1",
+            routes: [
+              { type: "application", name: "app1" },
+              {
+                type: "route",
+                path: "subroute",
+                routes: [{ type: "application", name: "subroute" }],
+              },
+            ],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+    });
+
+    it(`matches using base name`, () => {
+      routesConfig.base = "/base/";
+
+      expect(matchRoute(routesConfig, "/")).toMatchObject({
+        routes: [],
+      });
+
+      expect(matchRoute(routesConfig, "/base/")).toMatchObject({
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            default: true,
+            routes: [{ type: "application", name: "not-found" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+
+      expect(matchRoute(routesConfig, "/base")).toMatchObject({
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            default: true,
+            routes: [{ type: "application", name: "not-found" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+    });
+
+    it(`matches dynamic paths`, () => {
+      expect(matchRoute(routesConfig, "users/123")).toMatchObject({
+        ...routesConfig,
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            path: "users/:id",
+            routes: [{ type: "application", name: "user-home" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+
+      expect(matchRoute(routesConfig, "users/123/settings")).toMatchObject({
+        ...routesConfig,
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            path: "users/:id",
+            routes: [
+              { type: "application", name: "user-home" },
+              {
+                type: "route",
+                path: "settings",
+                routes: [{ type: "application", name: "user-settings" }],
+              },
+            ],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+    });
+
+    it(`properly matches default routes`, () => {
+      expect(matchRoute(routesConfig, "/")).toMatchObject({
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            default: true,
+            routes: [{ type: "application", name: "not-found" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
     });
   });
 
-  it(`returns a filtered routes array`, () => {
-    expect(matchRoute(routesConfig, "/")).toEqual({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        { type: "application", name: "footer" },
-      ],
+  describe(`nested-default-routes`, () => {
+    beforeEach(() => {
+      const { document, routerElement } = parseFixture(
+        "nested-default-route.html"
+      );
+      routesConfig = constructRoutes(routerElement);
+    });
+
+    it(`matches /settings/app1 route`, () => {
+      const match = matchRoute(routesConfig, "/settings/app1");
+      expect(match.routes.length).toBe(2);
+      expect(match.routes[0]).toMatchObject({
+        type: "application",
+        name: "header",
+      });
+      expect(match.routes[1].routes[0]).toMatchObject({
+        type: "route",
+        path: "settings",
+        routes: [
+          {
+            type: "route",
+            path: "app1",
+            routes: [{ type: "application", name: "app1" }],
+          },
+        ],
+      });
+      expect(match.routes[1].routes[0].routes.length).toBe(1);
+      expect(match.routes[1].routes[1].routes).toMatchObject([]);
+    });
+
+    it(`matches /settings route to not-found route`, () => {
+      const match = matchRoute(routesConfig, "/settings");
+      expect(match.routes.length).toBe(2);
+      expect(match.routes[0]).toMatchObject({
+        type: "application",
+        name: "header",
+      });
+      expect(match.routes[1].routes[0].routes.length).toBe(1);
+      expect(match.routes[1].routes[0].routes[0]).toMatchObject({
+        type: "route",
+        default: true,
+        routes: [{ type: "application", name: "settings-not-found" }],
+      });
+    });
+
+    it(`matches / route to not-found app`, () => {
+      const match = matchRoute(routesConfig, "/");
+      expect(match.routes.length).toBe(2);
+      expect(match.routes[0]).toMatchObject({
+        type: "application",
+        name: "header",
+      });
+      expect(match.routes[1].routes.length).toBe(1);
+      expect(match.routes[1].routes[0].routes).toMatchObject([
+        {
+          type: "route",
+          default: true,
+          routes: [{ type: "application", name: "not-found" }],
+        },
+      ]);
     });
   });
 
-  it(`matches nested routes`, () => {
-    expect(matchRoute(routesConfig, "/app1")).toMatchObject({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        {
-          type: "route",
-          path: "app1",
-          routes: [{ type: "application", name: "app1" }],
-        },
-        { type: "application", name: "footer" },
-      ],
+  describe(`multiple default routes`, () => {
+    beforeEach(() => {
+      routesConfig = constructRoutes({
+        routes: [
+          {
+            type: "route",
+            path: "settings",
+            routes: [
+              {
+                type: "route",
+                path: "users",
+                routes: [{ type: "application", name: "user-settings" }],
+              },
+              {
+                type: "route",
+                default: true,
+                routes: [{ type: "application", name: "settings-not-found" }],
+              },
+              {
+                type: "route",
+                default: true,
+                routes: [{ type: "application", name: "settings-not-found-2" }],
+              },
+            ],
+          },
+        ],
+      });
     });
 
-    expect(matchRoute(routesConfig, "/app2")).toMatchObject({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        {
-          type: "route",
-          path: "app2",
-          routes: [{ type: "application", name: "app2" }],
-        },
-        { type: "application", name: "footer" },
-      ],
-    });
-  });
+    it(`can match /settings/users`, () => {
+      const match = matchRoute(routesConfig, "/settings/users");
 
-  it(`matches deeply nested routes`, () => {
-    expect(matchRoute(routesConfig, "/app1/subroute")).toMatchObject({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        {
-          type: "route",
-          path: "app1",
-          routes: [
-            { type: "application", name: "app1" },
-            {
-              type: "route",
-              path: "subroute",
-              routes: [{ type: "application", name: "subroute" }],
-            },
-          ],
-        },
-        { type: "application", name: "footer" },
-      ],
-    });
-  });
+      expect(match).toMatchObject({
+        routes: [
+          {
+            type: "route",
+            path: "settings",
+            routes: [
+              {
+                type: "route",
+                path: "users",
+                routes: [{ type: "application", name: "user-settings" }],
+              },
+            ],
+          },
+        ],
+      });
 
-  it(`matches using base name`, () => {
-    routesConfig.base = "/base/";
-
-    expect(matchRoute(routesConfig, "/")).toEqual({
-      ...routesConfig,
-      routes: [],
+      expect(match.routes[0].routes.length).toBe(1);
     });
 
-    expect(matchRoute(routesConfig, "/base/")).toEqual({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        { type: "application", name: "footer" },
-      ],
-    });
-
-    expect(matchRoute(routesConfig, "/base")).toEqual({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        { type: "application", name: "footer" },
-      ],
-    });
-  });
-
-  it(`matches dynamic paths`, () => {
-    expect(matchRoute(routesConfig, "users/123")).toMatchObject({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        {
-          type: "route",
-          path: "users/:id",
-          routes: [{ type: "application", name: "user-home" }],
-        },
-        { type: "application", name: "footer" },
-      ],
-    });
-
-    expect(matchRoute(routesConfig, "users/123/settings")).toMatchObject({
-      ...routesConfig,
-      routes: [
-        { type: "application", name: "nav" },
-        {
-          type: "route",
-          path: "users/:id",
-          routes: [
-            { type: "application", name: "user-home" },
-            {
-              type: "route",
-              path: "settings",
-              routes: [{ type: "application", name: "user-settings" }],
-            },
-          ],
-        },
-        { type: "application", name: "footer" },
-      ],
+    it(`can match /settings`, () => {
+      expect(matchRoute(routesConfig, "/settings")).toMatchObject({
+        routes: [
+          {
+            type: "route",
+            path: "settings",
+            routes: [
+              {
+                type: "route",
+                default: true,
+                routes: [{ type: "application", name: "settings-not-found" }],
+              },
+              {
+                type: "route",
+                default: true,
+                routes: [{ type: "application", name: "settings-not-found-2" }],
+              },
+            ],
+          },
+        ],
+      });
     });
   });
 });

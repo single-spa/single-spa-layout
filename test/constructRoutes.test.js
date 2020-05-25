@@ -184,7 +184,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes, props`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes, props, default`
       );
     });
 
@@ -308,7 +308,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes, props"
+        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes, props, default"
       );
     });
 
@@ -356,6 +356,42 @@ describe("constructRoutes", () => {
         });
       });
     }
+
+    it(`allows for "default" routes`, () => {
+      constructRoutes({
+        routes: [
+          { type: "route", path: "app1" },
+          { type: "route", default: true },
+        ],
+      });
+
+      constructRoutes({
+        routes: [
+          { type: "route", path: "app1", default: false },
+          { type: "route", default: true },
+        ],
+      });
+    });
+
+    it(`throws on a default route that has a path`, () => {
+      expect(() => {
+        constructRoutes({
+          routes: [{ type: "route", path: "app1", default: true }],
+        });
+      }).toThrowError(
+        "Invalid routesConfig.routes[0]: cannot have both path and set default to true."
+      );
+    });
+
+    it(`throws on a route that has no path and is not default`, () => {
+      expect(() => {
+        constructRoutes({
+          routes: [{ type: "route" }],
+        });
+      }).toThrowError(
+        "Invalid routesConfig.routes[0]: routes must have either a path or default property"
+      );
+    });
   });
 
   describe(`return value`, () => {
