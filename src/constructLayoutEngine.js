@@ -159,9 +159,10 @@ function recurseRoutes({
       if (shouldMount) {
         if (!route.connectedNode) {
           const newNode = route.cloneNode(false);
-          insertNode(newNode, parentContainer, previousSibling);
           route.connectedNode = newNode;
         }
+
+        insertNode(route.connectedNode, parentContainer, previousSibling);
 
         if (route.routes) {
           recurseRoutes({
@@ -198,7 +199,7 @@ function insertNode(node, container, previousSibling) {
   if (previousSibling && previousSibling.nextSibling) {
     // move to be immediately after previousSibling
     previousSibling.parentNode.insertBefore(node, previousSibling.nextSibling);
-  } else if (node.parentNode !== container) {
+  } else {
     // append to end of the container
     container.appendChild(node);
   }

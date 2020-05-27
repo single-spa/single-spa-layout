@@ -1,4 +1,5 @@
 import { inBrowser } from "./environment-helpers";
+import { validateString } from "./validation-helpers";
 
 /**
  *
@@ -7,6 +8,7 @@ import { inBrowser } from "./environment-helpers";
  * @returns {import('./constructRoutes').ResolvedRoutesConfig}
  */
 export function matchRoute(resolvedRoutesConfig, pathMatch) {
+  validateString("path", pathMatch);
   const result = { ...resolvedRoutesConfig };
 
   const baseWithoutSlash = resolvedRoutesConfig.base.slice(

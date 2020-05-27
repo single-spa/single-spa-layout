@@ -178,6 +178,55 @@ exports[`constructLayoutEngine browser can process the layout in the medium.html
 </body>
 `;
 
+exports[`constructLayoutEngine browser can process the nested-default-route fixture 1`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  />
+  <div
+    class="main-content"
+  >
+    <span>
+      <div
+        id="single-spa-application:not-found"
+      />
+    </span>
+  </div>
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the nested-default-route fixture 2`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  />
+  <div
+    class="main-content"
+  >
+    <div
+      id="single-spa-application:settings-not-found"
+    />
+    <span />
+  </div>
+</body>
+`;
+
+exports[`constructLayoutEngine browser can process the nested-default-route fixture 3`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  />
+  <div
+    class="main-content"
+  >
+    <div
+      id="single-spa-application:app1"
+    />
+    <span />
+  </div>
+</body>
+`;
+
 exports[`constructLayoutEngine browser can successfully construct a layout engine and respond to routing events 1`] = `
 <body>
   <div

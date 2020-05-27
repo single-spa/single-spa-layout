@@ -10,6 +10,14 @@ export function validateObject(propertyName, obj) {
   }
 }
 
+export function validateBoolean(propertyName, bool) {
+  if (typeof bool !== "boolean") {
+    throw Error(
+      `Invalid ${propertyName}: received ${typeof bool}, but expected a boolean`
+    );
+  }
+}
+
 export function validateKeys(propertyName, obj, validKeys, disableWarnings) {
   if (disableWarnings) {
     return;

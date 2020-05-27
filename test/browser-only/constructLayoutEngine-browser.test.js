@@ -509,4 +509,52 @@ describe(`constructLayoutEngine browser`, () => {
     );
     expect(document.querySelector("body")).toMatchSnapshot();
   });
+
+  it(`can process the nested-default-route fixture`, () => {
+    history.pushState(history.state, document.title, "/");
+
+    const { routerElement } = parseFixture("nested-default-route.html");
+    const loadApp = jest.fn();
+    const routes = constructRoutes(routerElement);
+    const applications = constructApplications({ routes, loadApp });
+    layoutEngine = constructLayoutEngine({ routes, applications });
+
+    expect(document.body).toMatchSnapshot();
+
+    // Transition to /settings
+    history.pushState(history.state, document.title, "/settings");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["settings-not-found"],
+            NOT_MOUNTED: ["not-found"],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    expect(document.body).toMatchSnapshot();
+
+    // Transition to /settings/app1
+    history.pushState(history.state, document.title, "/settings/app1");
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:app-change", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: ["app1"],
+            NOT_MOUNTED: ["settings-not-found"],
+            NOT_LOADED: [],
+          },
+        },
+      })
+    );
+    expect(document.body).toMatchSnapshot();
+  });
 });

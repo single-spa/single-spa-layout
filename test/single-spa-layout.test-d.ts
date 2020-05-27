@@ -28,12 +28,16 @@ const routes = constructRoutes({
     {
       type: "route",
       path: "/app1",
-      routes: [{ type: "application", name: "app1" }],
+      routes: [
+        { type: "application", name: "app1" },
+        { type: "route", default: true },
+      ],
     },
   ],
 });
 
 (routes.routes[0] as ResolvedUrlRoute).activeWhen(window.location);
+expectType<boolean | undefined>((routes.routes[1] as ResolvedUrlRoute).default);
 
 const parse5Doc = parse(
   `<single-spa-router></single-spa-router>`

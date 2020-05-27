@@ -5,6 +5,7 @@ import {
   validateString,
   validateObject,
   validateContainerEl,
+  validateBoolean,
 } from "./validation-helpers.js";
 import { inBrowser } from "./environment-helpers.js";
 import { pathToActiveWhen } from "single-spa";
@@ -38,6 +39,7 @@ import { resolvePath } from "./matchRoute.js";
  * type: string;
  * path: string;
  * routes: Array<Route>;
+ * default?: boolean;
  * activeWhen: import('single-spa').ActivityFn;
  * }} ResolvedUrlRoute
  *
@@ -110,6 +112,14 @@ function getAttribute(element, attrName) {
   }
 }
 
+function hasAttribute(element, attrName) {
+  if (inBrowser) {
+    return element.hasAttribute(attrName);
+  } else {
+    return element.attrs.some((attr) => attr.name === attrName);
+  }
+}
+
 /**
  * @param {HTMLElement} element
  * @returns {Array<Route>}
@@ -130,10 +140,16 @@ function elementToJson(element) {
   } else if (element.nodeName.toLowerCase() === "route") {
     const route = {
       type: "route",
-      path: getAttribute(element, "path"),
       routes: [],
     };
-    setProps(element, route, ["path"]);
+    const path = getAttribute(element, "path");
+    if (path) {
+      route.path = path;
+    }
+    if (hasAttribute(element, "default")) {
+      route.default = true;
+    }
+    setProps(element, route, ["path", "default"]);
     for (let i = 0; i < element.childNodes.length; i++) {
       route.routes.push(...elementToJson(element.childNodes[i]));
     }
@@ -224,14 +240,16 @@ function validateAndSanitize(routesConfig) {
   const pathname = inBrowser ? window.location.pathname : "/";
   const hashPrefix = routesConfig.mode === "hash" ? pathname + "#" : "";
 
-  validateArray(
-    "routesConfig.routes",
-    routesConfig.routes,
-    validateRoute,
-    hashPrefix + routesConfig.base
-  );
+  validateArray("routesConfig.routes", routesConfig.routes, validateRoute, {
+    parentPath: hashPrefix + routesConfig.base,
+    siblingActiveWhens: [],
+  });
 
-  function validateRoute(route, propertyName, parentPath) {
+  function validateRoute(
+    route,
+    propertyName,
+    { parentPath, siblingActiveWhens }
+  ) {
     validateObject(propertyName, route);
 
     if (route.type === "application") {
@@ -249,19 +267,40 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "path", "routes", "props"],
+        ["type", "path", "routes", "props", "default"],
         disableWarnings
       );
-      validateString(`${propertyName}.path`, route.path);
-      const fullPath = resolvePath(parentPath, route.path);
-      route.activeWhen = pathToActiveWhen(fullPath);
-      if (route.routes)
-        validateArray(
-          `${propertyName}.routes`,
-          route.routes,
-          validateRoute,
-          fullPath
+
+      const hasPath = route.hasOwnProperty("path");
+      const hasDefault = route.hasOwnProperty("default");
+      let fullPath;
+
+      if (hasPath) {
+        validateString(`${propertyName}.path`, route.path);
+        fullPath = resolvePath(parentPath, route.path);
+        route.activeWhen = pathToActiveWhen(fullPath);
+        siblingActiveWhens.push(route.activeWhen);
+      } else if (hasDefault) {
+        validateBoolean(`${propertyName}.default`, route.default);
+        fullPath = parentPath;
+        route.activeWhen = defaultRoute(siblingActiveWhens);
+      } else {
+        throw Error(
+          `Invalid ${propertyName}: routes must have either a path or default property.`
         );
+      }
+
+      if (hasPath && hasDefault && route.default) {
+        throw Error(
+          `Invalid ${propertyName}: cannot have both path and set default to true.`
+        );
+      }
+
+      if (route.routes)
+        validateArray(`${propertyName}.routes`, route.routes, validateRoute, {
+          parentPath: fullPath,
+          siblingActiveWhens: [],
+        });
     } else {
       if (typeof Node !== "undefined" && route instanceof Node) {
         // HTMLElements are allowed
@@ -273,16 +312,20 @@ function validateAndSanitize(routesConfig) {
         }
       }
       if (route.routes)
-        validateArray(
-          `${propertyName}.routes`,
-          route.routes,
-          validateRoute,
-          parentPath
-        );
+        validateArray(`${propertyName}.routes`, route.routes, validateRoute, {
+          parentPath,
+          siblingActiveWhens,
+        });
     }
   }
 
   delete routesConfig.disableWarnings;
+}
+
+function defaultRoute(otherActiveWhens) {
+  return (location) => {
+    return !otherActiveWhens.some((activeWhen) => activeWhen(location));
+  };
 }
 
 function sanitizeBase(base) {
