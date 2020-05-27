@@ -37,7 +37,7 @@ const routes = constructRoutes({
 });
 
 (routes.routes[0] as ResolvedUrlRoute).activeWhen(window.location);
-expectType<boolean>((routes.routes[1] as ResolvedUrlRoute).default);
+expectType<boolean | undefined>((routes.routes[1] as ResolvedUrlRoute).default);
 
 const parse5Doc = parse(
   `<single-spa-router></single-spa-router>`
