@@ -201,6 +201,74 @@ describe(`constructApplications`, () => {
     ).toBe(true);
   });
 
+  it(`can merge route props and application props together`, () => {
+    const routes = constructRoutes({
+      mode: "history",
+      base: "/",
+      containerEl: "body",
+      routes: [
+        {
+          type: "route",
+          path: "route1",
+          props: { foo: 1, bar: 1, baz: 1 },
+          routes: [
+            {
+              type: "route",
+              path: "subroute",
+              props: { foo: 2, bar: 2, other: 2 },
+              routes: [
+                { type: "application", name: "app1", props: { foo: 3 } },
+              ],
+            },
+          ],
+        },
+        {
+          type: "route",
+          path: "route2",
+          props: { foo: -1, bar: -1, baz: -1 },
+          routes: [
+            {
+              type: "route",
+              path: "subroute",
+              props: { foo: -2, bar: -2, other: -2 },
+              routes: [
+                { type: "application", name: "app1", props: { foo: -3 } },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const loadApp = (name) => {};
+
+    const applications = constructApplications({ routes, loadApp });
+
+    expect(applications[0].name).toEqual("app1");
+    expect(
+      applications[0].customProps(
+        "app1",
+        new URL("https://localhost/route1/subroute")
+      )
+    ).toEqual({
+      foo: 3,
+      bar: 2,
+      baz: 1,
+      other: 2,
+    });
+    expect(
+      applications[0].customProps(
+        "app1",
+        new URL("https://localhost/route2/subroute")
+      )
+    ).toEqual({
+      foo: -3,
+      bar: -2,
+      baz: -1,
+      other: -2,
+    });
+  });
+
   it(`places a loader in the dom while loading the code`, async () => {
     const routes = constructRoutes({
       routes: [
