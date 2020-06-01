@@ -215,6 +215,6 @@ function removeNode(node) {
   }
 }
 
-function applicationElementId(name) {
+export function applicationElementId(name) {
   return `single-spa-application:${name}`;
 }

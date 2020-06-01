@@ -1,3 +1,7 @@
+import { applicationElementId } from "./constructLayoutEngine";
+import { mountRootParcel } from "single-spa";
+import { inBrowser } from "./environment-helpers";
+
 /**
  * @typedef {{
  * routes: import('./constructRoutes').ResolvedRoutesConfig;
@@ -17,6 +21,7 @@
  * @typedef {{
  * props: object;
  * activeWhen: import('single-spa').ActivityFn;
+ * loader?: string | import('single-spa').ParcelConfig;
  * }} AppRoute
  *
  * @param {ApplicationOptions} applicationOptions
@@ -35,7 +40,7 @@ export function constructApplications({ routes, loadApp }) {
    * activeWhen: import('single-spa').Activity
    * }>}
    */
-  const partialApplications = Object.keys(applicationMap).map((name) => {
+  return Object.keys(applicationMap).map((name) => {
     /** @type {AppRoute} */
     const appRoutes = applicationMap[name];
     return {
@@ -47,13 +52,21 @@ export function constructApplications({ routes, loadApp }) {
         return appRoute ? appRoute.props : {};
       },
       activeWhen: appRoutes.map((appRoute) => appRoute.activeWhen),
+      app: () => {
+        let appRoute;
+        if (inBrowser) {
+          appRoute = appRoutes.find((appRoute) =>
+            appRoute.activeWhen(window.location)
+          );
+        }
+
+        const loadPromise = loadApp({ name });
+        return appRoute && appRoute.loader
+          ? placeLoader(name, appRoute, loadPromise)
+          : loadPromise;
+      },
     };
   });
-
-  return partialApplications.map((partialApp) => ({
-    ...partialApp,
-    app: loadApp,
-  }));
 }
 
 /**
@@ -74,6 +87,7 @@ function recurseRoutes(applicationMap, activeWhen, props, routes) {
       applicationMap[route.name].push({
         activeWhen,
         props: mergeProps(props, route.props),
+        loader: route.loader,
       });
     } else if (route.type === "route") {
       recurseRoutes(
@@ -95,4 +109,72 @@ function mergeProps(originalProps, newProps = {}) {
 function topLevelActiveWhen() {
   // All applications not under routes are active
   return true;
+}
+
+let applicationEl;
+
+function placeLoader(appName, appRoute, loadingPromise) {
+  return Promise.resolve().then(() => {
+    // We need the application container element to place the loader into
+    const htmlId = applicationElementId(appName);
+    let applicationElement = document.getElementById(htmlId);
+    let hidElement;
+
+    if (!applicationElement) {
+      applicationElement = document.createElement("div");
+      applicationElement.id = htmlId;
+      // Wait for layout engine to place this dom element in correct location
+      // before it's visible
+      applicationElement.style.display = "none";
+      hidElement = true;
+
+      document.body.appendChild(applicationElement);
+    }
+
+    const parcelConfig =
+      typeof appRoute.loader === "string"
+        ? htmlToParcelConfig(appRoute.loader)
+        : appRoute.loader;
+    const parcel = mountRootParcel(parcelConfig, {
+      name: `application-loader:${appName}`,
+      domElement: applicationElement,
+    });
+
+    applicationEl = applicationElement;
+
+    return Promise.all([parcel.mountPromise, loadingPromise]).then((app) =>
+      parcel.unmount().then(() => {
+        if (hidElement) {
+          applicationElement.style.removeProperty("display");
+          if (applicationElement.getAttribute("style") === "") {
+            applicationElement.removeAttribute("style");
+          }
+        }
+
+        return app;
+      })
+    );
+  });
+}
+
+function htmlToParcelConfig(str) {
+  const doc = new DOMParser().parseFromString(str, "text/html");
+  let nodes = doc.body.childNodes;
+  let appendedNodes = [];
+
+  return {
+    bootstrap: () => Promise.resolve(),
+    mount: (props) =>
+      Promise.resolve().then(() => {
+        nodes.forEach((node) => {
+          appendedNodes.push(props.domElement.appendChild(node.cloneNode()));
+        });
+      }),
+    unmount: (props) =>
+      Promise.resolve().then(() => {
+        appendedNodes.forEach((node) => {
+          props.domElement.removeChild(node);
+        });
+      }),
+  };
 }

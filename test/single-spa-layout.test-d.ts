@@ -23,6 +23,13 @@ expectError(constructRoutes([]));
 
 expectError(constructRoutes({}));
 
+const loaderParcelConfig = {
+  async bootstrap() {},
+  async mount() {},
+  async unmount() {},
+  async update() {},
+};
+
 const routes = constructRoutes({
   routes: [
     {
@@ -30,6 +37,8 @@ const routes = constructRoutes({
       path: "/app1",
       routes: [
         { type: "application", name: "app1" },
+        { type: "application", name: "app2", loader: `<img src="loader">` },
+        { type: "application", name: "app3", loader: loaderParcelConfig },
         { type: "route", default: true },
       ],
     },
@@ -38,6 +47,10 @@ const routes = constructRoutes({
 
 (routes.routes[0] as ResolvedUrlRoute).activeWhen(window.location);
 expectType<boolean | undefined>((routes.routes[1] as ResolvedUrlRoute).default);
+
+expectType<string | singleSpa.ParcelConfig | undefined>(
+  (routes.routes[0] as import("../src/constructRoutes").Application).loader
+);
 
 const parse5Doc = parse(
   `<single-spa-router></single-spa-router>`
