@@ -557,4 +557,61 @@ describe(`constructLayoutEngine browser`, () => {
     );
     expect(document.body).toMatchSnapshot();
   });
+
+  it(`can show a loader properly`, async () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      containerEl: "body",
+      base: "/",
+      mode: "history",
+      routes: [
+        {
+          type: "route",
+          path: "/app1",
+          routes: [
+            {
+              type: "application",
+              name: "app1",
+              loader: `<img src="loading.gif">`,
+            },
+          ],
+        },
+      ],
+    });
+
+    const applications = constructApplications({
+      routes,
+      loadApp: (name) => {
+        return new Promise((resolve) => {
+          setTimeout(resolve, 5);
+        });
+      },
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+    });
+
+    expect(document.body).toMatchSnapshot();
+
+    history.pushState(history.state, document.title, "/app1");
+    const loadPromise = applications[0].app();
+
+    await tick();
+    expect(document.body).toMatchSnapshot();
+
+    await loadPromise;
+    expect(document.body).toMatchSnapshot();
+
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+    expect(document.body).toMatchSnapshot();
+  });
 });
+
+function tick() {
+  return new Promise((resolve) => {
+    setTimeout(resolve);
+  });
+}

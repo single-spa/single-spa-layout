@@ -53,6 +53,7 @@ import { resolvePath } from "./matchRoute.js";
  * type: string;
  * name: string;
  * props?: object;
+ * loader?: string | import('single-spa').ParcelConfig;
  * }} Application
  *
  * @typedef {{
@@ -302,7 +303,7 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "name", "props"],
+        ["type", "name", "props", "loader"],
         disableWarnings
       );
       if (route.props) {
