@@ -640,6 +640,7 @@ describe("constructRoutes", () => {
           portalMode: "client",
           prop1: "value1",
           prop2: "value2",
+          prop3: "value3",
         },
       };
       const routes = constructRoutes(routerElement, data);
@@ -650,6 +651,9 @@ describe("constructRoutes", () => {
       expect(routes.routes[1].routes[0].routes[0].props).toEqual({
         mode: data.props.portalMode,
         prop2: data.props.prop2,
+      });
+      expect(routes.routes[1].routes[0].props).toEqual({
+        prop3: "value3",
       });
     });
 
