@@ -251,7 +251,6 @@ describe(`constructApplications`, () => {
       expect(appEl).toMatchInlineSnapshot(`
         <div
           id="single-spa-application:app1"
-          style=""
         />
       `);
     }
