@@ -66,7 +66,7 @@ import { resolvePath } from "./matchRoute.js";
  * }} HTMLLayoutData
  *
  * @param {RoutesConfig} routesConfig
- * @param {data=HTMLLayoutData} htmlLayoutData
+ * @param {HTMLLayoutData=} htmlLayoutData
  * @returns {ResolvedRoutesConfig}
  */
 export function constructRoutes(routesConfig, htmlLayoutData) {
@@ -226,7 +226,7 @@ function elementToJson(element, htmlLayoutData) {
  * @param {HTMLLayoutData} htmlLayoutData
  */
 function setProps(element, route, ignoredAttributes, htmlLayoutData) {
-  const attributes = element.attributes || entries(element.attrs);
+  const attributes = element.attributes || element.attrs;
   for (let i = 0; i < attributes.length; i++) {
     const { name, value } = attributes[i];
     if (ignoredAttributes.includes(name)) {
@@ -248,10 +248,6 @@ function setProps(element, route, ignoredAttributes, htmlLayoutData) {
       }
     }
   }
-}
-
-function entries(obj) {
-  return Object.keys(obj).map((key) => ({ name: key, value: obj[key] }));
 }
 
 function validateAndSanitize(routesConfig) {
