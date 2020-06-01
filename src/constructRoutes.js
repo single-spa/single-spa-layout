@@ -53,6 +53,7 @@ import { resolvePath } from "./matchRoute.js";
  * type: string;
  * name: string;
  * props?: object;
+ * loader?: string | import('single-spa').ParcelConfig;
  * }} Application
  *
  * @param {RoutesConfig} routesConfig
@@ -135,7 +136,7 @@ function elementToJson(element) {
       type: "application",
       name: getAttribute(element, "name"),
     };
-    setProps(element, application, ["name"]);
+    setProps(element, application, ["name", "loader"]);
     return [application];
   } else if (element.nodeName.toLowerCase() === "route") {
     const route = {
@@ -256,7 +257,7 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "name", "props"],
+        ["type", "name", "props", "loader"],
         disableWarnings
       );
       if (route.props) {

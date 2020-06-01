@@ -212,7 +212,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader`
       );
 
       console.warn.mockReset();
@@ -228,7 +228,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props`
+        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props, loader`
       );
     });
 
@@ -268,7 +268,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props`
+        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader`
       );
     });
 
@@ -605,6 +605,28 @@ describe("constructRoutes", () => {
         activeWhen(new URL("http://localhost/users/asdf/permissions"))
       ).toBe(true);
       expect(activeWhen(new URL("http://localhost/users/new"))).toBe(false);
+    });
+
+    it(`handles 'loader' property on applications`, () => {
+      expect(
+        constructRoutes({
+          routes: [
+            {
+              type: "application",
+              name: "app1",
+              loader: `<img src="loading.gif">`,
+            },
+          ],
+        })
+      ).toMatchObject({
+        routes: [
+          {
+            type: "application",
+            name: "app1",
+            loader: `<img src="loading.gif">`,
+          },
+        ],
+      });
     });
   });
 });

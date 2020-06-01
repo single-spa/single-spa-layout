@@ -3,6 +3,7 @@ import {
   constructRoutes,
 } from "../src/single-spa-layout.js";
 import { parseFixture } from "./html-utils.js";
+import { inBrowser } from "../src/environment-helpers.js";
 
 describe(`constructApplications`, () => {
   it(`can handle a medium complexity case`, () => {
@@ -267,4 +268,65 @@ describe(`constructApplications`, () => {
       other: -2,
     });
   });
+
+  it(`places a loader in the dom while loading the code`, async () => {
+    const routes = constructRoutes({
+      routes: [
+        {
+          type: "application",
+          name: "app1",
+          loader: `<img src="loading.gif">`,
+        },
+      ],
+    });
+
+    const loadApp = (name) =>
+      new Promise((resolve) => {
+        setTimeout(resolve, 5);
+      });
+
+    const applications = constructApplications({ routes, loadApp });
+    let appEl;
+
+    if (inBrowser) {
+      appEl = document.getElementById(`single-spa-application:app1`);
+      expect(appEl).toBeNull();
+    }
+
+    // begin loading the app
+    const loadPromise = applications[0].app();
+
+    await tick();
+
+    if (inBrowser) {
+      appEl = document.getElementById(`single-spa-application:app1`);
+      expect(appEl).toMatchInlineSnapshot(`
+        <div
+          id="single-spa-application:app1"
+          style="display: none;"
+        >
+          <img
+            src="loading.gif"
+          />
+        </div>
+      `);
+    }
+
+    await loadPromise;
+
+    if (inBrowser) {
+      appEl = document.getElementById(`single-spa-application:app1`);
+      expect(appEl).toMatchInlineSnapshot(`
+        <div
+          id="single-spa-application:app1"
+        />
+      `);
+    }
+  });
 });
+
+function tick() {
+  return new Promise((resolve) => {
+    setTimeout(resolve);
+  });
+}

@@ -227,6 +227,37 @@ exports[`constructLayoutEngine browser can process the nested-default-route fixt
 </body>
 `;
 
+exports[`constructLayoutEngine browser can show a loader properly 1`] = `<body />`;
+
+exports[`constructLayoutEngine browser can show a loader properly 2`] = `
+<body>
+  <div
+    id="single-spa-application:app1"
+    style="display: none;"
+  >
+    <img
+      src="loading.gif"
+    />
+  </div>
+</body>
+`;
+
+exports[`constructLayoutEngine browser can show a loader properly 3`] = `
+<body>
+  <div
+    id="single-spa-application:app1"
+  />
+</body>
+`;
+
+exports[`constructLayoutEngine browser can show a loader properly 4`] = `
+<body>
+  <div
+    id="single-spa-application:app1"
+  />
+</body>
+`;
+
 exports[`constructLayoutEngine browser can successfully construct a layout engine and respond to routing events 1`] = `
 <body>
   <div
