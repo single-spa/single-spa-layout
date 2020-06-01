@@ -55,12 +55,26 @@ import { resolvePath } from "./matchRoute.js";
  * props?: object;
  * }} Application
  *
+ * @typedef {{
+ * loaders: {
+ *   [key]: any;
+ * };
+ * props: {
+ *  [key]: any;
+ * }
+ * }} HTMLLayoutData
+ *
  * @param {RoutesConfig} routesConfig
+ * @param {data=HTMLLayoutData} htmlLayoutData
  * @returns {ResolvedRoutesConfig}
  */
-export function constructRoutes(routesConfig) {
+export function constructRoutes(routesConfig, htmlLayoutData) {
   if (routesConfig && routesConfig.nodeName) {
-    routesConfig = domToRoutesConfig(routesConfig);
+    routesConfig = domToRoutesConfig(routesConfig, htmlLayoutData);
+  } else if (htmlLayoutData) {
+    throw Error(
+      `constructRoutes should be called either with an HTMLElement and layoutData, or a single json object.`
+    );
   }
 
   validateAndSanitize(routesConfig);
@@ -71,9 +85,10 @@ export function constructRoutes(routesConfig) {
  * Converts a domElement to a json object routes config
  *
  * @param {HTMLElement} domElement
+ * @param {HTMLLayoutData} htmlLayoutData
  * @returns {InputRoutesConfigObject}
  */
-function domToRoutesConfig(domElement) {
+function domToRoutesConfig(domElement, htmlLayoutData = {}) {
   if (domElement.nodeName.toLowerCase() !== "single-spa-router") {
     throw Error(
       `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router>. Received ${domElement.nodeName}`
@@ -94,7 +109,7 @@ function domToRoutesConfig(domElement) {
 
   for (let i = 0; i < domElement.childNodes.length; i++) {
     result.routes.push(
-      ...elementToJson(domElement.childNodes[i], domElement.parentNode)
+      ...elementToJson(domElement.childNodes[i], htmlLayoutData)
     );
   }
 
@@ -122,9 +137,10 @@ function hasAttribute(element, attrName) {
 
 /**
  * @param {HTMLElement} element
+ * @param {HTMLLayoutData} htmlLayoutData
  * @returns {Array<Route>}
  */
-function elementToJson(element) {
+function elementToJson(element, htmlLayoutData) {
   if (element.nodeName.toLowerCase() === "application") {
     if (element.childNodes.length > 0) {
       throw Error(
@@ -135,7 +151,20 @@ function elementToJson(element) {
       type: "application",
       name: getAttribute(element, "name"),
     };
-    setProps(element, application, ["name"]);
+    const loaderKey = getAttribute(element, "loader");
+    if (loaderKey) {
+      if (
+        htmlLayoutData.loaders &&
+        htmlLayoutData.loaders.hasOwnProperty(loaderKey)
+      ) {
+        application.loader = htmlLayoutData.loaders[loaderKey];
+      } else {
+        throw Error(
+          `Application loader '${loaderKey}' was not defined in the htmlLayoutData`
+        );
+      }
+    }
+    setProps(element, application, ["name", "loader"], htmlLayoutData);
     return [application];
   } else if (element.nodeName.toLowerCase() === "route") {
     const route = {
@@ -149,9 +178,11 @@ function elementToJson(element) {
     if (hasAttribute(element, "default")) {
       route.default = true;
     }
-    setProps(element, route, ["path", "default"]);
+    setProps(element, route, ["path", "default"], htmlLayoutData);
     for (let i = 0; i < element.childNodes.length; i++) {
-      route.routes.push(...elementToJson(element.childNodes[i]));
+      route.routes.push(
+        ...elementToJson(element.childNodes[i], htmlLayoutData)
+      );
     }
     return [route];
   } else if (typeof Node !== "undefined" && element instanceof Node) {
@@ -164,7 +195,9 @@ function elementToJson(element) {
       if (element.childNodes && element.childNodes.length > 0) {
         element.routes = [];
         for (let i = 0; i < element.childNodes.length; i++) {
-          element.routes.push(...elementToJson(element.childNodes[i]));
+          element.routes.push(
+            ...elementToJson(element.childNodes[i], htmlLayoutData)
+          );
         }
       }
       return [element];
@@ -175,7 +208,9 @@ function elementToJson(element) {
       routes: [],
     };
     for (let i = 0; i < element.childNodes.length; i++) {
-      result.routes.push(...elementToJson(element.childNodes[i]));
+      result.routes.push(
+        ...elementToJson(element.childNodes[i], htmlLayoutData)
+      );
     }
     return [result];
   } else {
@@ -187,8 +222,9 @@ function elementToJson(element) {
  * @param {HTMLElement} element
  * @param {Route} route
  * @param {string[]} ignoredAttributes
+ * @param {HTMLLayoutData} htmlLayoutData
  */
-function setProps(element, route, ignoredAttributes) {
+function setProps(element, route, ignoredAttributes, htmlLayoutData) {
   const attributes = element.attributes || entries(element.attrs);
   for (let i = 0; i < attributes.length; i++) {
     const { name, value } = attributes[i];
@@ -198,7 +234,17 @@ function setProps(element, route, ignoredAttributes) {
       if (!route.props) {
         route.props = {};
       }
-      route.props[name] = value;
+      const propName = value.trim() !== "" ? value : name;
+      if (
+        htmlLayoutData.props &&
+        htmlLayoutData.props.hasOwnProperty(propName)
+      ) {
+        route.props[name] = htmlLayoutData.props[propName];
+      } else {
+        throw Error(
+          `Prop '${name}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`
+        );
+      }
     }
   }
 }
