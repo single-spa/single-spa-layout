@@ -28,7 +28,6 @@ describe("basic html example", () => {
       throw err;
     });
     applications.forEach(singleSpa.registerApplication);
-    console.log("starting");
     singleSpa.start();
 
     await singleSpa.triggerAppChange();
