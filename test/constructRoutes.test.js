@@ -629,4 +629,76 @@ describe("constructRoutes", () => {
       });
     });
   });
+
+  describe("Loaders defined in HTML", () => {
+    it(`can parse and apply loaders from HTML files`, () => {
+      const { document, routerElement } = parseFixture("loaders.html");
+      const data = {
+        loaders: {
+          headerLoader: {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          },
+          mainContentLoader: `<img src="loading.gif">`,
+        },
+      };
+      const routes = constructRoutes(routerElement, data);
+
+      expect(routes.routes[0].loader).toBe(data.loaders.headerLoader);
+      expect(routes.routes[0].props).not.toBeDefined();
+      expect(routes.routes[1].routes[0].routes[0].loader).toBe(
+        data.loaders.mainContentLoader
+      );
+      expect(routes.routes[1].routes[0].routes[0].props).not.toBeDefined();
+    });
+  });
+
+  describe("props defined in HTML", () => {
+    it(`can assign valid props`, () => {
+      const { document, routerElement } = parseFixture("props.html");
+      const data = {
+        props: {
+          portalMode: "client",
+          prop1: "value1",
+          prop2: "value2",
+          prop3: "value3",
+        },
+      };
+      const routes = constructRoutes(routerElement, data);
+      expect(routes.routes[0].props).toEqual({
+        mode: data.props.portalMode,
+        prop1: data.props.prop1,
+      });
+      expect(routes.routes[1].routes[0].routes[0].props).toEqual({
+        mode: data.props.portalMode,
+        prop2: data.props.prop2,
+      });
+      expect(routes.routes[1].routes[0].props).toEqual({
+        prop3: "value3",
+      });
+    });
+
+    it(`throws with invalid props`, () => {
+      const { document, routerElement } = parseFixture("props.html");
+      expect(() => {
+        constructRoutes(routerElement);
+      }).toThrowError(/Prop '.+' was not defined/);
+    });
+
+    it(`throws when defining props for non-HTML routes`, () => {
+      const data = {
+        props: {
+          portalMode: "client",
+          prop1: "value1",
+          prop2: "value2",
+        },
+      };
+      expect(() => {
+        constructRoutes({ routes: [] }, data);
+      }).toThrowError(
+        /constructRoutes should be called either with an HTMLElement and layoutData, or a single json object./
+      );
+    });
+  });
 });

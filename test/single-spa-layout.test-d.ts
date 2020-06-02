@@ -30,6 +30,21 @@ const loaderParcelConfig = {
   async update() {},
 };
 
+constructRoutes(
+  {
+    routes: [],
+  },
+  {
+    loaders: {
+      headerLoader: `<img src="loading.gif"`,
+      mainContentLoader: loaderParcelConfig,
+    },
+    props: {
+      prop1: "val1",
+    },
+  }
+);
+
 const routes = constructRoutes({
   routes: [
     {
