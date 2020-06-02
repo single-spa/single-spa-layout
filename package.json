@@ -22,7 +22,8 @@
     "test": "concurrently -n w: 'yarn:test:*'",
     "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only",
     "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only",
-    "test:types": "tsd"
+    "test:types": "tsd",
+    "test:e2e": "cypress run --browser firefox"
   },
   "tsd": {
     "directory": "test"
@@ -62,6 +63,7 @@
     "babel-jest": "^26.0.1",
     "concurrently": "^5.2.0",
     "cross-env": "^7.0.2",
+    "cypress": "^4.7.0",
     "eslint": "^7.1.0",
     "eslint-config-important-stuff": "^1.1.0",
     "husky": "^4.2.5",

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basic HTML</title>
+    <script type="systemjs-importmap">
+      {
+        "imports": {
+          "single-spa": "https://cdn.jsdelivr.net/npm/single-spa/lib/system/single-spa.min.js",
+          "single-spa-layout": "/dist/system/single-spa-layout.min.js"
+        }
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/systemjs/dist/system.js"></script>
+  </head>
+  <body>
+    <single-spa-router>
+      <application name="header"></application>
+      <div class="main-content">
+        <route path="app1">
+          <application name="app1"></application>
+        </route>
+        <route path="app2">
+          <application name="app2"></application>
+        </route>
+      </div>
+      <application name="footer"></application>
+    </single-spa-router>
+  </body>
+</html>
