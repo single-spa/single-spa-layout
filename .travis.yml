@@ -1,7 +1,11 @@
 language: node_js
 node_js:
   - "node"
+addons:
+  firefox: latest
+  chrome: stable
 script:
   - yarn build
   - yarn lint
+  - yarn cypress install
   - yarn test
