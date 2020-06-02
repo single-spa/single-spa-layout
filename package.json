@@ -20,8 +20,8 @@
     "lint": "eslint src",
     "format": "prettier --write './**/*'",
     "test": "concurrently -n w: 'yarn:test:*'",
-    "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only",
-    "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only",
+    "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only --testPathIgnorePatterns=cypress",
+    "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only --testPathIgnorePatterns=cypress",
     "test:types": "tsd",
     "test:e2e": "cypress run --browser firefox"
   },
