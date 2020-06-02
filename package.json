@@ -23,7 +23,8 @@
     "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only --testPathIgnorePatterns=cypress",
     "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only --testPathIgnorePatterns=cypress",
     "test:types": "tsd",
-    "test:e2e": "cypress run --browser firefox"
+    "test:e2e:firefox": "cypress run --browser firefox",
+    "test:e2e:chrome": "cypress run --browser chrome"
   },
   "tsd": {
     "directory": "test"
