@@ -1,6 +1,11 @@
 language: node_js
 node_js:
   - "node"
+cache:
+  # cache both npm modules and Cypress binary
+  directories:
+    - ~/.yarn
+    - ~/.cache
 addons:
   firefox: latest
 script:
