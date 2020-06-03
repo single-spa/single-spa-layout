@@ -9,3 +9,5 @@ script:
   - yarn lint
   - yarn cypress install
   - yarn test
+  - yarn test-e2e:firefox
+  - yarn test-e2e:chrome

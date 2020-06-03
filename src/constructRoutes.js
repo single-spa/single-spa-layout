@@ -96,6 +96,10 @@ function domToRoutesConfig(domElement, htmlLayoutData = {}) {
     );
   }
 
+  if (inBrowser && domElement.isConnected) {
+    domElement.parentNode.removeChild(domElement);
+  }
+
   const result = {
     routes: [],
   };

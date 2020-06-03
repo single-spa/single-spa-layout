@@ -30,6 +30,9 @@ describe("basic html example", () => {
     applications.forEach(singleSpa.registerApplication);
     singleSpa.start();
 
+    expect(contentWindow.document.querySelector("single-spa-router")).to.be
+      .null;
+
     await singleSpa.triggerAppChange();
     expect(
       contentWindow.document.getElementById(applicationElementId("header"))
