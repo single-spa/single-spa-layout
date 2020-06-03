@@ -24,7 +24,8 @@
     "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only --testPathIgnorePatterns=cypress",
     "test:types": "tsd",
     "test:e2e:firefox": "cypress run --browser firefox",
-    "test:e2e:chrome": "cypress run --browser chrome"
+    "// TODO": "Change this to --browser chrome, once we figure out how to work around https://github.com/cypress-io/cypress/issues/6334",
+    "test:e2e:chrome": "cypress run --browser electron"
   },
   "tsd": {
     "directory": "test"
