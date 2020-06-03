@@ -27,6 +27,9 @@
     "test-e2e:firefox": "cypress run --browser firefox",
     "test-e2e:chrome": "cypress run --browser chrome"
   },
+  "files": [
+    "dist"
+  ],
   "tsd": {
     "directory": "test"
   },
