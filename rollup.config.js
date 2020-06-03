@@ -23,16 +23,17 @@ function createConfig(format) {
     },
     external: ["single-spa"],
     plugins: [
-      terser({
-        compress: {
-          passes: 2,
-        },
-        output: {
-          comments(node, comment) {
-            return comment.value.trim().startsWith("single-spa-layout@");
+      process.env.DEVELOPMENT !== "true" &&
+        terser({
+          compress: {
+            passes: 2,
           },
-        },
-      }),
+          output: {
+            comments(node, comment) {
+              return comment.value.trim().startsWith("single-spa-layout@");
+            },
+          },
+        }),
     ],
   };
 }

@@ -17,6 +17,7 @@
     "build": "rimraf dist && concurrently -n w: 'yarn:build:*'",
     "build:lib": "rollup -c",
     "build:types": "tsc",
+    "watch-build": "rollup -cw --environment DEVELOPMENT",
     "check-format": "prettier --check './**/*'",
     "lint": "eslint src",
     "format": "prettier --write './**/*'",
