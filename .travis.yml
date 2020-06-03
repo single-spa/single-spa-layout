@@ -7,7 +7,7 @@ addons:
 script:
   - yarn build
   - yarn lint
-  - yarn cypress install
   - yarn test
+  - yarn cypress install
   - yarn test-e2e:firefox
   - yarn test-e2e:chrome

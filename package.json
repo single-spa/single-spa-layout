@@ -13,6 +13,7 @@
   },
   "types": "dist/types/single-spa-layout.d.ts",
   "scripts": {
+    "prepublishOnly": "yarn build",
     "build": "rimraf dist && concurrently -n w: 'yarn:build:*'",
     "build:lib": "rollup -c",
     "build:types": "tsc",
