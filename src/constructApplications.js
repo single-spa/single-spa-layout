@@ -1,6 +1,7 @@
 import { applicationElementId } from "./constructLayoutEngine";
 import { mountRootParcel } from "single-spa";
 import { inBrowser } from "./environment-helpers";
+import { find } from "./utils/find";
 
 /**
  * @typedef {{
@@ -46,7 +47,7 @@ export function constructApplications({ routes, loadApp }) {
     return {
       name,
       customProps: (_name, location) => {
-        const appRoute = appRoutes.find((appRoute) =>
+        const appRoute = find(appRoutes, (appRoute) =>
           appRoute.activeWhen(location)
         );
         return appRoute ? appRoute.props : {};
@@ -55,7 +56,7 @@ export function constructApplications({ routes, loadApp }) {
       app: () => {
         let appRoute;
         if (inBrowser) {
-          appRoute = appRoutes.find((appRoute) =>
+          appRoute = find(appRoutes, (appRoute) =>
             appRoute.activeWhen(window.location)
           );
         }

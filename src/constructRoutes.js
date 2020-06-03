@@ -10,6 +10,7 @@ import {
 import { inBrowser } from "./environment-helpers.js";
 import { pathToActiveWhen } from "single-spa";
 import { resolvePath } from "./matchRoute.js";
+import { find } from "./utils/find";
 
 /**
  * @typedef {InputRoutesConfigObject | HTMLElement | import('parse5').DefaultTreeDocument} RoutesConfig
@@ -127,7 +128,7 @@ function getAttribute(element, attrName) {
     return element.getAttribute(attrName);
   } else {
     // NodeJS with parse5
-    const attr = element.attrs.find((attr) => attr.name === attrName);
+    const attr = find(element.attrs, (attr) => attr.name === attrName);
     return attr ? attr.value : null;
   }
 }
@@ -233,7 +234,7 @@ function setProps(element, route, ignoredAttributes, htmlLayoutData) {
   const attributes = element.attributes || element.attrs;
   for (let i = 0; i < attributes.length; i++) {
     const { name, value } = attributes[i];
-    if (ignoredAttributes.includes(name)) {
+    if (ignoredAttributes.indexOf(name) >= 0) {
       continue;
     } else {
       if (!route.props) {
