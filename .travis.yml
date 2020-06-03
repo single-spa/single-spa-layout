@@ -8,9 +8,6 @@ script:
   - yarn build
   - yarn lint
   - yarn cypress install
-  # Fix for https://travis-ci.com/github/single-spa/single-spa-layout/builds/169280921
-  # https://docs.cypress.io/guides/guides/continuous-integration.html#Xvfb
-  - Xvfb :99 &
-  - export DISPLAY=:99
   - yarn test
-  - pkill Xvfb
+  - yarn test-e2e:firefox
+  - yarn test-e2e:chrome
