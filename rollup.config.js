@@ -17,7 +17,11 @@ function createConfig(format) {
       file: `dist/${format}/single-spa-layout.min.js`,
       name: format === "umd" ? "singleSpaLayout" : null,
       banner: `/* single-spa-layout@${packageJson.version} - ${format} */`,
+      globals: {
+        "single-spa": "singleSpa",
+      },
     },
+    external: ["single-spa"],
     plugins: [
       terser({
         compress: {
