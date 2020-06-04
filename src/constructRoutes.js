@@ -91,9 +91,18 @@ export function constructRoutes(routesConfig, htmlLayoutData) {
  * @returns {InputRoutesConfigObject}
  */
 function domToRoutesConfig(domElement, htmlLayoutData = {}) {
+  // Support passing in a template element, which are nice because their content is
+  // not rendered by browsers
+  if (domElement.nodeName.toLowerCase() === "template") {
+    // IE11 doesn't support the content property on templates
+    domElement = (domElement.content || domElement).querySelector(
+      "single-spa-router"
+    );
+  }
+
   if (domElement.nodeName.toLowerCase() !== "single-spa-router") {
     throw Error(
-      `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router>. Received ${domElement.nodeName}`
+      `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router> or a <template> containing the router. Received ${domElement.nodeName}`
     );
   }
 
