@@ -18,7 +18,7 @@ describe(`constructLayoutEngine browser`, () => {
     }
   });
 
-  it(`starts out activated`, () => {
+  it(`starts out activated by default`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
       containerEl: "body",
@@ -32,6 +32,40 @@ describe(`constructLayoutEngine browser`, () => {
     });
 
     expect(layoutEngine.isActive()).toBe(true);
+  });
+
+  it(`starts out activated if forced active`, () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      containerEl: "body",
+      base: "/",
+      mode: "history",
+      routes: [{ type: "application", name: "@org-name/header" }],
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+      active: true,
+    });
+
+    expect(layoutEngine.isActive()).toBe(true);
+  });
+
+  it(`can start off deactivated if specified in options object`, () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      containerEl: "body",
+      base: "/",
+      mode: "history",
+      routes: [{ type: "application", name: "@org-name/header" }],
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+      active: false,
+    });
+
+    expect(layoutEngine.isActive()).toBe(false);
   });
 
   it(`can handle any calls to activate() / deactivate()`, () => {

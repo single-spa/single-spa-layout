@@ -19,8 +19,9 @@ import { inBrowser } from "./environment-helpers";
 export function constructLayoutEngine({
   routes: resolvedRoutes,
   applications,
+  active = true,
 }) {
-  let active = false;
+  let isActive = false;
   let pendingRemovals = [];
 
   const baseWithoutSlash = resolvedRoutes.base.slice(
@@ -29,12 +30,12 @@ export function constructLayoutEngine({
   );
 
   const layoutEngine = {
-    isActive: () => active,
+    isActive: () => isActive,
     activate() {
-      if (active) {
+      if (isActive) {
         return;
       } else {
-        active = true;
+        isActive = true;
       }
 
       if (inBrowser) {
@@ -49,10 +50,10 @@ export function constructLayoutEngine({
       }
     },
     deactivate() {
-      if (!active) {
+      if (!isActive) {
         return;
       } else {
-        active = false;
+        isActive = false;
       }
 
       if (inBrowser) {
@@ -66,7 +67,9 @@ export function constructLayoutEngine({
     },
   };
 
-  layoutEngine.activate();
+  if (active) {
+    layoutEngine.activate();
+  }
 
   return layoutEngine;
 
