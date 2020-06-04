@@ -44,7 +44,7 @@ export function constructLayoutEngine({
           arrangeDomElements
         );
 
-        window.addEventListener("single-spa:app-change", handleAppChange);
+        window.addEventListener("single-spa:routing-event", handleRoutingEvent);
 
         arrangeDomElements();
       }
@@ -62,7 +62,10 @@ export function constructLayoutEngine({
           arrangeDomElements
         );
 
-        window.removeEventListener("single-spa:app-change", handleAppChange);
+        window.removeEventListener(
+          "single-spa:routing-event",
+          handleRoutingEvent
+        );
       }
     },
   };
@@ -95,7 +98,7 @@ export function constructLayoutEngine({
     });
   }
 
-  function handleAppChange({ detail: { appsByNewStatus } }) {
+  function handleRoutingEvent({ detail: { appsByNewStatus } }) {
     pendingRemovals.forEach((remove) => remove());
     pendingRemovals = [];
 

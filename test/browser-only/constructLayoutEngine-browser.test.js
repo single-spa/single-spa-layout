@@ -142,7 +142,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["@org-name/app1"],
@@ -182,7 +182,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: [],
@@ -251,7 +251,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: [],
@@ -294,7 +294,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: [],
@@ -379,7 +379,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["@org/settings"],
@@ -398,7 +398,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: [],
@@ -416,7 +416,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["@org/main-sidenav", "@org/app1"],
@@ -434,7 +434,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: [],
@@ -452,7 +452,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["@org/main-sidenav", "@org/app2"],
@@ -470,7 +470,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["@org/app1"],
@@ -494,7 +494,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["header"],
@@ -513,7 +513,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["app1"],
@@ -531,7 +531,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: [],
@@ -561,7 +561,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["settings-not-found"],
@@ -579,7 +579,7 @@ describe(`constructLayoutEngine browser`, () => {
       new CustomEvent("single-spa:before-mount-routing-event")
     );
     window.dispatchEvent(
-      new CustomEvent("single-spa:app-change", {
+      new CustomEvent("single-spa:routing-event", {
         detail: {
           appsByNewStatus: {
             MOUNTED: ["app1"],
