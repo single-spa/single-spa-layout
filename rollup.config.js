@@ -1,4 +1,5 @@
 import { terser } from "rollup-plugin-terser";
+import babel from "@rollup/plugin-babel";
 import fs from "fs";
 
 const packageJson = JSON.parse(fs.readFileSync("./package.json"));
@@ -23,6 +24,7 @@ function createConfig(format) {
     },
     external: ["single-spa"],
     plugins: [
+      babel({ babelHelpers: "bundled" }),
       process.env.DEVELOPMENT !== "true" &&
         terser({
           compress: {
