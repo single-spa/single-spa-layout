@@ -102,7 +102,7 @@ function domToRoutesConfig(domElement, htmlLayoutData = {}) {
 
   if (domElement.nodeName.toLowerCase() !== "single-spa-router") {
     throw Error(
-      `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router>. Received ${domElement.nodeName}`
+      `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router> or a <template> containing the router. Received ${domElement.nodeName}`
     );
   }
 
