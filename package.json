@@ -29,7 +29,8 @@
     "test-e2e:chrome": "cypress run --browser chrome"
   },
   "files": [
-    "dist"
+    "dist",
+    "dist/types/single-spa-layout.d.ts"
   ],
   "tsd": {
     "directory": "test"
