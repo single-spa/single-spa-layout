@@ -659,16 +659,19 @@ describe("constructRoutes", () => {
       const { document, routerElement } = parseFixture("props.html");
       const data = {
         props: {
+          mode: "client",
           portalMode: "client",
           prop1: "value1",
           prop2: "value2",
           prop3: "value3",
+          caseSensitiveProp: "value4",
         },
       };
       const routes = constructRoutes(routerElement, data);
       expect(routes.routes[0].props).toEqual({
-        mode: data.props.portalMode,
+        portalMode: data.props.portalMode,
         prop1: data.props.prop1,
+        caseSensitiveProp: "value4",
       });
       expect(routes.routes[1].routes[0].routes[0].props).toEqual({
         mode: data.props.portalMode,
