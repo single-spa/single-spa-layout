@@ -48,6 +48,7 @@ import { find } from "./utils/find";
  * type: string;
  * path: string;
  * routes: Array<Route>;
+ * default?: boolean;
  * }} UrlRoute
  *
  * @typedef {{
@@ -179,7 +180,7 @@ function elementToJson(element, htmlLayoutData) {
         );
       }
     }
-    setProps(element, application, ["name", "loader"], htmlLayoutData);
+    setProps(element, application, htmlLayoutData);
     return [application];
   } else if (element.nodeName.toLowerCase() === "route") {
     const route = {
@@ -193,7 +194,7 @@ function elementToJson(element, htmlLayoutData) {
     if (hasAttribute(element, "default")) {
       route.default = true;
     }
-    setProps(element, route, ["path", "default"], htmlLayoutData);
+    setProps(element, route, htmlLayoutData);
     for (let i = 0; i < element.childNodes.length; i++) {
       route.routes.push(
         ...elementToJson(element.childNodes[i], htmlLayoutData)
@@ -236,30 +237,28 @@ function elementToJson(element, htmlLayoutData) {
 /**
  * @param {HTMLElement} element
  * @param {Route} route
- * @param {string[]} ignoredAttributes
  * @param {HTMLLayoutData} htmlLayoutData
  */
-function setProps(element, route, ignoredAttributes, htmlLayoutData) {
-  const attributes = element.attributes || element.attrs;
-  for (let i = 0; i < attributes.length; i++) {
-    const { name, value } = attributes[i];
-    if (ignoredAttributes.indexOf(name) >= 0) {
+function setProps(element, route, htmlLayoutData) {
+  const propNames = (getAttribute(element, "props") || "").split(",");
+
+  for (let i = 0; i < propNames.length; i++) {
+    const propName = propNames[i].trim();
+
+    if (propName.length === 0) {
       continue;
+    }
+
+    if (!route.props) {
+      route.props = {};
+    }
+
+    if (htmlLayoutData.props && htmlLayoutData.props.hasOwnProperty(propName)) {
+      route.props[propName] = htmlLayoutData.props[propName];
     } else {
-      if (!route.props) {
-        route.props = {};
-      }
-      const propName = value.trim() !== "" ? value : name;
-      if (
-        htmlLayoutData.props &&
-        htmlLayoutData.props.hasOwnProperty(propName)
-      ) {
-        route.props[name] = htmlLayoutData.props[propName];
-      } else {
-        throw Error(
-          `Prop '${name}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`
-        );
-      }
+      throw Error(
+        `Prop '${propName}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`
+      );
     }
   }
 }
