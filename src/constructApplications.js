@@ -143,17 +143,18 @@ function placeLoader(appName, appRoute, loadingPromise) {
 
     applicationEl = applicationElement;
 
-    return Promise.all([parcel.mountPromise, loadingPromise]).then((app) =>
-      parcel.unmount().then(() => {
-        if (hidElement) {
-          applicationElement.style.removeProperty("display");
-          if (applicationElement.getAttribute("style") === "") {
-            applicationElement.removeAttribute("style");
+    return Promise.all([parcel.mountPromise, loadingPromise]).then(
+      ([mountResult, app]) =>
+        parcel.unmount().then(() => {
+          if (hidElement) {
+            applicationElement.style.removeProperty("display");
+            if (applicationElement.getAttribute("style") === "") {
+              applicationElement.removeAttribute("style");
+            }
           }
-        }
 
-        return app;
-      })
+          return app;
+        })
     );
   });
 }
