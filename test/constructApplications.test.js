@@ -280,9 +280,17 @@ describe(`constructApplications`, () => {
       ],
     });
 
+    const app = {
+      async bootstrap() {},
+      async mount() {},
+      async unmount() {},
+    };
+
     const loadApp = (name) =>
       new Promise((resolve) => {
-        setTimeout(resolve, 5);
+        setTimeout(() => {
+          resolve(app);
+        }, 5);
       });
 
     const applications = constructApplications({ routes, loadApp });
@@ -312,7 +320,9 @@ describe(`constructApplications`, () => {
       `);
     }
 
-    await loadPromise;
+    const loadedApp = await loadPromise;
+
+    expect(loadedApp).toBe(app);
 
     if (inBrowser) {
       appEl = document.getElementById(`single-spa-application:app1`);
