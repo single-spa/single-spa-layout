@@ -119,7 +119,7 @@ function placeLoader(appName, appRoute, loadingPromise) {
     // We need the application container element to place the loader into
     const htmlId = applicationElementId(appName);
     let applicationElement = document.getElementById(htmlId);
-    let hidElement;
+    let makeElementVisible;
 
     if (!applicationElement) {
       applicationElement = document.createElement("div");
@@ -127,9 +127,24 @@ function placeLoader(appName, appRoute, loadingPromise) {
       // Wait for layout engine to place this dom element in correct location
       // before it's visible
       applicationElement.style.display = "none";
-      hidElement = true;
 
       document.body.appendChild(applicationElement);
+
+      makeElementVisible = () => {
+        applicationElement.style.removeProperty("display");
+        if (applicationElement.getAttribute("style") === "") {
+          applicationElement.removeAttribute("style");
+        }
+
+        window.removeEventListener(
+          "single-spa:before-mount-routing-event",
+          makeElementVisible
+        );
+      };
+      window.addEventListener(
+        "single-spa:before-mount-routing-event",
+        makeElementVisible
+      );
     }
 
     const parcelConfig =
@@ -146,13 +161,9 @@ function placeLoader(appName, appRoute, loadingPromise) {
     return Promise.all([parcel.mountPromise, loadingPromise]).then(
       ([mountResult, app]) =>
         parcel.unmount().then(() => {
-          if (hidElement) {
-            applicationElement.style.removeProperty("display");
-            if (applicationElement.getAttribute("style") === "") {
-              applicationElement.removeAttribute("style");
-            }
+          if (makeElementVisible) {
+            makeElementVisible();
           }
-
           return app;
         })
     );
@@ -160,23 +171,15 @@ function placeLoader(appName, appRoute, loadingPromise) {
 }
 
 function htmlToParcelConfig(str) {
-  const doc = new DOMParser().parseFromString(str, "text/html");
-  let nodes = doc.body.childNodes;
-  let appendedNodes = [];
-
   return {
     bootstrap: () => Promise.resolve(),
     mount: (props) =>
       Promise.resolve().then(() => {
-        nodes.forEach((node) => {
-          appendedNodes.push(props.domElement.appendChild(node.cloneNode()));
-        });
+        props.domElement.innerHTML = str;
       }),
     unmount: (props) =>
       Promise.resolve().then(() => {
-        appendedNodes.forEach((node) => {
-          props.domElement.removeChild(node);
-        });
+        props.domElement.innerHTML = "";
       }),
   };
 }
