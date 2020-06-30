@@ -13,9 +13,7 @@ import { resolvePath } from "./matchRoute.js";
 import { find } from "./utils/find";
 
 /**
- * @typedef {Element | null} ElementOrNull
- *
- * @typedef {InputRoutesConfigObject | ElementOrNull | import('parse5').DefaultTreeDocument} RoutesConfig
+ * @typedef {InputRoutesConfigObject | Element | import('parse5').DefaultTreeDocument} RoutesConfig
  *
  * @typedef {{
  * mode?: string;
@@ -36,7 +34,7 @@ import { find } from "./utils/find";
  *
  * @typedef {ResolvedUrlRoute | Application | Node} ResolvedRouteChild
  *
- * @typedef {string | ElementOrNull | import('parse5').Element} ContainerEl
+ * @typedef {string | Element | import('parse5').Element} ContainerEl
  *
  * @typedef {{
  * type: string;
