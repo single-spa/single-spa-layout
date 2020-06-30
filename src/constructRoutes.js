@@ -16,6 +16,13 @@ import { find } from "./utils/find";
  * @typedef {InputRoutesConfigObject | Element | import('parse5').DefaultTreeDocument} RoutesConfig
  *
  * @typedef {{
+ *  name: string;
+ *  type: "route" | "application";
+ *  routes: Array<Route>;
+ *  path?: string;
+ * } | AppRoute } Route
+ *
+ * @typedef {{
  * mode?: string;
  * base?: string;
  * containerEl?: ContainerEl;
