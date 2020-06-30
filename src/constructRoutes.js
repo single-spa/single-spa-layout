@@ -67,10 +67,10 @@ import { find } from "./utils/find";
  *
  * @typedef {{
  * loaders: {
- *   [key]: any;
+ *   [key: string]: any;
  * };
  * props: {
- *  [key]: any;
+ *   [key: string]: any;
  * }
  * }} HTMLLayoutData
  *
