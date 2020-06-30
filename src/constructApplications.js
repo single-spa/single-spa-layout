@@ -75,7 +75,7 @@ export function constructApplications({ routes, loadApp }) {
  * @param {ApplicationMap} applicationMap
  * @param {import('single-spa').ActivityFn} activeWhen
  * @param {object} props
- * @param {Array<import('./constructRoutes').Route>} routes
+ * @param {Array<import('./constructRoutes').RouteChild>} routes
  * @returns void
  */
 function recurseRoutes(applicationMap, activeWhen, props, routes) {

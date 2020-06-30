@@ -119,7 +119,7 @@ export function constructLayoutEngine({
 /**
  * @typedef {{
  * location: URL,
- * routes: Array<import('./constructRoutes').Route>,
+ * routes: Array<import('./constructRoutes').RouteChild>,
  * parentContainer: HTMLElement,
  * previousSibling?: HTMLElement,
  * shouldMount: boolean;
