@@ -46,7 +46,9 @@ const loaderParcelConfig = {
   async update() {},
 };
 
-constructRoutes(window.document.querySelector("#single-spa-layout"));
+constructRoutes(
+  window.document.querySelector("#single-spa-layout") as HTMLTemplateElement
+);
 
 constructRoutes(
   {
