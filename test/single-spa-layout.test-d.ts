@@ -15,6 +15,22 @@ import {
 } from "../src/single-spa-layout";
 import { parse, Element, DefaultTreeDocument } from "parse5";
 import { ResolvedUrlRoute } from "../src/constructRoutes";
+import { JSDOM } from "jsdom";
+
+const { window } = new JSDOM(`
+<!DOCTYPE html>
+<head>
+  <template id="single-spa-layout">
+    <single-spa-router>
+      <main>
+        <route default>
+          <application name="@single-spa/welcome"></application>
+        </route>
+      </main>
+    </single-spa-router>
+  </template>
+</head>
+`);
 
 // test constructRoutes
 expectError(constructRoutes());
@@ -29,6 +45,10 @@ const loaderParcelConfig = {
   async unmount() {},
   async update() {},
 };
+
+constructRoutes(
+  window.document.querySelector("#single-spa-layout") as HTMLTemplateElement
+);
 
 constructRoutes(
   {
@@ -101,6 +121,8 @@ application
   });
 
 // test constructLayoutEngine
+expectError(constructLayoutEngine({ routes, applications, active: "NOPE" }));
+
 const layoutEngine = constructLayoutEngine({ routes, applications });
 
 expectType<boolean>(layoutEngine.isActive());

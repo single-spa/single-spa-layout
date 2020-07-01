@@ -11,6 +11,7 @@ import { inBrowser } from "./environment-helpers";
  * @typedef {{
  * routes: import('./constructRoutes').ResolvedRoutesConfig;
  * applications: Array<import('single-spa').RegisterApplicationConfig & import('./constructApplications').WithLoadFunction>;
+ * active?: boolean;
  * }} LayoutEngineOptions
  *
  * @param {LayoutEngineOptions} layoutEngineOptions
@@ -118,7 +119,7 @@ export function constructLayoutEngine({
 /**
  * @typedef {{
  * location: URL,
- * routes: Array<import('./constructRoutes').Route>,
+ * routes: Array<import('./constructRoutes').RouteChild>,
  * parentContainer: HTMLElement,
  * previousSibling?: HTMLElement,
  * shouldMount: boolean;
