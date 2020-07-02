@@ -123,6 +123,10 @@ function domToRoutesConfig(domElement, htmlLayoutData = {}) {
     result.base = getAttribute(domElement, "base");
   }
 
+  if (getAttribute(domElement, "containerEl")) {
+    result.containerEl = getAttribute(domElement, "containerEl");
+  }
+
   for (let i = 0; i < domElement.childNodes.length; i++) {
     result.routes.push(
       ...elementToJson(domElement.childNodes[i], htmlLayoutData)
@@ -138,7 +142,11 @@ function getAttribute(element, attrName) {
     return element.getAttribute(attrName);
   } else {
     // NodeJS with parse5
-    const attr = find(element.attrs, (attr) => attr.name === attrName);
+    // watch out, parse5 converts attribute names to lowercase and not as is => https://github.com/inikulin/parse5/issues/116
+    const attr = find(
+      element.attrs,
+      (attr) => attr.name === attrName.toLowerCase()
+    );
     return attr ? attr.value : null;
   }
 }
