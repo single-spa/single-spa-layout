@@ -11,7 +11,7 @@
       ".": "./dist/umd/single-spa-layout.min.js"
     }
   },
-  "types": "dist/types/single-spa-layout.d.ts",
+  "types": "dist/types/single-spa-layout-main.d.ts",
   "scripts": {
     "prepublishOnly": "yarn build",
     "build": "rimraf dist && concurrently -n w: 'yarn:build:*'",
@@ -30,7 +30,7 @@
   },
   "files": [
     "dist",
-    "dist/types/single-spa-layout.d.ts"
+    "dist/types/single-spa-layout-main.d.ts"
   ],
   "tsd": {
     "directory": "test"
