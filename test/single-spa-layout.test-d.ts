@@ -5,6 +5,7 @@ import {
   Application,
   LifeCycles,
   AppProps,
+  RegisterApplicationConfig,
 } from "single-spa";
 import { expectError, expectType } from "tsd";
 import {
@@ -12,7 +13,8 @@ import {
   matchRoute,
   constructApplications,
   constructLayoutEngine,
-} from "../src/single-spa-layout";
+  WithLoadFunction,
+} from "../src/single-spa-layout-main";
 import { parse, Element, DefaultTreeDocument } from "parse5";
 import { ResolvedUrlRoute } from "../src/constructRoutes";
 import { JSDOM } from "jsdom";
@@ -105,7 +107,9 @@ expectType<Array<import("../src/constructRoutes").ResolvedRouteChild>>(
 );
 
 // test constructApplication
-const applications = constructApplications({
+const applications: Array<
+  RegisterApplicationConfig & WithLoadFunction
+> = constructApplications({
   routes,
   loadApp: (props) => {
     expectType<AppProps>(props);
