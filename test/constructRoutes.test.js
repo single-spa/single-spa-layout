@@ -704,4 +704,21 @@ describe("constructRoutes", () => {
       );
     });
   });
+
+  describe("router config defined in HTML", () => {
+    const { document, routerElement } = parseFixture("router-config.html");
+    const routes = constructRoutes(routerElement);
+
+    it(`assigns 'mode' when a valid value is passed as attribute`, () => {
+      expect(routes.mode).toBe("hash");
+    });
+
+    it(`assigns 'base' when a valid value is passed as attribute`, () => {
+      expect(routes.base).toBe("/custom/");
+    });
+
+    it(`assigns 'containerEl' when a valid value is passed as attribute`, () => {
+      expect(routes.containerEl).toBe("#spa-container");
+    });
+  });
 });
