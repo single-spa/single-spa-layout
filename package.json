@@ -2,6 +2,7 @@
   "name": "single-spa-layout",
   "version": "1.0.0-beta.6",
   "description": "Layout engine for single-spa applications",
+  "main": "dist/umd/single-spa-layout.min.js",
   "module": "dist/esm/single-spa-layout.min.js",
   "type": "module",
   "exports": {
@@ -18,7 +19,7 @@
       }
     }
   },
-  "types": "dist/types/single-spa-layout.d.ts",
+  "types": "dist/types/single-spa-layout-interface.d.ts",
   "scripts": {
     "prepublishOnly": "yarn build",
     "build": "rimraf dist && concurrently -n w: 'yarn:build:*'",

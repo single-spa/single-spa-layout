@@ -5,18 +5,15 @@ describe(`constructServerLayout`, () => {
     constructServerLayout({
       filePath: "./test/fixtures/dom-elements.html",
     });
-    // constructServerLayout({
-    //   filePath: './test/fixtures/medium.html'
-    // })
-    // constructServerLayout({
-    //   filePath: './test/fixtures/nested-default-route.html'
-    // })
-    // constructServerLayout({
-    //   filePath: './test/fixtures/props.html'
-    // })
-    // constructServerLayout({
-    //   filePath: './test/fixtures/router-config.html'
-    // })
+    constructServerLayout({
+      filePath: "./test/fixtures/medium.html",
+    });
+    constructServerLayout({
+      filePath: "./test/fixtures/nested-default-route.html",
+    });
+    constructServerLayout({
+      filePath: "./test/fixtures/props.html",
+    });
   });
 
   it(`returns a server layout`, () => {
