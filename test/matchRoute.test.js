@@ -1,4 +1,5 @@
-import { matchRoute, constructRoutes } from "../src/single-spa-layout.js";
+import { matchRoute } from "../src/isomorphic/matchRoute.js";
+import { constructRoutes } from "../src/isomorphic/constructRoutes.js";
 import { parseFixture } from "./html-utils.js";
 
 describe(`matchRoute`, () => {
@@ -218,56 +219,20 @@ describe(`matchRoute`, () => {
 
     it(`matches /settings/app1 route`, () => {
       const match = matchRoute(routesConfig, "/settings/app1");
-      expect(match.routes.length).toBe(2);
-      expect(match.routes[0]).toMatchObject({
-        type: "application",
-        name: "header",
-      });
-      expect(match.routes[1].routes[0]).toMatchObject({
-        type: "route",
-        path: "settings",
-        routes: [
-          {
-            type: "route",
-            path: "app1",
-            routes: [{ type: "application", name: "app1" }],
-          },
-        ],
-      });
-      expect(match.routes[1].routes[0].routes.length).toBe(1);
-      expect(match.routes[1].routes[1].routes).toMatchObject([]);
+      expectApplicationMatched(match, "header");
+      expectApplicationMatched(match, "app1");
     });
 
     it(`matches /settings route to not-found route`, () => {
       const match = matchRoute(routesConfig, "/settings");
-      expect(match.routes.length).toBe(2);
-      expect(match.routes[0]).toMatchObject({
-        type: "application",
-        name: "header",
-      });
-      expect(match.routes[1].routes[0].routes.length).toBe(1);
-      expect(match.routes[1].routes[0].routes[0]).toMatchObject({
-        type: "route",
-        default: true,
-        routes: [{ type: "application", name: "settings-not-found" }],
-      });
+      expectApplicationMatched(match, "header");
+      expectApplicationMatched(match, "settings-not-found");
     });
 
     it(`matches / route to not-found app`, () => {
       const match = matchRoute(routesConfig, "/");
-      expect(match.routes.length).toBe(2);
-      expect(match.routes[0]).toMatchObject({
-        type: "application",
-        name: "header",
-      });
-      expect(match.routes[1].routes.length).toBe(1);
-      expect(match.routes[1].routes[0].routes).toMatchObject([
-        {
-          type: "route",
-          default: true,
-          routes: [{ type: "application", name: "not-found" }],
-        },
-      ]);
+      expectApplicationMatched(match, "header");
+      expectApplicationMatched(match, "not-found");
     });
   });
 
@@ -346,3 +311,24 @@ describe(`matchRoute`, () => {
     });
   });
 });
+
+function expectApplicationMatched(match, name) {
+  const application = findApplication(match.routes, name);
+  if (!application) {
+    fail(
+      `Expected application '${name}' to be returned by matchRoute, but it was not`
+    );
+  }
+}
+
+function findApplication(routes, name) {
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i];
+
+    if (route.type === "application" && route.name === name) {
+      return route;
+    } else if (route.routes) {
+      return findApplication(route.routes, name);
+    }
+  }
+}

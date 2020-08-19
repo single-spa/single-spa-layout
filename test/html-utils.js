@@ -1,4 +1,4 @@
-import { inBrowser } from "../src/environment-helpers";
+import { inBrowser } from "../src/utils/environment-helpers";
 import parse5 from "parse5";
 import fs from "fs";
 import path from "path";

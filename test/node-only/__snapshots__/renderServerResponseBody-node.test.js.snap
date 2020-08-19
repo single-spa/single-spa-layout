@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renderServerResponseBody dom-elements.html fixture renders the app1 route correctly 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <div id="single-spa-application:header">
+    </div>
+    <div class="main-content">
+      <button>
+        Top level content
+      </button>
+      <div id="single-spa-application:app1">
+      </div>
+      Some raw text
+    </div>
+    <span>
+      <footer>
+        <a href="/about">
+          About
+        </a>
+      </footer>
+    </span>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+      <div id="single-spa-application:undefined">
+      </div>
+      <div class="main-content">
+        <button>
+          Top level content
+        </button>
+        <div id="single-spa-application:undefined">
+        </div>
+        Some raw text
+      </div>
+      <span>
+        <footer>
+          <a href="/about">
+            About
+          </a>
+        </footer>
+      </span>
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`renderServerResponseBody fragments.html fixture renders fragments correctly 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+    <script type="systemjs-importmap">
+      {
+                    "imports": {}
+                  }
+    </script>
+  </body>
+</html>
+`;

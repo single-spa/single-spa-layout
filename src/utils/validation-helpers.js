@@ -52,10 +52,12 @@ export function validateEnum(propertyName, actual, allowedValues) {
   }
 }
 
-export function validateString(propertyName, val) {
-  if (typeof val !== "string" || val.trim() === "") {
+export function validateString(propertyName, val, strict = true) {
+  if (typeof val !== "string" || (strict && val.trim() === "")) {
     throw Error(
-      `Invalid ${propertyName}: received '${val}', but expected a non-blank string`
+      `Invalid ${propertyName}: received '${val}', but expected a${
+        strict ? " non-blank" : ""
+      } string`
     );
   }
 }

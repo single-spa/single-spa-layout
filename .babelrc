@@ -11,6 +11,16 @@
         ]
       ],
       "plugins": ["@babel/plugin-transform-modules-commonjs"]
+    },
+    "server": {
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": "node >= 12"
+          }
+        ]
+      ]
     }
   }
 }

@@ -1,5 +1,5 @@
-import { inBrowser } from "./environment-helpers";
-import { validateString } from "./validation-helpers";
+import { inBrowser } from "../utils/environment-helpers";
+import { validateString } from "../utils/validation-helpers";
 
 /**
  *
@@ -51,6 +51,8 @@ function recurseRoutes(location, routes) {
         ...route,
         routes: recurseRoutes(location, route.routes),
       });
+    } else {
+      result.push(route);
     }
   });
 

@@ -1,5 +1,5 @@
-import { matchRoute, resolvePath } from "./matchRoute";
-import { inBrowser } from "./environment-helpers";
+import { matchRoute, resolvePath } from "../isomorphic/matchRoute";
+import { inBrowser } from "../utils/environment-helpers";
 
 /**
  * @typedef {{
@@ -9,7 +9,7 @@ import { inBrowser } from "./environment-helpers";
  * }} LayoutEngine
  *
  * @typedef {{
- * routes: import('./constructRoutes').ResolvedRoutesConfig;
+ * routes: import('../isomorphic/constructRoutes').ResolvedRoutesConfig;
  * applications: Array<import('single-spa').RegisterApplicationConfig & import('./constructApplications').WithLoadFunction>;
  * active?: boolean;
  * }} LayoutEngineOptions
@@ -119,7 +119,7 @@ export function constructLayoutEngine({
 /**
  * @typedef {{
  * location: URL,
- * routes: Array<import('./constructRoutes').RouteChild>,
+ * routes: Array<import('../isomorphic/constructRoutes').RouteChild>,
  * parentContainer: HTMLElement,
  * previousSibling?: HTMLElement,
  * shouldMount: boolean;

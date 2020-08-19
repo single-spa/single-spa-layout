@@ -10,14 +10,18 @@ import {
 import { expectError, expectType } from "tsd";
 import {
   constructRoutes,
-  matchRoute,
   constructApplications,
   constructLayoutEngine,
   WithLoadFunction,
-} from "../src/single-spa-layout-main";
+} from "../src/single-spa-layout-interface";
+import {
+  constructServerLayout,
+  renderServerResponseBody,
+} from "../src/server/index";
 import { parse, Element, DefaultTreeDocument } from "parse5";
-import { ResolvedUrlRoute } from "../src/constructRoutes";
+import { ResolvedUrlRoute } from "../src/isomorphic/constructRoutes";
 import { JSDOM } from "jsdom";
+import stream from "stream";
 
 const { window } = new JSDOM(`
 <!DOCTYPE html>
@@ -86,7 +90,8 @@ const routes = constructRoutes({
 expectType<boolean | undefined>((routes.routes[1] as ResolvedUrlRoute).default);
 
 expectType<string | singleSpa.ParcelConfig | undefined>(
-  (routes.routes[0] as import("../src/constructRoutes").Application).loader
+  (routes.routes[0] as import("../src/isomorphic/constructRoutes").Application)
+    .loader
 );
 
 const parse5Doc = parse(
@@ -94,17 +99,6 @@ const parse5Doc = parse(
 ) as DefaultTreeDocument;
 
 const routes2 = constructRoutes(parse5Doc);
-
-// test matchRoute
-const matchedRoutes = matchRoute(routes, "/");
-expectType<string>(matchedRoutes.base);
-expectType<import("../src/constructRoutes").ContainerEl>(
-  matchedRoutes.containerEl
-);
-expectType<string>(matchedRoutes.mode);
-expectType<Array<import("../src/constructRoutes").ResolvedRouteChild>>(
-  matchedRoutes.routes
-);
 
 // test constructApplication
 const applications: Array<
@@ -136,3 +130,31 @@ expectType<void>(layoutEngine.activate());
 start();
 
 expectType<void>(layoutEngine.deactivate());
+
+// server types
+const serverLayout = constructServerLayout({
+  filePath: "./some-file.html",
+});
+constructServerLayout({
+  html: "<html></html>",
+});
+expectError(constructServerLayout());
+
+expectType<stream.Readable>(
+  renderServerResponseBody(serverLayout, {
+    urlPath: "/app1",
+    renderApplication(props) {
+      return new stream.Readable();
+    },
+  })
+);
+
+renderServerResponseBody(serverLayout, {
+  urlPath: "/app1",
+  renderApplication(props) {
+    return new stream.Readable();
+  },
+  renderFragment(name) {
+    return new stream.Readable();
+  },
+});
