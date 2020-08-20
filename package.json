@@ -43,7 +43,7 @@
   },
   "files": [
     "dist",
-    "dist/types/single-spa-layout.d.ts"
+    "dist/types/single-spa-layout-interface.d.ts"
   ],
   "tsd": {
     "directory": "test"
