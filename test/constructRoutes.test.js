@@ -1,4 +1,4 @@
-import { inBrowser } from "../src/environment-helpers.js";
+import { inBrowser } from "../src/utils/environment-helpers.js";
 import { constructRoutes } from "../src/single-spa-layout.js";
 import { parseFixture } from "./html-utils";
 
@@ -645,65 +645,69 @@ describe("constructRoutes", () => {
       };
       const routes = constructRoutes(routerElement, data);
 
-      expect(routes.routes[0].loader).toBe(data.loaders.headerLoader);
-      expect(routes.routes[0].props).not.toBeDefined();
-      expect(routes.routes[1].routes[0].routes[0].loader).toBe(
-        data.loaders.mainContentLoader
-      );
-      expect(routes.routes[1].routes[0].routes[0].props).not.toBeDefined();
+      const headerApp = findApplication(routes.routes, "header");
+      expect(headerApp).toBeDefined();
+      expect(headerApp.loader).toBe(data.loaders.headerLoader);
+      expect(headerApp.props).not.toBeDefined();
+
+      const app1App = findApplication(routes.routes, "app1");
+
+      expect(app1App.loader).toBe(data.loaders.mainContentLoader);
+      expect(app1App.props).not.toBeDefined();
     });
   });
 
-  describe("props defined in HTML", () => {
-    it(`can assign valid props`, () => {
-      const { document, routerElement } = parseFixture("props.html");
-      const data = {
-        props: {
-          mode: "client",
-          portalMode: "client",
-          prop1: "value1",
-          prop2: "value2",
-          prop3: "value3",
+  if (inBrowser)
+    describe("props defined in HTML", () => {
+      it(`can assign valid props`, () => {
+        const { document, routerElement } = parseFixture("props.html");
+        const data = {
+          props: {
+            mode: "client",
+            portalMode: "client",
+            prop1: "value1",
+            prop2: "value2",
+            prop3: "value3",
+            caseSensitiveProp: "value4",
+          },
+        };
+        const routes = constructRoutes(routerElement, data);
+        expect(routes.routes[0].props).toEqual({
+          portalMode: data.props.portalMode,
+          prop1: data.props.prop1,
           caseSensitiveProp: "value4",
-        },
-      };
-      const routes = constructRoutes(routerElement, data);
-      expect(routes.routes[0].props).toEqual({
-        portalMode: data.props.portalMode,
-        prop1: data.props.prop1,
-        caseSensitiveProp: "value4",
+        });
+        expect(routes.routes[1].routes[0].routes[0].props).toEqual({
+          mode: data.props.portalMode,
+          prop2: data.props.prop2,
+        });
+        expect(routes.routes[1].routes[0].props).toEqual({
+          prop3: "value3",
+        });
       });
-      expect(routes.routes[1].routes[0].routes[0].props).toEqual({
-        mode: data.props.portalMode,
-        prop2: data.props.prop2,
-      });
-      expect(routes.routes[1].routes[0].props).toEqual({
-        prop3: "value3",
-      });
-    });
 
-    it(`throws with invalid props`, () => {
-      const { document, routerElement } = parseFixture("props.html");
-      expect(() => {
-        constructRoutes(routerElement);
-      }).toThrowError(/Prop '.+' was not defined/);
-    });
+      it(`throws with invalid props`, () => {
+        const { document, routerElement } = parseFixture("props.html");
+        expect(() => {
+          constructRoutes(routerElement);
+        }).toThrowError(/Prop '.+' was not defined/);
+      });
 
-    it(`throws when defining props for non-HTML routes`, () => {
-      const data = {
-        props: {
-          portalMode: "client",
-          prop1: "value1",
-          prop2: "value2",
-        },
-      };
-      expect(() => {
-        constructRoutes({ routes: [] }, data);
-      }).toThrowError(
-        /constructRoutes should be called either with an HTMLElement and layoutData, or a single json object./
-      );
+      it(`throws when defining props for non-HTML routes`, () => {
+        const data = {
+          props: {
+            portalMode: "client",
+            prop1: "value1",
+            prop2: "value2",
+          },
+        };
+        expect(() => {
+          constructRoutes({ routes: [] }, data);
+        }).toThrowError(
+          /constructRoutes should be called either with an HTMLElement and layoutData, or a single json object./
+        );
+      });
     });
-  });
 
   describe("router config defined in HTML", () => {
     const { document, routerElement } = parseFixture("router-config.html");
@@ -722,3 +726,15 @@ describe("constructRoutes", () => {
     });
   });
 });
+
+function findApplication(routes, name) {
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i];
+
+    if (route.type === "application" && route.name === name) {
+      return route;
+    } else if (route.routes) {
+      return findApplication(route.routes, name);
+    }
+  }
+}

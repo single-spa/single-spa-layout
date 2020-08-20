@@ -1,6 +1,8 @@
 import { terser } from "rollup-plugin-terser";
 import babel from "@rollup/plugin-babel";
 import fs from "fs";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 
 const packageJson = JSON.parse(fs.readFileSync("./package.json"));
 
@@ -8,23 +10,33 @@ export default [
   createConfig("esm"),
   createConfig("system"),
   createConfig("umd"),
+  createConfig("umd", true),
+  createConfig("esm", true),
 ];
 
-function createConfig(format) {
+function createConfig(format, server = false) {
+  const babelOpts = server
+    ? { babelHelpers: "bundled", envName: "server" }
+    : { babelHelpers: "bundled" };
+
   return {
-    input: "./src/single-spa-layout.js",
+    input: `./src/single-spa-layout${server ? "-server" : ""}.js`,
     output: {
       format,
-      file: `dist/${format}/single-spa-layout.min.js`,
+      file: `dist/${format}/single-spa-layout${server ? "-server" : ""}.min.${
+        format === "umd" ? "c" : ""
+      }js`,
       name: format === "umd" ? "singleSpaLayout" : null,
       banner: `/* single-spa-layout@${packageJson.version} - ${format} */`,
       globals: {
         "single-spa": "singleSpa",
       },
     },
-    external: ["single-spa"],
+    external: ["single-spa", "path", "fs", "stream", /^parse5.*/],
     plugins: [
-      babel({ babelHelpers: "bundled" }),
+      nodeResolve(),
+      commonjs(),
+      babel(babelOpts),
       process.env.DEVELOPMENT !== "true" &&
         terser({
           compress: {

@@ -1,7 +1,7 @@
 import { applicationElementId } from "./constructLayoutEngine";
 import { mountRootParcel } from "single-spa";
-import { inBrowser } from "./environment-helpers";
-import { find } from "./utils/find";
+import { inBrowser } from "../utils/environment-helpers.js";
+import { find } from "../utils/find.js";
 
 /**
  * @typedef {{

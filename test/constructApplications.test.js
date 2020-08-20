@@ -3,7 +3,7 @@ import {
   constructRoutes,
 } from "../src/single-spa-layout.js";
 import { parseFixture } from "./html-utils.js";
-import { inBrowser } from "../src/environment-helpers.js";
+import { inBrowser } from "../src/utils/environment-helpers.js";
 
 describe(`constructApplications`, () => {
   it(`can handle a medium complexity case`, () => {

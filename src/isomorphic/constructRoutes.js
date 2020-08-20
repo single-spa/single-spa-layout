@@ -6,11 +6,19 @@ import {
   validateObject,
   validateContainerEl,
   validateBoolean,
-} from "./validation-helpers.js";
-import { inBrowser } from "./environment-helpers.js";
-import { pathToActiveWhen } from "single-spa";
+} from "../utils/validation-helpers.js";
+import { inBrowser } from "../utils/environment-helpers.js";
+import * as singleSpa from "single-spa";
 import { resolvePath } from "./matchRoute.js";
-import { find } from "./utils/find";
+import { find } from "../utils/find";
+
+// This can be replaced with a named import once single-spa changes its package.json exports or type
+// The weird strings here are to trick rollup into not optimizing the import to avoid the * syntax
+const defaultStr = "d" + "efault";
+const pathToActiveWhenStr = "pathTo" + "ActiveWhen";
+const pathToActiveWhen = singleSpa[defaultStr]
+  ? singleSpa[defaultStr][pathToActiveWhenStr]
+  : singleSpa[pathToActiveWhenStr];
 
 /**
  * @typedef {InputRoutesConfigObject | Element | import('parse5').DefaultTreeDocument} RoutesConfig
@@ -182,7 +190,7 @@ function elementToJson(element, htmlLayoutData) {
         htmlLayoutData.loaders.hasOwnProperty(loaderKey)
       ) {
         application.loader = htmlLayoutData.loaders[loaderKey];
-      } else {
+      } else if (inBrowser) {
         throw Error(
           `Application loader '${loaderKey}' was not defined in the htmlLayoutData`
         );
@@ -230,6 +238,7 @@ function elementToJson(element, htmlLayoutData) {
     const result = {
       type: element.nodeName.toLowerCase(),
       routes: [],
+      attrs: element.attrs,
     };
     for (let i = 0; i < element.childNodes.length; i++) {
       result.routes.push(
@@ -237,8 +246,20 @@ function elementToJson(element, htmlLayoutData) {
       );
     }
     return [result];
-  } else {
-    return [];
+  } else if (element.nodeName === "#comment") {
+    return [
+      {
+        type: "#comment",
+        value: element.data,
+      },
+    ];
+  } else if (element.nodeName === "#text") {
+    return [
+      {
+        type: "#text",
+        value: element.value,
+      },
+    ];
   }
 }
 
@@ -263,7 +284,7 @@ function setProps(element, route, htmlLayoutData) {
 
     if (htmlLayoutData.props && htmlLayoutData.props.hasOwnProperty(propName)) {
       route.props[propName] = htmlLayoutData.props[propName];
-    } else {
+    } else if (inBrowser) {
       throw Error(
         `Prop '${propName}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`
       );
@@ -370,8 +391,8 @@ function validateAndSanitize(routesConfig) {
         // HTMLElements are allowed
       } else {
         for (let key in route) {
-          if (key !== "routes") {
-            validateString(`${propertyName}['${key}']`, route[key]);
+          if (key !== "routes" && key !== "attrs") {
+            validateString(`${propertyName}['${key}']`, route[key], false);
           }
         }
       }

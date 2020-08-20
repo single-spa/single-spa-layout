@@ -3,20 +3,29 @@
   "version": "1.0.0-beta.6",
   "description": "Layout engine for single-spa applications",
   "main": "dist/umd/single-spa-layout.min.js",
+  "module": "dist/esm/single-spa-layout.min.js",
+  "type": "module",
   "exports": {
-    "import": {
-      ".": "./dist/esm/single-spa-layout.min.js"
+    ".": {
+      "default": {
+        "import": "./dist/esm/single-spa-layout.min.js",
+        "require": "./dist/umd/single-spa-layout.min.cjs"
+      }
     },
-    "require": {
-      ".": "./dist/umd/single-spa-layout.min.js"
+    "./server": {
+      "node": {
+        "import": "./dist/esm/single-spa-layout-server.min.js",
+        "require": "./dist/cjs/single-spa-layout-server.min.cjs"
+      }
     }
   },
-  "types": "dist/types/single-spa-layout-main.d.ts",
+  "types": "dist/types/single-spa-layout-interface.d.ts",
   "scripts": {
     "prepublishOnly": "yarn build",
     "build": "rimraf dist && concurrently -n w: 'yarn:build:*'",
     "build:lib": "rollup -c",
-    "build:types": "tsc",
+    "build:types:browser": "tsc --project tsconfig.json",
+    "build:types:server": "tsc --project tsconfig.node.json",
     "watch-build": "rollup -cw --environment DEVELOPMENT",
     "check-format": "prettier --check './**/*'",
     "lint": "eslint src",
@@ -25,12 +34,16 @@
     "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only --testPathIgnorePatterns=cypress",
     "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only --testPathIgnorePatterns=cypress",
     "test:types": "tsd",
+    "test:exports": "ls-exports path .",
     "test-e2e:firefox": "cypress run --browser firefox",
     "test-e2e:chrome": "cypress run --browser chrome"
   },
+  "engines": {
+    "node": ">=12"
+  },
   "files": [
     "dist",
-    "dist/types/single-spa-layout-main.d.ts"
+    "dist/types/single-spa-layout-interface.d.ts"
   ],
   "tsd": {
     "directory": "test"
@@ -63,6 +76,8 @@
     "@babel/plugin-transform-modules-commonjs": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
     "@rollup/plugin-babel": "^5.0.2",
+    "@rollup/plugin-commonjs": "^15.0.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "@testing-library/dom": "^7.5.7",
     "@testing-library/jest-dom": "^5.8.0",
     "@types/jest": "^25.2.3",
@@ -75,12 +90,14 @@
     "cypress": "^4.7.0",
     "eslint": "^7.1.0",
     "eslint-config-important-stuff": "^1.1.0",
+    "eslint-config-node-important-stuff": "^1.1.0",
     "eslint-plugin-es5": "^1.5.0",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
     "jest-cli": "^26.0.1",
+    "jest-serializer-html": "^7.0.0",
     "jsdom": "^16.2.2",
-    "parse5": "^6.0.0",
+    "ls-exports": "^1.0.2",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.2",
@@ -92,6 +109,7 @@
     "typescript": "^3.9.3"
   },
   "dependencies": {
-    "@types/parse5": "^5.0.3"
+    "@types/parse5": "^5.0.3",
+    "parse5": "^6.0.0"
   }
 }
