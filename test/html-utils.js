@@ -1,5 +1,5 @@
 import { inBrowser } from "../src/utils/environment-helpers";
-import parse5 from "parse5";
+import Parser from "../src/server/CustomParser.js";
 import fs from "fs";
 import path from "path";
 
@@ -7,7 +7,7 @@ export function parseHTML(str) {
   if (inBrowser) {
     return new DOMParser().parseFromString(str, "text/html").documentElement;
   } else {
-    return parse5.parse(str);
+    return new Parser().parse(str);
   }
 }
 

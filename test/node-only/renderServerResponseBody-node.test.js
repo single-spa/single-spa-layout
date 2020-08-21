@@ -48,54 +48,6 @@ describe(`renderServerResponseBody`, () => {
     });
   });
 
-  it(`renders the app1 route fast`, (done) => {
-    const html = fs
-      .readFileSync(
-        path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-        "utf-8"
-      )
-      .toString();
-
-    const layout = constructServerLayout({
-      html,
-    });
-
-    const start = Date.now();
-    const perfThresholdMs = 50;
-
-    const readable = renderServerResponseBody(layout, {
-      urlPath: "/app1",
-      renderApplication(props) {
-        const { name } = props;
-        const appStream = new stream.Readable({
-          read() {
-            appStream.push(`<div id="single-spa-application:${name}"></div>`);
-            appStream.push(null);
-          },
-        });
-        return appStream;
-      },
-    });
-
-    let finalHtml = "";
-
-    readable.on("data", (chunk) => {
-      finalHtml += chunk;
-    });
-
-    readable.on("end", () => {
-      const latency = Date.now() - start;
-      if (latency > perfThresholdMs) {
-        fail(`It took ${latency}ms to render the server layout`);
-      } else {
-        console.log("latency", latency);
-      }
-      done();
-    });
-
-    readable.read();
-  });
-
   describe(`fragments.html fixture`, () => {
     it(`renders fragments correctly`, (done) => {
       const html = fs
