@@ -1,8 +1,9 @@
 import { treeAdapter } from "./treeAdapter.js";
 import doctype from "parse5/lib/common/doctype.js";
 import HTML from "parse5/lib/common/html.js";
-import stream from "stream";
+import { Readable } from "stream";
 import { matchRoute } from "../isomorphic/matchRoute.js";
+import merge2 from "merge2";
 
 // Serialization algorithm is heavily based on the Serializer class in
 // https://github.com/inikulin/parse5/blob/master/packages/parse5/lib/serializer/index.js
@@ -44,8 +45,8 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     );
   }
 
-  const output = new stream.Readable({
-    read() {},
+  const output = merge2({
+    pipeError: true,
   });
 
   serializeChildNodes({
@@ -53,13 +54,7 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     output,
     renderOptions,
     serverLayout,
-  })
-    .then(() => {
-      output.push(null);
-    })
-    .catch((err) => {
-      output.destroy(err);
-    });
+  });
 
   return output;
 }
@@ -68,7 +63,7 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
  *
  * @param {SerializeArgs} serializeArgs
  */
-async function serializeChildNodes(args) {
+function serializeChildNodes(args) {
   const { node: parentNode } = args;
 
   let childNodes = treeAdapter.getChildNodes(parentNode);
@@ -100,7 +95,7 @@ async function serializeChildNodes(args) {
     }
 
     if (serialize) {
-      await serialize({ ...args, node });
+      serialize({ ...args, node });
     } else {
       console.error(node);
       throw Error(
@@ -124,8 +119,8 @@ function isRouteNode(node) {
  *
  * @param {SerializeArgs} serializeArgs
  */
-async function serializeRoute(args) {
-  await serializeChildNodes({
+function serializeRoute(args) {
+  serializeChildNodes({
     ...args,
     node: args.node,
   });
@@ -136,24 +131,12 @@ async function serializeRoute(args) {
  * @param {SerializeArgs} serializeArgs
  */
 function serializeApplication({ node, output, renderOptions }) {
-  return new Promise((resolve, reject) => {
-    const appStream = renderOptions.renderApplication({
-      name: node.name,
-      ...(node.props || {}),
-    });
-
-    appStream.on("data", (chunk) => {
-      output.push(chunk);
-    });
-
-    appStream.on("error", (err) => {
-      reject(err);
-    });
-
-    appStream.on("end", () => {
-      resolve();
-    });
+  const appStream = renderOptions.renderApplication({
+    name: node.name,
+    ...(node.props || {}),
   });
+
+  output.add(appStream);
 }
 
 function isRouterContent(node) {
@@ -167,13 +150,13 @@ function isRouterContent(node) {
  *
  * @param {SerializeArgs} serializeArgs
  */
-async function serializeRouterContent(args) {
+function serializeRouterContent(args) {
   const { serverLayout, renderOptions } = args;
   const matchedRoutes = matchRoute(
     serverLayout.resolvedRoutes,
     renderOptions.urlPath
   );
-  await serializeChildNodes({
+  serializeChildNodes({
     ...args,
     node: { childNodes: matchedRoutes.routes },
   });
@@ -191,42 +174,30 @@ function isFragmentNode(node) {
  * @param {SerializeArgs} serializeArgs
  */
 function serializeFragment({ node, output, renderOptions }) {
-  return new Promise((resolve, reject) => {
-    const attr = treeAdapter
-      .getAttrList(node)
-      .find((attr) => attr.name === "name");
-    if (!attr.name) {
-      throw Error(`<fragment> has unknown name`);
-    }
+  const attr = treeAdapter
+    .getAttrList(node)
+    .find((attr) => attr.name === "name");
+  if (!attr.name) {
+    throw Error(`<fragment> has unknown name`);
+  }
 
-    const fragmentStream = renderOptions.renderFragment(attr.name);
+  const fragmentStream = renderOptions.renderFragment(attr.value);
 
-    fragmentStream.on("data", (chunk) => {
-      output.push(chunk);
-    });
-
-    fragmentStream.on("error", (err) => {
-      reject(err);
-    });
-
-    fragmentStream.on("end", () => {
-      resolve();
-    });
-  });
+  output.add(fragmentStream);
 }
 
 /**
  *
  * @param {SerializeArgs} serializeArgs
  */
-async function serializeElement(args) {
+function serializeElement(args) {
   const { node, output } = args;
   const tn = treeAdapter.getTagName(node);
   const ns = treeAdapter.getNamespaceURI(node);
 
-  output.push(`<${tn}`);
+  output.add(stringStream(`<${tn}`));
   serializeAttributes(args);
-  output.push(`>`);
+  output.add(stringStream(`>`));
 
   if (
     tn !== $.AREA &&
@@ -254,8 +225,8 @@ async function serializeElement(args) {
         : node;
 
     const newArgs = { ...args, node: childNodesHolder };
-    await serializeChildNodes(newArgs);
-    output.push(`</${tn}>`);
+    serializeChildNodes(newArgs);
+    output.add(stringStream(`</${tn}>`));
   }
 }
 
@@ -287,7 +258,7 @@ function serializeAttributes({ node, output }) {
       attrName = attr.prefix + ":" + attr.name;
     }
 
-    output.push(` ${attrName}="${value}"`);
+    output.add(stringStream(` ${attrName}="${value}"`));
   }
 }
 
@@ -315,9 +286,9 @@ function serializeTextNode({ node, output }) {
     parentTn === $.PLAINTEXT ||
     parentTn === $.NOSCRIPT
   ) {
-    output.push(content);
+    output.add(stringStream(content));
   } else {
-    output.push(escapeString(content, false));
+    output.add(stringStream(escapeString(content, false)));
   }
 }
 
@@ -338,7 +309,7 @@ function escapeString(str, attrMode) {
  * @param {SerializeArgs} serializeArgs
  */
 function serializeCommentNode({ node, output }) {
-  output.push(`<!--${treeAdapter.getCommentNodeContent(node)}-->`);
+  output.add(stringStream(`<!--${treeAdapter.getCommentNodeContent(node)}-->`));
 }
 
 /**
@@ -347,5 +318,12 @@ function serializeCommentNode({ node, output }) {
  */
 function serializeDocumentTypeNode({ node, output }) {
   const name = treeAdapter.getDocumentTypeNodeName(node);
-  output.push(`<${doctype.serializeContent(name, null, null)}>`);
+  output.add(stringStream(`<${doctype.serializeContent(name, null, null)}>`));
+}
+
+export function stringStream(str) {
+  const readable = new Readable({ read() {} });
+  readable.push(str);
+  readable.push(null);
+  return readable;
 }

@@ -80,3 +80,95 @@ exports[`renderServerResponseBody fragments.html fixture renders fragments corre
   </body>
 </html>
 `;
+
+exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when both fragments are slow 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Document
+    </title>
+    <script type="systemjs-importmap">
+      {
+                    "imports": {}
+                  }
+    </script>
+  </head>
+  <body>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when fragments are synchronous 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Document
+    </title>
+    <script type="systemjs-importmap">
+      {
+                  "imports": {}
+                }
+    </script>
+  </head>
+  <body>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when head-metadata is slow 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Document
+    </title>
+    <script type="systemjs-importmap">
+      {
+                  "imports": {}
+                }
+    </script>
+  </head>
+  <body>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when import map is slow 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Document
+    </title>
+    <script type="systemjs-importmap">
+      {
+                    "imports": {}
+                  }
+    </script>
+  </head>
+  <body>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+  </body>
+</html>
+`;
