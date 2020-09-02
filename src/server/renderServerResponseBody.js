@@ -32,7 +32,13 @@ const GT_REGEX = />/g;
  * output: import('parse5').output;
  * renderOptions: RenderOptions;
  * serverLayout: import('./constructServerLayout').serverLayout;
+ * applicationProps: import('single-spa').AppProps;
  * }} SerializeArgs
+ *
+ * @typedef {{
+ * bodyStream: import('stream').Readable;
+ * applicationProps: Array<import('single-spa').AppProps>;
+ * }} ServerResponseBodyResult
  *
  * @param {import('./constructServerLayout').ServerLayout} serverLayout
  * @param {RenderOptions} renderOptions
@@ -56,7 +62,9 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     serverLayout,
   });
 
-  return output;
+  return {
+    bodyStream: output,
+  };
 }
 
 /**
