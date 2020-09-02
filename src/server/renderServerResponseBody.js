@@ -51,6 +51,8 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     );
   }
 
+  const applicationProps = [];
+
   const output = merge2({
     pipeError: true,
   });
@@ -60,6 +62,7 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     output,
     renderOptions,
     serverLayout,
+    applicationProps,
   });
 
   return {
@@ -138,11 +141,20 @@ function serializeRoute(args) {
  *
  * @param {SerializeArgs} serializeArgs
  */
-function serializeApplication({ node, output, renderOptions }) {
-  const appStream = renderOptions.renderApplication({
+function serializeApplication({
+  node,
+  output,
+  renderOptions,
+  applicationProps,
+}) {
+  const props = {
     name: node.name,
     ...(node.props || {}),
-  });
+  };
+
+  applicationProps.push(props);
+
+  const appStream = renderOptions.renderApplication(props);
 
   output.add(appStream);
 }
