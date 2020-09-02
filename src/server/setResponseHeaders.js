@@ -27,7 +27,11 @@ export async function setResponseHeaders(options) {
     "mergeHeaders",
   ]);
 
-  validateArray("applicationProps", options.applicationProps, validateObject);
+  validateArray(
+    "applicationProps",
+    options.applicationProps,
+    (props, propertyName) => validateObject(propertyName, props)
+  );
 
   validateFunction(
     "retrieveApplicationHeaders",
@@ -38,22 +42,14 @@ export async function setResponseHeaders(options) {
 
   validateObject("res", options.res);
 
-  try {
-    console.log(options.applicationProps);
-    const allHeaders = await Promise.all(
-      options.applicationProps.map(options.retrieveApplicationHeaders)
-    );
+  const allHeaders = await Promise.all(
+    options.applicationProps.map(options.retrieveApplicationHeaders)
+  );
 
-    const finalHeaders = options.mergeHeaders(allHeaders);
+  const finalHeaders = options.mergeHeaders(allHeaders);
 
-    console.log("finalHeaders");
-
-    options.res.status(200);
-    Object.entries(finalHeaders).forEach((name, value) => {
-      options.res.setHeader(name, value);
-    });
-  } catch (err) {
-    console.error(err);
-    options.res.status(500).send("Didn't work");
-  }
+  options.res.status(200);
+  Object.entries(finalHeaders).forEach(([name, value]) => {
+    options.res.setHeader(name, value);
+  });
 }

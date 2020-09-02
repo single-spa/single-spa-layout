@@ -67,6 +67,7 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
 
   return {
     bodyStream: output,
+    applicationProps,
   };
 }
 

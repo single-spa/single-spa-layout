@@ -17,11 +17,13 @@ import {
 import {
   constructServerLayout,
   renderServerResponseBody,
+  setResponseHeaders,
 } from "../src/server/index";
 import { parse, Element, DefaultTreeDocument } from "parse5";
 import { ResolvedUrlRoute } from "../src/isomorphic/constructRoutes";
 import { JSDOM } from "jsdom";
 import stream from "stream";
+import http, { OutgoingHttpHeaders } from "http";
 
 const { window } = new JSDOM(`
 <!DOCTYPE html>
@@ -157,4 +159,17 @@ renderServerResponseBody(serverLayout, {
   renderFragment(name) {
     return new stream.Readable();
   },
+});
+
+const res = http.request("/fake.js");
+
+setResponseHeaders({
+  applicationProps: [{ name: "app1" }, { name: "app2" }],
+  retrieveApplicationHeaders(props: AppProps) {
+    return { "content-type": "application/javascript" };
+  },
+  mergeHeaders(headers: OutgoingHttpHeaders) {
+    return headers[0];
+  },
+  res,
 });
