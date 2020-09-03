@@ -19,7 +19,10 @@ describe(`renderServerResponseBody`, () => {
         html,
       });
 
-      const readable = renderServerResponseBody(layout, {
+      const {
+        bodyStream: readable,
+        applicationProps,
+      } = renderServerResponseBody(layout, {
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
@@ -32,6 +35,9 @@ describe(`renderServerResponseBody`, () => {
           return appStream;
         },
       });
+
+      // Pending a fix
+      // expect(applicationProps).toEqual([{name: "app1"}])
 
       let finalHtml = "";
 
@@ -61,7 +67,7 @@ describe(`renderServerResponseBody`, () => {
         html,
       });
 
-      const readable = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody(layout, {
         urlPath: "/app1",
         renderFragment(name) {
           const fragStream = new stream.Readable({
@@ -113,7 +119,7 @@ describe(`renderServerResponseBody`, () => {
         html,
       });
 
-      const readable = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody(layout, {
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -158,7 +164,7 @@ describe(`renderServerResponseBody`, () => {
         html,
       });
 
-      const readable = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody(layout, {
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -208,7 +214,7 @@ describe(`renderServerResponseBody`, () => {
         html,
       });
 
-      const readable = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody(layout, {
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -258,7 +264,7 @@ describe(`renderServerResponseBody`, () => {
         html,
       });
 
-      const readable = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody(layout, {
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -315,7 +321,7 @@ describe(`renderServerResponseBody`, () => {
 
       let renderedFragments = [];
 
-      renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody(layout, {
         urlPath: "/app1",
         renderFragment(name) {
           renderedFragments.push(name);

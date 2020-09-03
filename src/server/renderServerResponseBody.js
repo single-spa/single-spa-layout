@@ -32,7 +32,13 @@ const GT_REGEX = />/g;
  * output: import('parse5').output;
  * renderOptions: RenderOptions;
  * serverLayout: import('./constructServerLayout').serverLayout;
+ * applicationProps: import('single-spa').AppProps;
  * }} SerializeArgs
+ *
+ * @typedef {{
+ * bodyStream: import('stream').Readable;
+ * applicationProps: Array<import('single-spa').AppProps>;
+ * }} ServerResponseBodyResult
  *
  * @param {import('./constructServerLayout').ServerLayout} serverLayout
  * @param {RenderOptions} renderOptions
@@ -45,6 +51,8 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     );
   }
 
+  const applicationProps = [];
+
   const output = merge2({
     pipeError: true,
   });
@@ -54,9 +62,13 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     output,
     renderOptions,
     serverLayout,
+    applicationProps,
   });
 
-  return output;
+  return {
+    bodyStream: output,
+    applicationProps,
+  };
 }
 
 /**
@@ -130,11 +142,20 @@ function serializeRoute(args) {
  *
  * @param {SerializeArgs} serializeArgs
  */
-function serializeApplication({ node, output, renderOptions }) {
-  const appStream = renderOptions.renderApplication({
+function serializeApplication({
+  node,
+  output,
+  renderOptions,
+  applicationProps,
+}) {
+  const props = {
     name: node.name,
     ...(node.props || {}),
-  });
+  };
+
+  applicationProps.push(props);
+
+  const appStream = renderOptions.renderApplication(props);
 
   output.add(appStream);
 }

@@ -93,3 +93,12 @@ export function validateContainerEl(propertyName, containerEl) {
     );
   }
 }
+
+export function validateFunction(propertyName, fn) {
+  const type = typeof fn;
+  if (type !== "function") {
+    throw Error(
+      `Invalid ${propertyName}: received ${type} but expected function`
+    );
+  }
+}
