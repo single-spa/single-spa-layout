@@ -23,8 +23,8 @@ const GT_REGEX = />/g;
 /**
  * @typedef {{
  * urlPath: string;
- * renderApplication(props: import('single-spa').AppProps) => import('stream').Readable;
- * renderFragment?(name: string) => import('stream').Readable;
+ * renderApplication(props: import('single-spa').AppProps) => import('stream').Readable | string;
+ * renderFragment?(name: string) => import('stream').Readable | string;
  * }} RenderOptions
  *
  * @typedef {{
@@ -155,7 +155,11 @@ function serializeApplication({
 
   applicationProps.push(props);
 
-  const appStream = renderOptions.renderApplication(props);
+  let appStream = renderOptions.renderApplication(props);
+
+  if (typeof appStream === "string") {
+    appStream = stringStream(appStream);
+  }
 
   output.add(appStream);
 }
@@ -202,7 +206,11 @@ function serializeFragment({ node, output, renderOptions }) {
     throw Error(`<fragment> has unknown name`);
   }
 
-  const fragmentStream = renderOptions.renderFragment(attr.value);
+  let fragmentStream = renderOptions.renderFragment(attr.value);
+
+  if (typeof fragmentStream === "string") {
+    fragmentStream = stringStream(fragmentStream);
+  }
 
   output.add(fragmentStream);
 }

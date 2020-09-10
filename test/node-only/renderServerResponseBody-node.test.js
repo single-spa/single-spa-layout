@@ -355,5 +355,81 @@ describe(`renderServerResponseBody`, () => {
         },
       });
     });
+
+    it(`allows renderFragment to return a string`, (done) => {
+      const html = fs
+        .readFileSync(
+          path.resolve(process.cwd(), "./test/fixtures/fragments.html"),
+          "utf-8"
+        )
+        .toString();
+
+      const layout = constructServerLayout({
+        html,
+      });
+
+      const { bodyStream: readable } = renderServerResponseBody(layout, {
+        urlPath: "/app1",
+        renderFragment(name) {
+          return `
+            <script type="systemjs-importmap">
+              {
+                "imports": {}
+              }
+            </script>
+          `.trim();
+        },
+      });
+
+      let finalHtml = "";
+
+      readable.on("data", (chunk) => {
+        finalHtml += chunk;
+      });
+
+      readable.on("end", () => {
+        expect(finalHtml).toMatchSnapshot();
+        done();
+      });
+
+      readable.read();
+    });
+  });
+
+  it(`allows for strings to be returned from renderApplication`, (done) => {
+    const html = fs
+      .readFileSync(
+        path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
+        "utf-8"
+      )
+      .toString();
+
+    const layout = constructServerLayout({
+      html,
+    });
+
+    const { bodyStream: readable, applicationProps } = renderServerResponseBody(
+      layout,
+      {
+        urlPath: "/app1",
+        renderApplication(props) {
+          const { name } = props;
+          return `<div id="single-spa-application:${name}"></div>`;
+        },
+      }
+    );
+
+    let finalHtml = "";
+
+    readable.on("data", (chunk) => {
+      finalHtml += chunk;
+    });
+
+    readable.on("end", () => {
+      expect(finalHtml).toMatchSnapshot();
+      done();
+    });
+
+    readable.read();
   });
 });
