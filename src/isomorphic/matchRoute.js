@@ -68,12 +68,10 @@ export function resolvePath(prefix, path) {
     } else {
       result = prefix + path;
     }
+  } else if (path[0] === "/") {
+    result = prefix + path;
   } else {
-    if (path[0] === "/") {
-      result = prefix + path;
-    } else {
-      result = prefix + "/" + path;
-    }
+    result = prefix + "/" + path;
   }
 
   if (result.substr(-1) === "/") {
