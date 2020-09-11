@@ -333,6 +333,35 @@ describe(`constructApplications`, () => {
       `);
     }
   });
+
+  // https://github.com/single-spa/single-spa-layout/issues/64
+  it(`does not require trailing slashes after base path`, () => {
+    const routes = constructRoutes({
+      mode: "history",
+      base: "/something",
+      routes: [
+        {
+          type: "route",
+          path: "/",
+          routes: [
+            {
+              type: "application",
+              name: "app1",
+            },
+          ],
+        },
+      ],
+    });
+
+    async function loadApp() {}
+
+    const applications = constructApplications({ routes, loadApp });
+    expect(applications.length).toBe(1);
+    const app1 = applications[0];
+    expect(
+      app1.activeWhen.some((fn) => fn(new URL("http://example.com/something")))
+    ).toBe(true);
+  });
 });
 
 function tick() {
