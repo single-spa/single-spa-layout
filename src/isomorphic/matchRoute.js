@@ -60,17 +60,25 @@ function recurseRoutes(location, routes) {
 }
 
 export function resolvePath(prefix, path) {
+  let result;
+
   if (prefix.substr(-1) === "/") {
     if (path[0] === "/") {
-      return prefix + path.slice(1);
+      result = prefix + path.slice(1);
     } else {
-      return prefix + path;
+      result = prefix + path;
     }
   } else {
     if (path[0] === "/") {
-      return prefix + path;
+      result = prefix + path;
     } else {
-      return prefix + "/" + path;
+      result = prefix + "/" + path;
     }
   }
+
+  if (result.substr(-1) === "/") {
+    result = result.slice(0, result.length - 1);
+  }
+
+  return result;
 }
