@@ -96,7 +96,7 @@ function serializeChildNodes(args) {
       serialize = serializeRoute;
     } else if (isRouterContent(node)) {
       serialize = serializeRouterContent;
-    } else if (!inRouterElement && isFragmentNode(node)) {
+    } else if (isFragmentNode(node)) {
       serialize = serializeFragment;
     } else if (treeAdapter.isElementNode(node)) {
       serialize = serializeElement;
