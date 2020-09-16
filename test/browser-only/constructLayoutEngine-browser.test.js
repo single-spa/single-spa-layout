@@ -642,6 +642,70 @@ describe(`constructLayoutEngine browser`, () => {
     );
     expect(document.body).toMatchSnapshot();
   });
+
+  it(`can render dom elements from json`, () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      containerEl: "body",
+      base: "/",
+      mode: "history",
+      routes: [
+        {
+          type: "route",
+          path: "/app1",
+          routes: [
+            {
+              type: "div",
+              attrs: [
+                {
+                  name: "class",
+                  value: "before",
+                },
+              ],
+            },
+            {
+              type: "application",
+              name: "app1",
+            },
+            {
+              type: "div",
+              attrs: [
+                {
+                  name: "class",
+                  value: "after",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const applications = constructApplications({
+      routes,
+      loadApp: async (name) => {
+        return {
+          async bootstrap() {},
+          async mount() {},
+          async unmount() {},
+        };
+      },
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+      applications,
+    });
+
+    history.pushState(history.state, document.title, "/app1");
+    const loadPromise = applications[0].app();
+
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+
+    expect(document.body).toMatchSnapshot();
+  });
 });
 
 function tick() {
