@@ -161,7 +161,11 @@ function serializeApplication({
     appStream = stringStream(appStream);
   }
 
+  output.add(stringStream(`<div id="single-spa-application:${props.name}">`));
+
   output.add(appStream);
+
+  output.add(stringStream(`</div>`));
 }
 
 function isRouterContent(node) {

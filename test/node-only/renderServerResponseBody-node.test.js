@@ -28,7 +28,7 @@ describe(`renderServerResponseBody`, () => {
           const { name } = props;
           const appStream = new stream.Readable({
             read() {
-              appStream.push(`<div id="single-spa-application:${name}"></div>`);
+              appStream.push(`<button>App ${name}</button>`);
               appStream.push(null);
             },
           });
@@ -414,7 +414,7 @@ describe(`renderServerResponseBody`, () => {
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
-          return `<div id="single-spa-application:${name}"></div>`;
+          return `<button>App ${name}</button>`;
         },
       }
     );

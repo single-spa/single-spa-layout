@@ -14,12 +14,18 @@ exports[`renderServerResponseBody allows for strings to be returned from renderA
   </head>
   <body>
     <div id="single-spa-application:header">
+      <button>
+        App header
+      </button>
     </div>
     <div class="main-content">
       <button>
         Top level content
       </button>
       <div id="single-spa-application:app1">
+        <button>
+          App app1
+        </button>
       </div>
       Some raw text
     </div>
@@ -34,12 +40,18 @@ exports[`renderServerResponseBody allows for strings to be returned from renderA
                        base="/"
     >
       <div id="single-spa-application:undefined">
+        <button>
+          App undefined
+        </button>
       </div>
       <div class="main-content">
         <button>
           Top level content
         </button>
         <div id="single-spa-application:undefined">
+          <button>
+            App undefined
+          </button>
         </div>
         Some raw text
       </div>
@@ -69,12 +81,18 @@ exports[`renderServerResponseBody dom-elements.html fixture renders the app1 rou
   </head>
   <body>
     <div id="single-spa-application:header">
+      <button>
+        App header
+      </button>
     </div>
     <div class="main-content">
       <button>
         Top level content
       </button>
       <div id="single-spa-application:app1">
+        <button>
+          App app1
+        </button>
       </div>
       Some raw text
     </div>
@@ -89,12 +107,18 @@ exports[`renderServerResponseBody dom-elements.html fixture renders the app1 rou
                        base="/"
     >
       <div id="single-spa-application:undefined">
+        <button>
+          App undefined
+        </button>
       </div>
       <div class="main-content">
         <button>
           Top level content
         </button>
         <div id="single-spa-application:undefined">
+          <button>
+            App undefined
+          </button>
         </div>
         Some raw text
       </div>
