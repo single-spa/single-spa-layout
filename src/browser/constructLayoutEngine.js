@@ -5,6 +5,7 @@ import {
   removeErrorHandler,
   getAppStatus as singleSpaGetAppStatus,
   SKIP_BECAUSE_BROKEN,
+  LOAD_ERROR,
 } from "single-spa";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
 
@@ -117,11 +118,12 @@ export function constructLayoutEngine({
         typeof applicationRoute.error === "string"
           ? htmlToParcelConfig(applicationRoute.error)
           : applicationRoute.error;
-      errorParcelByAppName[
-        applicationRoute.name
-      ] = mountRootParcel(parcelConfig, {
-        domElement: applicationDomContainer,
-      });
+      errorParcelByAppName[applicationRoute.name] = mountRootParcel(
+        parcelConfig,
+        {
+          domElement: applicationDomContainer,
+        }
+      );
     }
   }
 
@@ -129,8 +131,8 @@ export function constructLayoutEngine({
     for (let appName in newAppStatuses) {
       if (
         errorParcelByAppName[appName] &&
-        getAppStatus(appName) === SKIP_BECAUSE_BROKEN &&
-        newAppStatuses[appName] !== SKIP_BECAUSE_BROKEN
+        brokenStatus(getAppStatus(appName)) &&
+        !brokenStatus(newAppStatuses[appName])
       ) {
         errorParcelByAppName[appName].unmount();
         delete errorParcelByAppName[appName];
@@ -327,4 +329,8 @@ function removeNode(node) {
 
 export function applicationElementId(name) {
   return `single-spa-application:${name}`;
+}
+
+function brokenStatus(status) {
+  return status === SKIP_BECAUSE_BROKEN || status === LOAD_ERROR;
 }
