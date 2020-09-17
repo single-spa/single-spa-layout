@@ -663,6 +663,16 @@ describe(`constructLayoutEngine browser`, () => {
                   value: "before",
                 },
               ],
+              routes: [
+                {
+                  type: "#text",
+                  value: "The text before",
+                },
+                {
+                  type: "#comment",
+                  value: "the comment before",
+                },
+              ],
             },
             {
               type: "application",
@@ -674,6 +684,12 @@ describe(`constructLayoutEngine browser`, () => {
                 {
                   name: "class",
                   value: "after",
+                },
+              ],
+              routes: [
+                {
+                  type: "#comment",
+                  value: "the comment after",
                 },
               ],
             },

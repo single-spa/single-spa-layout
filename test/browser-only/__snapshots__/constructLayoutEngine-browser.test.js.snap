@@ -231,13 +231,18 @@ exports[`constructLayoutEngine browser can render dom elements from json 1`] = `
 <body>
   <div
     class="before"
-  />
+  >
+    The text before
+    <!--the comment before-->
+  </div>
   <div
     id="single-spa-application:app1"
   />
   <div
     class="after"
-  />
+  >
+    <!--the comment after-->
+  </div>
 </body>
 `;
 

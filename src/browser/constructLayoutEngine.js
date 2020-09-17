@@ -339,12 +339,26 @@ export function applicationElementId(name) {
  * Example: {type: 'div', attrs: [{"class": "blue"}]}
  */
 function jsonToDom(obj) {
-  const node = document.createElement(obj.type);
+  if (obj.type.toLowerCase() === "#text") {
+    return document.createTextNode(obj.value);
+  } else if (obj.type.toLowerCase() === "#comment") {
+    return document.createComment(obj.value);
+  }
+  {
+    const node = document.createElement(obj.type);
 
-  (obj.attrs || []).forEach((attr) => {
-    node.setAttribute(attr.name, attr.value);
-  });
-  return node;
+    (obj.attrs || []).forEach((attr) => {
+      node.setAttribute(attr.name, attr.value);
+    });
+
+    if (node.routes) {
+      node.routes.forEach((route) => {
+        node.appendChild(jsonToDom(route));
+      });
+    }
+
+    return node;
+  }
 }
 
 function brokenStatus(status) {
