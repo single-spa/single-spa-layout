@@ -32,7 +32,7 @@ function createConfig(format, server = false) {
         "single-spa": "singleSpa",
       },
     },
-    external: ["single-spa", "path", "fs", "stream", /^parse5.*/],
+    external: ["single-spa", "path", "fs", "stream", /^parse5.*/, "merge2"],
     plugins: [
       nodeResolve(),
       commonjs(),

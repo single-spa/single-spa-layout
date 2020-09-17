@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { validateString } from "../utils/validation-helpers.js";
 import { constructRoutes } from "../isomorphic/constructRoutes.js";
-import parse5 from "parse5";
+import Parser from "./CustomParser.js";
 
 const errPrefix = `single-spa-layout (server):`;
 
@@ -45,9 +45,10 @@ export function constructServerLayout(templateOptions) {
   }
 
   let parsedDocument;
+  const parser = new Parser();
 
   try {
-    parsedDocument = parse5.parse(html);
+    parsedDocument = parser.parse(html);
   } catch (err) {
     console.error(`${errPrefix} failed to parse HTML template with parse5.`);
     throw err;

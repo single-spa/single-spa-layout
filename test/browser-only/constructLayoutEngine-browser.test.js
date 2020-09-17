@@ -5,6 +5,7 @@ import {
 } from "../../src/single-spa-layout.js";
 import { screen } from "@testing-library/dom";
 import { parseFixture } from "../html-utils.js";
+import { triggerAppChange, getAppStatus } from "single-spa";
 
 describe(`constructLayoutEngine browser`, () => {
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
@@ -705,6 +706,278 @@ describe(`constructLayoutEngine browser`, () => {
     );
 
     expect(document.body).toMatchSnapshot();
+  });
+
+  describe(`error handling`, () => {
+    it(`shows an error UI when an application goes into SKIP_BECAUSE_BROKEN status`, async () => {
+      /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+      const routes = constructRoutes({
+        containerEl: "body",
+        base: "/",
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/app1",
+            routes: [
+              {
+                type: "application",
+                name: "app1",
+                error: "<div>Oops, app1 is broken</div>",
+              },
+            ],
+          },
+        ],
+      });
+
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+
+      const errorHandlers = [];
+
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+        addErrorHandler(handler) {
+          errorHandlers.push(handler);
+        },
+      });
+
+      history.pushState(history.state, document.title, "/app1");
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-mount-routing-event")
+      );
+
+      errorHandlers.forEach((cb) =>
+        cb({
+          appOrParcelName: "app1",
+        })
+      );
+
+      await tick();
+
+      expect(document.body).toMatchSnapshot();
+    });
+
+    it(`works with a parcel provided for the error UI`, async () => {
+      /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+      const routes = constructRoutes({
+        containerEl: "body",
+        base: "/",
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/app1",
+            routes: [
+              {
+                type: "application",
+                name: "app1",
+                error: {
+                  async bootstrap() {},
+                  async mount(props) {
+                    const div = document.createElement("div");
+                    div.textContent = `App 1 is broken (parcel)`;
+                    props.domElement.appendChild(div);
+                  },
+                  async unmount(props) {},
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+
+      const errorHandlers = [];
+
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+        addErrorHandler(handler) {
+          errorHandlers.push(handler);
+        },
+      });
+
+      history.pushState(history.state, document.title, "/app1");
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-mount-routing-event")
+      );
+
+      errorHandlers.forEach((cb) =>
+        cb({
+          appOrParcelName: "app1",
+        })
+      );
+
+      await tick();
+
+      expect(document.body).toMatchSnapshot();
+    });
+
+    it(`works with error handlers defined in HTML`, async () => {
+      const { routerElement } = parseFixture("error-handlers.html");
+      const data = {
+        errors: {
+          headerError: {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          },
+          mainContentError: `<div>Oops! An error occurred!</div>`,
+        },
+      };
+
+      const routes = constructRoutes(routerElement, data);
+      const applications = constructApplications({
+        routes,
+        async loadApp({ name }) {
+          throw Error();
+        },
+      });
+
+      const errorHandlers = [];
+
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+        addErrorHandler(handler) {
+          errorHandlers.push(handler);
+        },
+      });
+
+      history.pushState(history.state, document.title, "/app1");
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-mount-routing-event")
+      );
+
+      errorHandlers.forEach((cb) =>
+        cb({
+          appOrParcelName: "app1",
+        })
+      );
+
+      await tick();
+
+      expect(document.body).toMatchSnapshot();
+    });
+
+    it(`unmounts the error parcel when the application gets unloaded`, async () => {
+      let parcelWasMounted = false,
+        parcelWasUnmounted = false;
+
+      /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+      const routes = constructRoutes({
+        containerEl: "body",
+        base: "/",
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/app1",
+            routes: [
+              {
+                type: "application",
+                name: "app1",
+                error: {
+                  async bootstrap() {},
+                  async mount(props) {
+                    const div = document.createElement("div");
+                    div.textContent = `App 1 is broken (parcel)`;
+                    props.domElement.appendChild(div);
+                    parcelWasMounted = true;
+                  },
+                  async unmount(props) {
+                    parcelWasUnmounted = true;
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+
+      const errorHandlers = [];
+
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+        addErrorHandler(handler) {
+          errorHandlers.push(handler);
+        },
+        getAppStatus() {
+          return "SKIP_BECAUSE_BROKEN";
+        },
+      });
+
+      history.pushState(history.state, document.title, "/app1");
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-mount-routing-event")
+      );
+
+      errorHandlers.forEach((cb) =>
+        cb({
+          appOrParcelName: "app1",
+        })
+      );
+
+      await tick();
+
+      expect(parcelWasMounted).toBe(true);
+      expect(parcelWasUnmounted).toBe(false);
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-mount-routing-event")
+      );
+
+      // indicate that the application has been unloaded
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-routing-event", {
+          detail: {
+            newAppStatuses: {
+              app1: "MOUNTED",
+            },
+          },
+        })
+      );
+
+      await tick();
+
+      expect(parcelWasUnmounted).toBe(true);
+    });
   });
 });
 

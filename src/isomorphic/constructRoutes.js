@@ -196,6 +196,21 @@ function elementToJson(element, htmlLayoutData) {
         );
       }
     }
+
+    const errorKey = getAttribute(element, "error");
+    if (errorKey) {
+      if (
+        htmlLayoutData.errors &&
+        htmlLayoutData.errors.hasOwnProperty(errorKey)
+      ) {
+        application.error = htmlLayoutData.errors[errorKey];
+      } else if (inBrowser) {
+        throw Error(
+          `Application error handler '${loaderKey}' was not defined in the htmlLayoutData`
+        );
+      }
+    }
+
     setProps(element, application, htmlLayoutData);
     return [application];
   } else if (element.nodeName.toLowerCase() === "route") {
@@ -341,7 +356,7 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "name", "props", "loader"],
+        ["type", "name", "props", "loader", "error"],
         disableWarnings
       );
       if (route.props) {
