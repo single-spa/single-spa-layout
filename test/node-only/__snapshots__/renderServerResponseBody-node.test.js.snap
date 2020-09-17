@@ -39,20 +39,14 @@ exports[`renderServerResponseBody allows for strings to be returned from renderA
     <single-spa-router mode="history"
                        base="/"
     >
-      <div id="single-spa-application:undefined">
-        <button>
-          App undefined
-        </button>
-      </div>
+      <application name="header">
+      </application>
       <div class="main-content">
         <button>
           Top level content
         </button>
-        <div id="single-spa-application:undefined">
-          <button>
-            App undefined
-          </button>
-        </div>
+        <application name="app1">
+        </application>
         Some raw text
       </div>
       <span>
@@ -106,20 +100,14 @@ exports[`renderServerResponseBody dom-elements.html fixture renders the app1 rou
     <single-spa-router mode="history"
                        base="/"
     >
-      <div id="single-spa-application:undefined">
-        <button>
-          App undefined
-        </button>
-      </div>
+      <application name="header">
+      </application>
       <div class="main-content">
         <button>
           Top level content
         </button>
-        <div id="single-spa-application:undefined">
-          <button>
-            App undefined
-          </button>
-        </div>
+        <application name="app1">
+        </application>
         Some raw text
       </div>
       <span>
