@@ -2,6 +2,7 @@ import { applicationElementId } from "./constructLayoutEngine";
 import { mountRootParcel } from "single-spa";
 import { inBrowser } from "../utils/environment-helpers.js";
 import { find } from "../utils/find.js";
+import { htmlToParcelConfig } from "../utils/parcel-utils";
 
 /**
  * @typedef {{
@@ -168,18 +169,4 @@ function placeLoader(appName, appRoute, loadingPromise) {
         })
     );
   });
-}
-
-function htmlToParcelConfig(str) {
-  return {
-    bootstrap: () => Promise.resolve(),
-    mount: (props) =>
-      Promise.resolve().then(() => {
-        props.domElement.innerHTML = str;
-      }),
-    unmount: (props) =>
-      Promise.resolve().then(() => {
-        props.domElement.innerHTML = "";
-      }),
-  };
 }
