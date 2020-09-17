@@ -344,3 +344,46 @@ exports[`constructLayoutEngine browser can successfully rearrange dom elements d
   />
 </body>
 `;
+
+exports[`constructLayoutEngine browser error handling shows an error UI when an application goes into SKIP_BECAUSE_BROKEN status 1`] = `
+<body>
+  <div
+    id="single-spa-application:app1"
+  >
+    <div>
+      Oops, app1 is broken
+    </div>
+  </div>
+</body>
+`;
+
+exports[`constructLayoutEngine browser error handling works with a parcel provided for the error UI 1`] = `
+<body>
+  <div
+    id="single-spa-application:app1"
+  >
+    <div>
+      App 1 is broken (parcel)
+    </div>
+  </div>
+</body>
+`;
+
+exports[`constructLayoutEngine browser error handling works with error handlers defined in HTML 1`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  />
+  <div
+    class="main-content"
+  >
+    <div
+      id="single-spa-application:app1"
+    >
+      <div>
+        Oops! An error occurred!
+      </div>
+    </div>
+  </div>
+</body>
+`;

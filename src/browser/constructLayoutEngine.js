@@ -1,5 +1,13 @@
-import { matchRoute, resolvePath } from "../isomorphic/matchRoute";
 import { inBrowser } from "../utils/environment-helpers";
+import {
+  addErrorHandler as singleSpaAddErrorHandler,
+  mountRootParcel,
+  removeErrorHandler,
+  getAppStatus as singleSpaGetAppStatus,
+  SKIP_BECAUSE_BROKEN,
+  LOAD_ERROR,
+} from "single-spa";
+import { htmlToParcelConfig } from "../utils/parcel-utils";
 
 /**
  * @typedef {{
@@ -21,9 +29,14 @@ export function constructLayoutEngine({
   routes: resolvedRoutes,
   applications,
   active = true,
+  // secretly used for tests, but not exposed in typescript or docs
+  // was too lazy to mock all of single-spa, including pathToActiveWhen
+  addErrorHandler = singleSpaAddErrorHandler,
+  getAppStatus = singleSpaGetAppStatus,
 }) {
   let isActive = false;
   let pendingRemovals = [];
+  let errorParcelByAppName = {};
 
   const baseWithoutSlash = resolvedRoutes.base.slice(
     0,
@@ -41,11 +54,18 @@ export function constructLayoutEngine({
 
       if (inBrowser) {
         window.addEventListener(
+          "single-spa:before-routing-event",
+          unmountErrorParcels
+        );
+
+        window.addEventListener(
           "single-spa:before-mount-routing-event",
           arrangeDomElements
         );
 
         window.addEventListener("single-spa:routing-event", handleRoutingEvent);
+
+        addErrorHandler(errorHandler);
 
         arrangeDomElements();
       }
@@ -59,6 +79,11 @@ export function constructLayoutEngine({
 
       if (inBrowser) {
         window.removeEventListener(
+          "single-spa:before-routing-event",
+          unmountErrorParcels
+        );
+
+        window.removeEventListener(
           "single-spa:before-mount-routing-event",
           arrangeDomElements
         );
@@ -67,6 +92,8 @@ export function constructLayoutEngine({
           "single-spa:routing-event",
           handleRoutingEvent
         );
+
+        removeErrorHandler(errorHandler);
       }
     },
   };
@@ -76,6 +103,42 @@ export function constructLayoutEngine({
   }
 
   return layoutEngine;
+
+  function errorHandler(err) {
+    const applicationRoute = findApplicationRoute({
+      applicationName: err.appOrParcelName,
+      location: window.location,
+      routes: resolvedRoutes.routes,
+    });
+    if (applicationRoute && applicationRoute.error) {
+      const applicationDomContainer = document.getElementById(
+        applicationElementId(applicationRoute.name)
+      );
+      const parcelConfig =
+        typeof applicationRoute.error === "string"
+          ? htmlToParcelConfig(applicationRoute.error)
+          : applicationRoute.error;
+      errorParcelByAppName[applicationRoute.name] = mountRootParcel(
+        parcelConfig,
+        {
+          domElement: applicationDomContainer,
+        }
+      );
+    }
+  }
+
+  function unmountErrorParcels({ detail: { newAppStatuses } }) {
+    for (let appName in newAppStatuses) {
+      if (
+        errorParcelByAppName[appName] &&
+        brokenStatus(getAppStatus(appName)) &&
+        !brokenStatus(newAppStatuses[appName])
+      ) {
+        errorParcelByAppName[appName].unmount();
+        delete errorParcelByAppName[appName];
+      }
+    }
+  }
 
   function arrangeDomElements() {
     const path = location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
@@ -197,6 +260,48 @@ function recurseRoutes({
 }
 
 /**
+ * @typedef {{
+ * location: URL,
+ * routes: Array<import('../isomorphic/constructRoutes').RouteChild>,
+ * applicationName: string
+ * }} FindApplicationRouteInput
+ *
+ * @param {FindApplicationRouteInput} input
+ * @returns {import('./constructRoutes').Application}
+ */
+function findApplicationRoute({ applicationName, location, routes }) {
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i];
+
+    if (route.type === "application") {
+      if (route.name === applicationName) {
+        return route;
+      }
+    } else if (route.type === "route") {
+      if (route.activeWhen(location)) {
+        const routeResult = findApplicationRoute({
+          applicationName,
+          location,
+          routes: route.routes,
+        });
+        if (routeResult) {
+          return routeResult;
+        }
+      }
+    } else if (route.routes) {
+      const routeResult = findApplicationRoute({
+        applicationName,
+        location,
+        routes: route.routes,
+      });
+      if (routeResult) {
+        return routeResult;
+      }
+    }
+  }
+}
+
+/**
  *
  * @param {Node} node
  * @param {Node} container
@@ -224,4 +329,8 @@ function removeNode(node) {
 
 export function applicationElementId(name) {
   return `single-spa-application:${name}`;
+}
+
+function brokenStatus(status) {
+  return status === SKIP_BECAUSE_BROKEN || status === LOAD_ERROR;
 }

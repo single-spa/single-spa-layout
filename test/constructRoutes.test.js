@@ -212,7 +212,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`
       );
 
       console.warn.mockReset();
@@ -228,7 +228,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props, loader`
+        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props, loader, error`
       );
     });
 
@@ -268,7 +268,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader`
+        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`
       );
     });
 
@@ -628,6 +628,28 @@ describe("constructRoutes", () => {
         ],
       });
     });
+
+    it(`handles the 'error' property on applications`, () => {
+      expect(
+        constructRoutes({
+          routes: [
+            {
+              type: "application",
+              name: "app1",
+              error: `<div>Oops, looks like app1 is broken</div>`,
+            },
+          ],
+        })
+      ).toMatchObject({
+        routes: [
+          {
+            type: "application",
+            name: "app1",
+            error: `<div>Oops, looks like app1 is broken</div>`,
+          },
+        ],
+      });
+    });
   });
 
   describe("Loaders defined in HTML", () => {
@@ -708,6 +730,28 @@ describe("constructRoutes", () => {
         );
       });
     });
+
+  describe(`error handlers defined in HTML`, () => {
+    it(`can parse and apply error handlers from HTML files`, () => {
+      const { document, routerElement } = parseFixture("error-handlers.html");
+      const data = {
+        errors: {
+          headerError: {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          },
+          mainContentError: `<div>Oops! An error occurred!</div>`,
+        },
+      };
+      const routes = constructRoutes(routerElement, data);
+
+      const headerApp = findApplication(routes.routes, "header");
+      expect(headerApp).toBeDefined();
+      expect(headerApp.error).toBe(data.errors.headerError);
+      expect(headerApp.props).not.toBeDefined();
+    });
+  });
 
   describe("router config defined in HTML", () => {
     const { document, routerElement } = parseFixture("router-config.html");
