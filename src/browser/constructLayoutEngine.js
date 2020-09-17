@@ -225,10 +225,11 @@ function recurseRoutes({
         shouldMount: shouldMount && route.activeWhen(location),
         pendingRemovals,
       });
-    } else if (route instanceof Node) {
+    } else if (route instanceof Node || typeof route.type === "string") {
       if (shouldMount) {
         if (!route.connectedNode) {
-          const newNode = route.cloneNode(false);
+          const newNode =
+            route instanceof Node ? route.cloneNode(false) : jsonToDom(route);
           route.connectedNode = newNode;
         }
 
@@ -329,6 +330,35 @@ function removeNode(node) {
 
 export function applicationElementId(name) {
   return `single-spa-application:${name}`;
+}
+
+/*
+ * The json object here is expected to be a parse5 representation
+ * of the dom element.
+ *
+ * Example: {type: 'div', attrs: [{"class": "blue"}]}
+ */
+function jsonToDom(obj) {
+  if (obj.type.toLowerCase() === "#text") {
+    return document.createTextNode(obj.value);
+  } else if (obj.type.toLowerCase() === "#comment") {
+    return document.createComment(obj.value);
+  }
+  {
+    const node = document.createElement(obj.type);
+
+    (obj.attrs || []).forEach((attr) => {
+      node.setAttribute(attr.name, attr.value);
+    });
+
+    if (node.routes) {
+      node.routes.forEach((route) => {
+        node.appendChild(jsonToDom(route));
+      });
+    }
+
+    return node;
+  }
 }
 
 function brokenStatus(status) {

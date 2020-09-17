@@ -227,6 +227,25 @@ exports[`constructLayoutEngine browser can process the nested-default-route fixt
 </body>
 `;
 
+exports[`constructLayoutEngine browser can render dom elements from json 1`] = `
+<body>
+  <div
+    class="before"
+  >
+    The text before
+    <!--the comment before-->
+  </div>
+  <div
+    id="single-spa-application:app1"
+  />
+  <div
+    class="after"
+  >
+    <!--the comment after-->
+  </div>
+</body>
+`;
+
 exports[`constructLayoutEngine browser can show a loader properly 1`] = `<body />`;
 
 exports[`constructLayoutEngine browser can show a loader properly 2`] = `

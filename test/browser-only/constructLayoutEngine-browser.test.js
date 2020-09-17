@@ -644,6 +644,86 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
   });
 
+  it(`can render dom elements from json`, () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      containerEl: "body",
+      base: "/",
+      mode: "history",
+      routes: [
+        {
+          type: "route",
+          path: "/app1",
+          routes: [
+            {
+              type: "div",
+              attrs: [
+                {
+                  name: "class",
+                  value: "before",
+                },
+              ],
+              routes: [
+                {
+                  type: "#text",
+                  value: "The text before",
+                },
+                {
+                  type: "#comment",
+                  value: "the comment before",
+                },
+              ],
+            },
+            {
+              type: "application",
+              name: "app1",
+            },
+            {
+              type: "div",
+              attrs: [
+                {
+                  name: "class",
+                  value: "after",
+                },
+              ],
+              routes: [
+                {
+                  type: "#comment",
+                  value: "the comment after",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const applications = constructApplications({
+      routes,
+      loadApp: async (name) => {
+        return {
+          async bootstrap() {},
+          async mount() {},
+          async unmount() {},
+        };
+      },
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+      applications,
+    });
+
+    history.pushState(history.state, document.title, "/app1");
+    const loadPromise = applications[0].app();
+
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event")
+    );
+
+    expect(document.body).toMatchSnapshot();
+  });
+
   describe(`error handling`, () => {
     it(`shows an error UI when an application goes into SKIP_BECAUSE_BROKEN status`, async () => {
       /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
