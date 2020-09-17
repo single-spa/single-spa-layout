@@ -33,6 +33,7 @@ const GT_REGEX = />/g;
  * renderOptions: RenderOptions;
  * serverLayout: import('./constructServerLayout').serverLayout;
  * applicationProps: import('single-spa').AppProps;
+ * inRouterElement: boolean;
  * }} SerializeArgs
  *
  * @typedef {{
@@ -63,6 +64,7 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
     renderOptions,
     serverLayout,
     applicationProps,
+    inRouterElement: false,
   });
 
   return {
@@ -76,7 +78,7 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
  * @param {SerializeArgs} serializeArgs
  */
 function serializeChildNodes(args) {
-  const { node: parentNode } = args;
+  const { node: parentNode, inRouterElement } = args;
 
   let childNodes = treeAdapter.getChildNodes(parentNode);
 
@@ -88,7 +90,7 @@ function serializeChildNodes(args) {
     }
     let serialize;
 
-    if (isApplicationNode(node)) {
+    if (!inRouterElement && isApplicationNode(node)) {
       serialize = serializeApplication;
     } else if (isRouteNode(node)) {
       serialize = serializeRoute;
@@ -253,7 +255,8 @@ function serializeElement(args) {
         ? treeAdapter.getTemplateContent(node)
         : node;
 
-    const newArgs = { ...args, node: childNodesHolder };
+    const inRouterElement = args.inRouterElement || tn === "single-spa-router";
+    const newArgs = { ...args, node: childNodesHolder, inRouterElement };
     serializeChildNodes(newArgs);
     output.add(stringStream(`</${tn}>`));
   }
