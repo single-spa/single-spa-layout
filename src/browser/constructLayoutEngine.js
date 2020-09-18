@@ -1,9 +1,9 @@
 import { inBrowser } from "../utils/environment-helpers";
 import {
-  addErrorHandler as singleSpaAddErrorHandler,
+  addErrorHandler,
   mountRootParcel,
   removeErrorHandler,
-  getAppStatus as singleSpaGetAppStatus,
+  getAppStatus,
   SKIP_BECAUSE_BROKEN,
   LOAD_ERROR,
 } from "single-spa";
@@ -29,10 +29,6 @@ export function constructLayoutEngine({
   routes: resolvedRoutes,
   applications,
   active = true,
-  // secretly used for tests, but not exposed in typescript or docs
-  // was too lazy to mock all of single-spa, including pathToActiveWhen
-  addErrorHandler = singleSpaAddErrorHandler,
-  getAppStatus = singleSpaGetAppStatus,
 }) {
   let isActive = false;
   let pendingRemovals = [];
