@@ -5,9 +5,23 @@ import {
 } from "../../src/single-spa-layout.js";
 import { screen } from "@testing-library/dom";
 import { parseFixture } from "../html-utils.js";
-import { triggerAppChange, getAppStatus } from "single-spa";
+import { addErrorHandler, getAppStatus } from "single-spa";
+
+jest.mock("single-spa", () => {
+  const actualSingleSpa = jest.requireActual("single-spa");
+  return {
+    ...actualSingleSpa,
+    addErrorHandler: jest.fn(),
+    getAppStatus: jest.fn(),
+  };
+});
 
 describe(`constructLayoutEngine browser`, () => {
+  beforeEach(() => {
+    addErrorHandler.mockReset();
+    getAppStatus.mockReset();
+  });
+
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
   let layoutEngine;
 
@@ -758,13 +772,13 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       const errorHandlers = [];
+      addErrorHandler.mockImplementation((handler) => {
+        errorHandlers.push(handler);
+      });
 
       layoutEngine = constructLayoutEngine({
         routes,
         applications,
-        addErrorHandler(handler) {
-          errorHandlers.push(handler);
-        },
       });
 
       history.pushState(history.state, document.title, "/app1");
@@ -825,13 +839,13 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       const errorHandlers = [];
+      addErrorHandler.mockImplementation((handler) => {
+        errorHandlers.push(handler);
+      });
 
       layoutEngine = constructLayoutEngine({
         routes,
         applications,
-        addErrorHandler(handler) {
-          errorHandlers.push(handler);
-        },
       });
 
       history.pushState(history.state, document.title, "/app1");
@@ -873,13 +887,13 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       const errorHandlers = [];
+      addErrorHandler.mockImplementation((handler) => {
+        errorHandlers.push(handler);
+      });
 
       layoutEngine = constructLayoutEngine({
         routes,
         applications,
-        addErrorHandler(handler) {
-          errorHandlers.push(handler);
-        },
       });
 
       history.pushState(history.state, document.title, "/app1");
@@ -946,16 +960,14 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       const errorHandlers = [];
+      addErrorHandler.mockImplementation((handler) => {
+        errorHandlers.push(handler);
+      });
+      getAppStatus.mockReturnValue("SKIP_BECAUSE_BROKEN");
 
       layoutEngine = constructLayoutEngine({
         routes,
         applications,
-        addErrorHandler(handler) {
-          errorHandlers.push(handler);
-        },
-        getAppStatus() {
-          return "SKIP_BECAUSE_BROKEN";
-        },
       });
 
       history.pushState(history.state, document.title, "/app1");
