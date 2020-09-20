@@ -157,11 +157,10 @@ function serializeApplication({
 
   applicationProps.push(props);
 
-  let appStream = renderOptions.renderApplication(props);
-
-  if (typeof appStream === "string") {
-    appStream = stringStream(appStream);
-  }
+  const appStream = renderResultToStream(
+    () => renderOptions.renderApplication(props),
+    props.name
+  );
 
   output.add(stringStream(`<div id="single-spa-application:${props.name}">`));
 
@@ -212,13 +211,12 @@ function serializeFragment({ node, output, renderOptions }) {
     throw Error(`<fragment> has unknown name`);
   }
 
-  let fragmentStream = renderOptions.renderFragment(attr.value);
-
-  if (typeof fragmentStream === "string") {
-    fragmentStream = stringStream(fragmentStream);
-  }
-
-  output.add(fragmentStream);
+  output.add(
+    renderResultToStream(
+      () => renderOptions.renderFragment(attr.value),
+      attr.value
+    )
+  );
 }
 
 /**
@@ -362,4 +360,40 @@ export function stringStream(str) {
   readable.push(str);
   readable.push(null);
   return readable;
+}
+
+function renderResultToStream(cb, name) {
+  let appStream;
+
+  try {
+    appStream = cb();
+  } catch (err) {
+    renderError(name, err);
+    appStream = stringStream("");
+  }
+
+  if (appStream && typeof appStream.then === "function") {
+    const promise = appStream;
+    appStream = merge2();
+    promise.then(
+      (result) => {
+        appStream.add(
+          typeof result === "string" ? stringStream(result) : result
+        );
+      },
+      (err) => {
+        renderError(name, err);
+        appStream.add(stringStream(""));
+      }
+    );
+  } else if (typeof appStream === "string") {
+    appStream = stringStream(appStream);
+  }
+
+  return appStream;
+}
+
+function renderError(name, err) {
+  console.error(`Application ${name} failed to render.`);
+  console.error(err);
 }

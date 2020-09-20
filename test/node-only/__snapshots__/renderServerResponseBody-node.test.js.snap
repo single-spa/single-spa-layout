@@ -1,5 +1,127 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`renderServerResponseBody allows for promises that resolve with streams to be returned from renderApplication 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <div id="single-spa-application:header">
+      <button>
+        App header from stream
+      </button>
+    </div>
+    <div class="main-content">
+      <button>
+        Top level content
+      </button>
+      <div id="single-spa-application:app1">
+        <button>
+          App app1 from stream
+        </button>
+      </div>
+      Some raw text
+    </div>
+    <span>
+      <footer>
+        <a href="/about">
+          About
+        </a>
+      </footer>
+    </span>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+      <application name="header">
+      </application>
+      <div class="main-content">
+        <button>
+          Top level content
+        </button>
+        <application name="app1">
+        </application>
+        Some raw text
+      </div>
+      <span>
+        <footer>
+          <a href="/about">
+            About
+          </a>
+        </footer>
+      </span>
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`renderServerResponseBody allows for promises to be returned from renderApplication 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <div id="single-spa-application:header">
+      <button>
+        App header from promise
+      </button>
+    </div>
+    <div class="main-content">
+      <button>
+        Top level content
+      </button>
+      <div id="single-spa-application:app1">
+        <button>
+          App app1 from promise
+        </button>
+      </div>
+      Some raw text
+    </div>
+    <span>
+      <footer>
+        <a href="/about">
+          About
+        </a>
+      </footer>
+    </span>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+      <application name="header">
+      </application>
+      <div class="main-content">
+        <button>
+          Top level content
+        </button>
+        <application name="app1">
+        </application>
+        Some raw text
+      </div>
+      <span>
+        <footer>
+          <a href="/about">
+            About
+          </a>
+        </footer>
+      </span>
+    </single-spa-router>
+  </body>
+</html>
+`;
+
 exports[`renderServerResponseBody allows for strings to be returned from renderApplication 1`] = `
 <!DOCTYPE html>
 <html lang="en">
@@ -261,6 +383,116 @@ exports[`renderServerResponseBody multiple-fragments.html fixture preserves corr
     <single-spa-router mode="history"
                        base="/"
     >
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`renderServerResponseBody renders an empty string when renderApplication throws an error 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <div id="single-spa-application:header">
+    </div>
+    <div class="main-content">
+      <button>
+        Top level content
+      </button>
+      <div id="single-spa-application:app1">
+      </div>
+      Some raw text
+    </div>
+    <span>
+      <footer>
+        <a href="/about">
+          About
+        </a>
+      </footer>
+    </span>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+      <application name="header">
+      </application>
+      <div class="main-content">
+        <button>
+          Top level content
+        </button>
+        <application name="app1">
+        </application>
+        Some raw text
+      </div>
+      <span>
+        <footer>
+          <a href="/about">
+            About
+          </a>
+        </footer>
+      </span>
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`renderServerResponseBody renders an empty string when returned promise from renderApplication rejects 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <div id="single-spa-application:header">
+    </div>
+    <div class="main-content">
+      <button>
+        Top level content
+      </button>
+      <div id="single-spa-application:app1">
+      </div>
+      Some raw text
+    </div>
+    <span>
+      <footer>
+        <a href="/about">
+          About
+        </a>
+      </footer>
+    </span>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+      <application name="header">
+      </application>
+      <div class="main-content">
+        <button>
+          Top level content
+        </button>
+        <application name="app1">
+        </application>
+        Some raw text
+      </div>
+      <span>
+        <footer>
+          <a href="/about">
+            About
+          </a>
+        </footer>
+      </span>
     </single-spa-router>
   </body>
 </html>

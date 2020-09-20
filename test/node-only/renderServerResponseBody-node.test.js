@@ -432,4 +432,154 @@ describe(`renderServerResponseBody`, () => {
 
     readable.read();
   });
+
+  it(`allows for promises to be returned from renderApplication`, (done) => {
+    const html = fs
+      .readFileSync(
+        path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
+        "utf-8"
+      )
+      .toString();
+
+    const layout = constructServerLayout({
+      html,
+    });
+
+    const { bodyStream: readable, applicationProps } = renderServerResponseBody(
+      layout,
+      {
+        urlPath: "/app1",
+        renderApplication(props) {
+          const { name } = props;
+          return Promise.resolve(`<button>App ${name} from promise</button>`);
+        },
+      }
+    );
+
+    let finalHtml = "";
+
+    readable.on("data", (chunk) => {
+      finalHtml += chunk;
+    });
+
+    readable.on("end", () => {
+      expect(finalHtml).toMatchSnapshot();
+      done();
+    });
+
+    readable.read();
+  });
+
+  it(`allows for promises that resolve with streams to be returned from renderApplication`, (done) => {
+    const html = fs
+      .readFileSync(
+        path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
+        "utf-8"
+      )
+      .toString();
+
+    const layout = constructServerLayout({
+      html,
+    });
+
+    const { bodyStream: readable, applicationProps } = renderServerResponseBody(
+      layout,
+      {
+        urlPath: "/app1",
+        renderApplication(props) {
+          const { name } = props;
+          return Promise.resolve().then(() => {
+            return Readable.from(`<button>App ${name} from stream</button>`);
+          });
+        },
+      }
+    );
+
+    let finalHtml = "";
+
+    readable.on("data", (chunk) => {
+      finalHtml += chunk;
+    });
+
+    readable.on("end", () => {
+      expect(finalHtml).toMatchSnapshot();
+      done();
+    });
+
+    readable.read();
+  });
+
+  it(`renders an empty string when returned promise from renderApplication rejects`, (done) => {
+    const html = fs
+      .readFileSync(
+        path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
+        "utf-8"
+      )
+      .toString();
+
+    const layout = constructServerLayout({
+      html,
+    });
+
+    const { bodyStream: readable, applicationProps } = renderServerResponseBody(
+      layout,
+      {
+        urlPath: "/app1",
+        renderApplication(props) {
+          const { name } = props;
+          return Promise.reject(Error(`render failed`));
+        },
+      }
+    );
+
+    let finalHtml = "";
+
+    readable.on("data", (chunk) => {
+      finalHtml += chunk;
+    });
+
+    readable.on("end", () => {
+      expect(finalHtml).toMatchSnapshot();
+      done();
+    });
+
+    readable.read();
+  });
+
+  it(`renders an empty string when renderApplication throws an error`, (done) => {
+    const html = fs
+      .readFileSync(
+        path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
+        "utf-8"
+      )
+      .toString();
+
+    const layout = constructServerLayout({
+      html,
+    });
+
+    const { bodyStream: readable, applicationProps } = renderServerResponseBody(
+      layout,
+      {
+        urlPath: "/app1",
+        renderApplication(props) {
+          const { name } = props;
+          throw Error(`render failed`);
+        },
+      }
+    );
+
+    let finalHtml = "";
+
+    readable.on("data", (chunk) => {
+      finalHtml += chunk;
+    });
+
+    readable.on("end", () => {
+      expect(finalHtml).toMatchSnapshot();
+      done();
+    });
+
+    readable.read();
+  });
 });
