@@ -159,7 +159,7 @@ function serializeApplication({
 
   const appStream = renderResultToStream(
     () => renderOptions.renderApplication(props),
-    props.name
+    `Application ${props.name}`
   );
 
   output.add(stringStream(`<div id="single-spa-application:${props.name}">`));
@@ -214,7 +214,7 @@ function serializeFragment({ node, output, renderOptions }) {
   output.add(
     renderResultToStream(
       () => renderOptions.renderFragment(attr.value),
-      attr.value
+      `Fragment ${attr.value}`
     )
   );
 }
@@ -362,11 +362,11 @@ export function stringStream(str) {
   return readable;
 }
 
-function renderResultToStream(cb, name) {
+function renderResultToStream(render, name) {
   let appStream;
 
   try {
-    appStream = cb();
+    appStream = render();
   } catch (err) {
     renderError(name, err);
     appStream = stringStream("");
@@ -394,6 +394,6 @@ function renderResultToStream(cb, name) {
 }
 
 function renderError(name, err) {
-  console.error(`Application ${name} failed to render.`);
+  console.error(`${name} failed to render.`);
   console.error(err);
 }
