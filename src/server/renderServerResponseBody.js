@@ -368,8 +368,7 @@ function renderResultToStream(render, name) {
   try {
     appStream = render();
   } catch (err) {
-    renderError(name, err);
-    appStream = stringStream("");
+    appStream = renderError(name, err);
   }
 
   if (appStream && typeof appStream.then === "function") {
@@ -382,8 +381,7 @@ function renderResultToStream(render, name) {
         );
       },
       (err) => {
-        renderError(name, err);
-        appStream.add(stringStream(""));
+        appStream.add(renderError(name, err));
       }
     );
   } else if (typeof appStream === "string") {
@@ -396,4 +394,5 @@ function renderResultToStream(render, name) {
 function renderError(name, err) {
   console.error(`${name} failed to render.`);
   console.error(err);
+  return stringStream("");
 }
