@@ -15,14 +15,15 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
       const {
         bodyStream: readable,
         applicationProps,
-      } = renderServerResponseBody(layout, {
+      } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
@@ -63,11 +64,12 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
-      const { bodyStream: readable } = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderFragment(name) {
           const fragStream = new stream.Readable({
@@ -115,11 +117,12 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
-      const { bodyStream: readable } = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -160,11 +163,12 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
-      const { bodyStream: readable } = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -210,11 +214,12 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
-      const { bodyStream: readable } = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -260,11 +265,12 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
-      const { bodyStream: readable } = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderFragment(name) {
           if (name === "importmap") {
@@ -315,13 +321,14 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
       let renderedFragments = [];
 
-      const { bodyStream: readable } = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderFragment(name) {
           renderedFragments.push(name);
@@ -364,11 +371,12 @@ describe(`renderServerResponseBody`, () => {
         )
         .toString();
 
-      const layout = constructServerLayout({
+      const serverLayout = constructServerLayout({
         html,
       });
 
-      const { bodyStream: readable } = renderServerResponseBody(layout, {
+      const { bodyStream: readable } = renderServerResponseBody({
+        serverLayout,
         urlPath: "/app1",
         renderFragment(name) {
           return `
@@ -404,13 +412,13 @@ describe(`renderServerResponseBody`, () => {
       )
       .toString();
 
-    const layout = constructServerLayout({
+    const serverLayout = constructServerLayout({
       html,
     });
 
     const { bodyStream: readable, applicationProps } = renderServerResponseBody(
-      layout,
       {
+        serverLayout,
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
@@ -441,13 +449,13 @@ describe(`renderServerResponseBody`, () => {
       )
       .toString();
 
-    const layout = constructServerLayout({
+    const serverLayout = constructServerLayout({
       html,
     });
 
     const { bodyStream: readable, applicationProps } = renderServerResponseBody(
-      layout,
       {
+        serverLayout,
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
@@ -478,13 +486,13 @@ describe(`renderServerResponseBody`, () => {
       )
       .toString();
 
-    const layout = constructServerLayout({
+    const serverLayout = constructServerLayout({
       html,
     });
 
     const { bodyStream: readable, applicationProps } = renderServerResponseBody(
-      layout,
       {
+        serverLayout,
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
@@ -517,13 +525,13 @@ describe(`renderServerResponseBody`, () => {
       )
       .toString();
 
-    const layout = constructServerLayout({
+    const serverLayout = constructServerLayout({
       html,
     });
 
     const { bodyStream: readable, applicationProps } = renderServerResponseBody(
-      layout,
       {
+        serverLayout,
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
@@ -554,13 +562,13 @@ describe(`renderServerResponseBody`, () => {
       )
       .toString();
 
-    const layout = constructServerLayout({
+    const serverLayout = constructServerLayout({
       html,
     });
 
     const { bodyStream: readable, applicationProps } = renderServerResponseBody(
-      layout,
       {
+        serverLayout,
         urlPath: "/app1",
         renderApplication(props) {
           const { name } = props;
