@@ -22,6 +22,7 @@ const GT_REGEX = />/g;
 
 /**
  * @typedef {{
+ * serverLayout: import('./constructServerLayout').ServerLayout;
  * urlPath: string;
  * renderApplication(props: import('single-spa').AppProps) => import('stream').Readable | string;
  * renderFragment?(name: string) => import('stream').Readable | string;
@@ -41,15 +42,12 @@ const GT_REGEX = />/g;
  * applicationProps: Array<import('single-spa').AppProps>;
  * }} ServerResponseBodyResult
  *
- * @param {import('./constructServerLayout').ServerLayout} serverLayout
  * @param {RenderOptions} renderOptions
  * @returns {import('stream').Readable}
  */
-export function renderServerResponseBody(serverLayout, renderOptions) {
-  if (!serverLayout || !renderOptions) {
-    throw Error(
-      `single-spa-layout (server): must provide serverLayout and renderOptions`
-    );
+export function renderServerResponseBody(renderOptions) {
+  if (!renderOptions) {
+    throw Error(`single-spa-layout (server): must provide renderOptions`);
   }
 
   const applicationProps = [];
@@ -59,10 +57,9 @@ export function renderServerResponseBody(serverLayout, renderOptions) {
   });
 
   serializeChildNodes({
-    node: serverLayout.parsedDocument,
+    node: renderOptions.serverLayout.parsedDocument,
     output,
     renderOptions,
-    serverLayout,
     applicationProps,
     inRouterElement: false,
   });
@@ -181,9 +178,9 @@ function isRouterContent(node) {
  * @param {SerializeArgs} serializeArgs
  */
 function serializeRouterContent(args) {
-  const { serverLayout, renderOptions } = args;
+  const { renderOptions } = args;
   const matchedRoutes = matchRoute(
-    serverLayout.resolvedRoutes,
+    renderOptions.serverLayout.resolvedRoutes,
     renderOptions.urlPath
   );
   serializeChildNodes({

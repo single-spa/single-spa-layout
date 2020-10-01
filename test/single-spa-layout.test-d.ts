@@ -143,7 +143,8 @@ constructServerLayout({
 expectError(constructServerLayout());
 
 expectType<stream.Readable>(
-  renderServerResponseBody(serverLayout, {
+  renderServerResponseBody({
+    serverLayout,
     urlPath: "/app1",
     renderApplication(props) {
       return new stream.Readable();
@@ -151,7 +152,8 @@ expectType<stream.Readable>(
   })
 );
 
-renderServerResponseBody(serverLayout, {
+renderServerResponseBody({
+  serverLayout,
   urlPath: "/app1",
   renderApplication(props) {
     return new stream.Readable();
