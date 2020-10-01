@@ -4,6 +4,7 @@ import HTML from "parse5/lib/common/html.js";
 import { Readable } from "stream";
 import { matchRoute } from "../isomorphic/matchRoute.js";
 import merge2 from "merge2";
+import { MISSING_PROP } from "../isomorphic/constructRoutes.js";
 
 // Serialization algorithm is heavily based on the Serializer class in
 // https://github.com/inikulin/parse5/blob/master/packages/parse5/lib/serializer/index.js
@@ -22,52 +23,77 @@ const GT_REGEX = />/g;
 
 /**
  * @typedef {{
+ * res: import('http').ServerResponse;
  * serverLayout: import('./constructServerLayout').ServerLayout;
  * urlPath: string;
- * renderApplication(props: import('single-spa').AppProps) => import('stream').Readable | string;
- * renderFragment?(name: string) => import('stream').Readable | string;
+ * renderApplication(appToRender: AppToRender) => import('stream').Readable | string | Promise<string> | Promise<import('stream').Readable>;
+ * retrieveApplicationHeaders(appToRender AppToRender) => object;
+ * renderFragment?(name: string) => import('stream').Readable | string | Promise<string> | Promise<import('stream').Readable>;
+ * retrieveProp(name: string) => Promise<any>;
+ * assembleFinalHeaders(appHeaders: AppHeaders[]) => object;
  * }} RenderOptions
  *
  * @typedef {{
+ * appName: string;
+ * propsPromise: Promise<import('single-spa').AppProps>;
+ * }} AppToRender
+ *
+ * @typedef {{
+ * appProps: import('single-spa').AppProps;
+ * appHeaders: object;
+ * }} AppHeaders
+ *
+ * @typedef {{
  * node: import('parse5').Element;
- * output: import('parse5').output;
+ * bodyStream: import('merge2').Merge2Stream;
  * renderOptions: RenderOptions;
  * serverLayout: import('./constructServerLayout').serverLayout;
  * applicationProps: import('single-spa').AppProps;
  * inRouterElement: boolean;
  * }} SerializeArgs
  *
- * @typedef {{
- * bodyStream: import('stream').Readable;
- * applicationProps: Array<import('single-spa').AppProps>;
- * }} ServerResponseBodyResult
- *
  * @param {RenderOptions} renderOptions
- * @returns {import('stream').Readable}
+ * @returns {Promise}
  */
-export function renderServerResponseBody(renderOptions) {
+export async function sendLayoutHTTPResponse(renderOptions) {
   if (!renderOptions) {
     throw Error(`single-spa-layout (server): must provide renderOptions`);
   }
 
-  const applicationProps = [];
+  const propPromises = {},
+    applicationPropPromises = {},
+    headerPromises = {};
 
-  const output = merge2({
+  const bodyStream = merge2({
     pipeError: true,
   });
 
   serializeChildNodes({
     node: renderOptions.serverLayout.parsedDocument,
-    output,
+    bodyStream,
     renderOptions,
-    applicationProps,
+    propPromises,
+    applicationPropPromises,
+    headerPromises,
     inRouterElement: false,
   });
 
-  return {
-    bodyStream: output,
-    applicationProps,
-  };
+  const allAppHeaders = await Promise.all(
+    Object.keys(headerPromises).map(async (appName) => {
+      const [appHeaders, appProps] = await Promise.all([
+        headerPromises[appName],
+        applicationPropPromises[appName],
+      ]);
+      return { appHeaders, appProps };
+    })
+  );
+
+  const finalHeaders = renderOptions.assembleFinalHeaders(allAppHeaders);
+  for (let headerName in finalHeaders) {
+    renderOptions.res.setHeader(headerName, finalHeaders[headerName]);
+  }
+
+  bodyStream.pipe(renderOptions.res);
 }
 
 /**
@@ -143,27 +169,57 @@ function serializeRoute(args) {
  */
 function serializeApplication({
   node,
-  output,
+  bodyStream,
   renderOptions,
-  applicationProps,
+  applicationPropPromises,
+  propPromises,
+  headerPromises,
 }) {
-  const props = {
-    name: node.name,
-    ...(node.props || {}),
-  };
+  const appName = node.name;
 
-  applicationProps.push(props);
+  const propsConfig = node.props || {};
+  const propsPromise = Promise.all(
+    Object.keys(propsConfig).map((propName) => {
+      let value;
+      if (propsConfig[propName] === MISSING_PROP) {
+        value =
+          propPromises[propName] ||
+          (propPromises[propName] = renderOptions.retrieveProp(propName));
+      } else {
+        value = propsConfig[propName];
+      }
+
+      return Promise.resolve(value).then((rawValue) => [propName, rawValue]);
+    })
+  ).then((propEntries) => {
+    const props = {};
+
+    propEntries.forEach(([propName, value]) => {
+      props[propName] = value;
+    });
+
+    props.name = appName;
+
+    return props;
+  });
+
+  applicationPropPromises[appName] = propsPromise;
+
+  headerPromises[appName] = renderOptions.retrieveApplicationHeaders({
+    appName,
+    propsPromise,
+  });
 
   const appStream = renderResultToStream(
-    () => renderOptions.renderApplication(props),
-    `Application ${props.name}`
+    () => renderOptions.renderApplication({ appName, propsPromise }),
+    `Application ${appName}`
   );
 
-  output.add(stringStream(`<div id="single-spa-application:${props.name}">`));
+  bodyStream.add(stringStream(`<div id="single-spa-application:${appName}">`));
 
-  output.add(appStream);
+  bodyStream.add(appStream);
 
-  output.add(stringStream(`</div>`));
+  bodyStream.add(stringStream(`</div>`));
 }
 
 function isRouterContent(node) {
@@ -187,6 +243,7 @@ function serializeRouterContent(args) {
     ...args,
     node: { childNodes: matchedRoutes.routes },
   });
+  serializeLayoutData(args);
 }
 
 function isFragmentNode(node) {
@@ -198,9 +255,35 @@ function isFragmentNode(node) {
 
 /**
  *
+ * @param {SerializeArgs} args
+ */
+function serializeLayoutData({ propPromises, bodyStream }) {
+  bodyStream.add(
+    renderResultToStream(async () => {
+      const propEntries = await Promise.all(
+        Object.entries(propPromises).map(([propName, propValuePromise]) => {
+          return propValuePromise.then((value) => {
+            return [propName, value];
+          });
+        })
+      );
+      const props = propEntries.reduce((acc, [propName, value]) => {
+        acc[propName] = value;
+        return acc;
+      }, {});
+
+      return `<script>window.singleSpaLayoutData = ${JSON.stringify({
+        props,
+      })}</script>`;
+    }, `Serialize layout props`)
+  );
+}
+
+/**
+ *
  * @param {SerializeArgs} serializeArgs
  */
-function serializeFragment({ node, output, renderOptions }) {
+function serializeFragment({ node, bodyStream, renderOptions }) {
   const attr = treeAdapter
     .getAttrList(node)
     .find((attr) => attr.name === "name");
@@ -208,7 +291,7 @@ function serializeFragment({ node, output, renderOptions }) {
     throw Error(`<fragment> has unknown name`);
   }
 
-  output.add(
+  bodyStream.add(
     renderResultToStream(
       () => renderOptions.renderFragment(attr.value),
       `Fragment ${attr.value}`
@@ -221,13 +304,13 @@ function serializeFragment({ node, output, renderOptions }) {
  * @param {SerializeArgs} serializeArgs
  */
 function serializeElement(args) {
-  const { node, output } = args;
+  const { node, bodyStream } = args;
   const tn = treeAdapter.getTagName(node);
   const ns = treeAdapter.getNamespaceURI(node);
 
-  output.add(stringStream(`<${tn}`));
+  bodyStream.add(stringStream(`<${tn}`));
   serializeAttributes(args);
-  output.add(stringStream(`>`));
+  bodyStream.add(stringStream(`>`));
 
   if (
     tn !== $.AREA &&
@@ -257,7 +340,7 @@ function serializeElement(args) {
     const inRouterElement = args.inRouterElement || tn === "single-spa-router";
     const newArgs = { ...args, node: childNodesHolder, inRouterElement };
     serializeChildNodes(newArgs);
-    output.add(stringStream(`</${tn}>`));
+    bodyStream.add(stringStream(`</${tn}>`));
   }
 }
 
@@ -265,7 +348,7 @@ function serializeElement(args) {
  *
  * @param {SerializeArgs} serializeArgs
  */
-function serializeAttributes({ node, output }) {
+function serializeAttributes({ node, bodyStream }) {
   const attrs = treeAdapter.getAttrList(node) || [];
 
   for (let i = 0, attrsLength = attrs.length; i < attrsLength; i++) {
@@ -289,16 +372,11 @@ function serializeAttributes({ node, output }) {
       attrName = attr.prefix + ":" + attr.name;
     }
 
-    output.add(stringStream(` ${attrName}="${value}"`));
+    bodyStream.add(stringStream(` ${attrName}="${value}"`));
   }
 }
 
-/**
- *
- * @param {import('parse5').Element} node
- * @param {import('stream').Readable} output
- */
-function serializeTextNode({ node, output }) {
+function serializeTextNode({ node, bodyStream }) {
   const content = treeAdapter.getTextNodeContent(node);
   const parent = treeAdapter.getParentNode(node);
   let parentTn = null;
@@ -317,9 +395,9 @@ function serializeTextNode({ node, output }) {
     parentTn === $.PLAINTEXT ||
     parentTn === $.NOSCRIPT
   ) {
-    output.add(stringStream(content));
+    bodyStream.add(stringStream(content));
   } else {
-    output.add(stringStream(escapeString(content, false)));
+    bodyStream.add(stringStream(escapeString(content, false)));
   }
 }
 
@@ -339,17 +417,21 @@ function escapeString(str, attrMode) {
  *
  * @param {SerializeArgs} serializeArgs
  */
-function serializeCommentNode({ node, output }) {
-  output.add(stringStream(`<!--${treeAdapter.getCommentNodeContent(node)}-->`));
+function serializeCommentNode({ node, bodyStream }) {
+  bodyStream.add(
+    stringStream(`<!--${treeAdapter.getCommentNodeContent(node)}-->`)
+  );
 }
 
 /**
  *
  * @param {SerializeArgs} serializeArgs
  */
-function serializeDocumentTypeNode({ node, output }) {
+function serializeDocumentTypeNode({ node, bodyStream }) {
   const name = treeAdapter.getDocumentTypeNodeName(node);
-  output.add(stringStream(`<${doctype.serializeContent(name, null, null)}>`));
+  bodyStream.add(
+    stringStream(`<${doctype.serializeContent(name, null, null)}>`)
+  );
 }
 
 export function stringStream(str) {

@@ -16,8 +16,7 @@ import {
 } from "../src/single-spa-layout-interface";
 import {
   constructServerLayout,
-  renderServerResponseBody,
-  setResponseHeaders,
+  sendLayoutHTTPResponse,
 } from "../src/server/index";
 import { parse, Element, DefaultTreeDocument } from "parse5";
 import { ResolvedUrlRoute } from "../src/isomorphic/constructRoutes";
