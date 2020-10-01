@@ -20,6 +20,8 @@ const pathToActiveWhen = singleSpa[defaultStr]
   ? singleSpa[defaultStr][pathToActiveWhenStr]
   : singleSpa[pathToActiveWhenStr];
 
+export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
+
 /**
  * @typedef {InputRoutesConfigObject | Element | import('parse5').DefaultTreeDocument} RoutesConfig
  *
@@ -81,6 +83,9 @@ const pathToActiveWhen = singleSpa[defaultStr]
  */
 export function constructRoutes(routesConfig, htmlLayoutData) {
   if (routesConfig && routesConfig.nodeName) {
+    if (inBrowser && !htmlLayoutData && window.singleSpaLayoutData) {
+      htmlLayoutData = window.singleSpaLayoutData;
+    }
     routesConfig = domToRoutesConfig(routesConfig, htmlLayoutData);
   } else if (htmlLayoutData) {
     throw Error(
@@ -303,6 +308,8 @@ function setProps(element, route, htmlLayoutData) {
       throw Error(
         `Prop '${propName}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`
       );
+    } else {
+      route.props[propName] = MISSING_PROP;
     }
   }
 }

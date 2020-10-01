@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`renderServerResponseBody allows for promises that resolve with streams to be returned from renderApplication 1`] = `
+exports[`sendLayoutHTTPResponse response body allows for promises that resolve with streams to be returned from renderApplication 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -36,6 +36,9 @@ exports[`renderServerResponseBody allows for promises that resolve with streams 
         </a>
       </footer>
     </span>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -61,7 +64,7 @@ exports[`renderServerResponseBody allows for promises that resolve with streams 
 </html>
 `;
 
-exports[`renderServerResponseBody allows for promises to be returned from renderApplication 1`] = `
+exports[`sendLayoutHTTPResponse response body allows for promises to be returned from renderApplication 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -97,6 +100,9 @@ exports[`renderServerResponseBody allows for promises to be returned from render
         </a>
       </footer>
     </span>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -122,7 +128,7 @@ exports[`renderServerResponseBody allows for promises to be returned from render
 </html>
 `;
 
-exports[`renderServerResponseBody allows for strings to be returned from renderApplication 1`] = `
+exports[`sendLayoutHTTPResponse response body allows for strings to be returned from renderApplication 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -158,6 +164,9 @@ exports[`renderServerResponseBody allows for strings to be returned from renderA
         </a>
       </footer>
     </span>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -183,7 +192,7 @@ exports[`renderServerResponseBody allows for strings to be returned from renderA
 </html>
 `;
 
-exports[`renderServerResponseBody dom-elements.html fixture renders the app1 route correctly 1`] = `
+exports[`sendLayoutHTTPResponse response body dom-elements.html fixture renders the app1 route correctly 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -219,6 +228,9 @@ exports[`renderServerResponseBody dom-elements.html fixture renders the app1 rou
         </a>
       </footer>
     </span>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -244,7 +256,7 @@ exports[`renderServerResponseBody dom-elements.html fixture renders the app1 rou
 </html>
 `;
 
-exports[`renderServerResponseBody fragments.html fixture renders fragments correctly 1`] = `
+exports[`sendLayoutHTTPResponse response body fragments.html fixture renders fragments correctly 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -257,6 +269,9 @@ exports[`renderServerResponseBody fragments.html fixture renders fragments corre
     </title>
   </head>
   <body>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -270,7 +285,7 @@ exports[`renderServerResponseBody fragments.html fixture renders fragments corre
 </html>
 `;
 
-exports[`renderServerResponseBody multiple-fragments.html fixture allows renderFragment to return a string 1`] = `
+exports[`sendLayoutHTTPResponse response body multiple-fragments.html fixture allows renderFragment to return a string 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -283,6 +298,9 @@ exports[`renderServerResponseBody multiple-fragments.html fixture allows renderF
     </title>
   </head>
   <body>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -296,30 +314,7 @@ exports[`renderServerResponseBody multiple-fragments.html fixture allows renderF
 </html>
 `;
 
-exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when both fragments are slow 1`] = `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>
-      Document
-    </title>
-    <script type="systemjs-importmap">
-      {
-                    "imports": {}
-                  }
-    </script>
-  </head>
-  <body>
-    <single-spa-router mode="history"
-                       base="/"
-    >
-    </single-spa-router>
-  </body>
-</html>
-`;
-
-exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when fragments are synchronous 1`] = `
+exports[`sendLayoutHTTPResponse response body multiple-fragments.html fixture doesn't wait for the first fragment stream to finish before starting to read the second fragment 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -334,29 +329,9 @@ exports[`renderServerResponseBody multiple-fragments.html fixture preserves corr
     </script>
   </head>
   <body>
-    <single-spa-router mode="history"
-                       base="/"
-    >
-    </single-spa-router>
-  </body>
-</html>
-`;
-
-exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when head-metadata is slow 1`] = `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>
-      Document
-    </title>
-    <script type="systemjs-importmap">
-      {
-                  "imports": {}
-                }
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
     </script>
-  </head>
-  <body>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -365,7 +340,7 @@ exports[`renderServerResponseBody multiple-fragments.html fixture preserves corr
 </html>
 `;
 
-exports[`renderServerResponseBody multiple-fragments.html fixture preserves correct order of bytes when import map is slow 1`] = `
+exports[`sendLayoutHTTPResponse response body multiple-fragments.html fixture preserves correct order of bytes when both fragments are slow 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -380,6 +355,9 @@ exports[`renderServerResponseBody multiple-fragments.html fixture preserves corr
     </script>
   </head>
   <body>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -388,7 +366,85 @@ exports[`renderServerResponseBody multiple-fragments.html fixture preserves corr
 </html>
 `;
 
-exports[`renderServerResponseBody renders an empty string when renderApplication throws an error 1`] = `
+exports[`sendLayoutHTTPResponse response body multiple-fragments.html fixture preserves correct order of bytes when fragments are synchronous 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Document
+    </title>
+    <script type="systemjs-importmap">
+      {
+                  "imports": {}
+                }
+    </script>
+  </head>
+  <body>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`sendLayoutHTTPResponse response body multiple-fragments.html fixture preserves correct order of bytes when head-metadata is slow 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Document
+    </title>
+    <script type="systemjs-importmap">
+      {
+                  "imports": {}
+                }
+    </script>
+  </head>
+  <body>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`sendLayoutHTTPResponse response body multiple-fragments.html fixture preserves correct order of bytes when import map is slow 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Document
+    </title>
+    <script type="systemjs-importmap">
+      {
+                    "imports": {}
+                  }
+    </script>
+  </head>
+  <body>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+    </single-spa-router>
+  </body>
+</html>
+`;
+
+exports[`sendLayoutHTTPResponse response body renders an empty string when renderApplication throws an error 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -418,6 +474,9 @@ exports[`renderServerResponseBody renders an empty string when renderApplication
         </a>
       </footer>
     </span>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
@@ -443,7 +502,7 @@ exports[`renderServerResponseBody renders an empty string when renderApplication
 </html>
 `;
 
-exports[`renderServerResponseBody renders an empty string when returned promise from renderApplication rejects 1`] = `
+exports[`sendLayoutHTTPResponse response body renders an empty string when returned promise from renderApplication rejects 1`] = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -473,6 +532,9 @@ exports[`renderServerResponseBody renders an empty string when returned promise 
         </a>
       </footer>
     </span>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
     <single-spa-router mode="history"
                        base="/"
     >
