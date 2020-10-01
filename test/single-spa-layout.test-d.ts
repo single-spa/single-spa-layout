@@ -22,7 +22,8 @@ import { parse, Element, DefaultTreeDocument } from "parse5";
 import { ResolvedUrlRoute } from "../src/isomorphic/constructRoutes";
 import { JSDOM } from "jsdom";
 import stream from "stream";
-import http, { OutgoingHttpHeaders } from "http";
+import http, { ClientRequest, IncomingMessage, ServerResponse } from "http";
+import { Socket } from "net";
 
 const { window } = new JSDOM(`
 <!DOCTYPE html>
@@ -141,36 +142,28 @@ constructServerLayout({
 });
 expectError(constructServerLayout());
 
-expectType<stream.Readable>(
-  renderServerResponseBody({
+let res: ServerResponse = new ServerResponse(new IncomingMessage(new Socket()));
+
+expectType<Promise<any>>(
+  sendLayoutHTTPResponse({
+    res,
     serverLayout,
     urlPath: "/app1",
-    renderApplication(props) {
+    assembleFinalHeaders() {
+      return {};
+    },
+    renderApplication(arg) {
+      expectType<string>(arg.appName);
       return new stream.Readable();
+    },
+    retrieveApplicationHeaders(arg) {
+      return { hi: "there" };
+    },
+    retrieveProp(name) {
+      return "hi";
+    },
+    renderFragment(name) {
+      return "hi";
     },
   })
 );
-
-renderServerResponseBody({
-  serverLayout,
-  urlPath: "/app1",
-  renderApplication(props) {
-    return new stream.Readable();
-  },
-  renderFragment(name) {
-    return new stream.Readable();
-  },
-});
-
-const res = http.request("/fake.js");
-
-setResponseHeaders({
-  applicationProps: [{ name: "app1" }, { name: "app2" }],
-  retrieveApplicationHeaders(props: AppProps) {
-    return { "content-type": "application/javascript" };
-  },
-  mergeHeaders(headers: OutgoingHttpHeaders) {
-    return headers[0];
-  },
-  res,
-});
