@@ -45,6 +45,7 @@ const GT_REGEX = />/g;
  *
  * @typedef {{
  * node: import('parse5').Element;
+ * assetsStream: import('merge2').Merge2Stream;
  * bodyStream: import('merge2').Merge2Stream;
  * renderOptions: RenderOptions;
  * serverLayout: import('./constructServerLayout').serverLayout;
@@ -64,12 +65,17 @@ export async function sendLayoutHTTPResponse(renderOptions) {
     applicationPropPromises = {},
     headerPromises = {};
 
+  const assetsStream = merge2({
+    pipeError: true,
+  });
+
   const bodyStream = merge2({
     pipeError: true,
   });
 
   serializeChildNodes({
     node: renderOptions.serverLayout.parsedDocument,
+    assetsStream,
     bodyStream,
     renderOptions,
     propPromises,
@@ -119,6 +125,8 @@ function serializeChildNodes(args) {
       serialize = serializeRoute;
     } else if (isRouterContent(node)) {
       serialize = serializeRouterContent;
+    } else if (isAssetsNode(node)) {
+      validateAssetsContent; // Just validate the asset fragement
     } else if (isFragmentNode(node)) {
       serialize = serializeFragment;
     } else if (treeAdapter.isElementNode(node)) {
@@ -169,6 +177,7 @@ function serializeRoute(args) {
  */
 function serializeApplication({
   node,
+  assetsStream,
   bodyStream,
   renderOptions,
   applicationPropPromises,
@@ -215,9 +224,16 @@ function serializeApplication({
     `Application ${appName}`
   );
 
+  // If there are assets streamed then add them to the assetsStream
+  if (appStream.assets) {
+    assetsStream.add(appStream.assets);
+  }
+
   bodyStream.add(stringStream(`<div id="single-spa-application:${appName}">`));
 
-  bodyStream.add(appStream);
+  // The renderApplication API may return the new object format as well as support
+  // the existing way of just returning the final html content directly as a string
+  bodyStream.add(appStream.content ? appStream.content : appStream);
 
   bodyStream.add(stringStream(`</div>`));
 }
@@ -250,6 +266,12 @@ function isFragmentNode(node) {
   return (
     treeAdapter.isElementNode(node) &&
     treeAdapter.getTagName(node) === "fragment"
+  );
+}
+
+function isAssetsNode(node) {
+  return (
+    treeAdapter.isElementNode(node) && treeAdapter.getTagName(node) === "assets"
   );
 }
 
@@ -297,6 +319,18 @@ function serializeFragment({ node, bodyStream, renderOptions }) {
       `Fragment ${attr.value}`
     )
   );
+}
+
+/**
+ *
+ * @param {SerializeArgs} serializeArgs
+ */
+function validateAssetsContent({ node }) {
+  // Assuming there will be one assets fragment where
+  // all appliations will append there global styles
+  // its up to the mfe's to clear them after hydration
+  // for example as shown in the material-ui example
+  // Just leaving this as a placeholder for now
 }
 
 /**
