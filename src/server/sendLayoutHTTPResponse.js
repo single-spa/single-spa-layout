@@ -126,7 +126,7 @@ function serializeChildNodes(args) {
     } else if (isRouterContent(node)) {
       serialize = serializeRouterContent;
     } else if (isAssetsNode(node)) {
-      validateAssetsContent; // Just validate the asset fragement
+      serialize = serializeAssets;
     } else if (isFragmentNode(node)) {
       serialize = serializeFragment;
     } else if (treeAdapter.isElementNode(node)) {
@@ -219,23 +219,51 @@ function serializeApplication({
     propsPromise,
   });
 
-  const appStream = renderResultToStream(
-    () => renderOptions.renderApplication({ appName, propsPromise }),
-    `Application ${appName}`
-  );
+  let renderResult, contentStream, assetStream;
+  try {
+    renderResult = renderOptions.renderApplication({ appName, propsPromise });
 
-  // If there are assets streamed then add them to the assetsStream
-  if (appStream.assets) {
-    assetsStream.add(appStream.assets);
+    if (typeof renderResult.then === "function") {
+      contentStream = merge2();
+      assetStream = merge2();
+      renderResult.then(
+        (value) => {
+          const streams = valueToAppStreams(appName, value);
+          contentStream.add(streams.contentStream);
+          assetStream.add(streams.assetStream);
+        },
+        (err) => {
+          contentStream.add(renderError(appName, err));
+          assetStream.add(renderError(appName, err));
+        }
+      );
+    } else {
+      const streams = valueToAppStreams(appName, renderResult);
+      contentStream = streams.contentStream;
+      assetStream = streams.assetStream;
+    }
+  } catch (err) {
+    contentStream = renderError(appName, err);
+    assetStream = renderError(appName, err);
+  }
+  assetsStream.add(assetStream);
+  bodyStream.add(stringStream(`<div id="single-spa-application:${appName}">`));
+  bodyStream.add(contentStream);
+  bodyStream.add(stringStream(`</div>`));
+}
+
+function valueToAppStreams(name, value) {
+  let contentStream, assetStream;
+
+  if (value) {
+    contentStream = valueToStream(value.content || value, name);
+    assetStream = valueToStream(value.assets || "", name);
+  } else {
+    contentStream = renderError(name, Error(`returned nothing`));
+    assetStream = renderError(name, Error(`returned nothing`));
   }
 
-  bodyStream.add(stringStream(`<div id="single-spa-application:${appName}">`));
-
-  // The renderApplication API may return the new object format as well as support
-  // the existing way of just returning the final html content directly as a string
-  bodyStream.add(appStream.content ? appStream.content : appStream);
-
-  bodyStream.add(stringStream(`</div>`));
+  return { contentStream, assetStream };
 }
 
 function isRouterContent(node) {
@@ -280,25 +308,32 @@ function isAssetsNode(node) {
  * @param {SerializeArgs} args
  */
 function serializeLayoutData({ propPromises, bodyStream }) {
-  bodyStream.add(
-    renderResultToStream(async () => {
-      const propEntries = await Promise.all(
-        Object.entries(propPromises).map(([propName, propValuePromise]) => {
-          return propValuePromise.then((value) => {
-            return [propName, value];
-          });
-        })
-      );
-      const props = propEntries.reduce((acc, [propName, value]) => {
-        acc[propName] = value;
-        return acc;
-      }, {});
+  const getLayoutData = async () => {
+    const propEntries = await Promise.all(
+      Object.entries(propPromises).map(([propName, propValuePromise]) => {
+        return propValuePromise.then((value) => {
+          return [propName, value];
+        });
+      })
+    );
+    const props = propEntries.reduce((acc, [propName, value]) => {
+      acc[propName] = value;
+      return acc;
+    }, {});
 
-      return `<script>window.singleSpaLayoutData = ${JSON.stringify({
-        props,
-      })}</script>`;
-    }, `Serialize layout props`)
-  );
+    return `<script>window.singleSpaLayoutData = ${JSON.stringify({
+      props,
+    })}</script>`;
+  };
+
+  let value;
+  try {
+    value = getLayoutData();
+  } catch (err) {
+    value = renderError(`Serialize layout props`, err);
+  }
+
+  bodyStream.add(valueToStream(value, `Serialize layout props`));
 }
 
 /**
@@ -313,24 +348,25 @@ function serializeFragment({ node, bodyStream, renderOptions }) {
     throw Error(`<fragment> has unknown name`);
   }
 
-  bodyStream.add(
-    renderResultToStream(
-      () => renderOptions.renderFragment(attr.value),
+  let fragmentStream;
+  try {
+    fragmentStream = valueToStream(
+      renderOptions.renderFragment(attr.value),
       `Fragment ${attr.value}`
-    )
-  );
+    );
+  } catch (err) {
+    fragmentStream = renderError(`Fragment ${attr.name}`, err);
+  }
+
+  bodyStream.add(fragmentStream);
 }
 
 /**
  *
  * @param {SerializeArgs} serializeArgs
  */
-function validateAssetsContent({ node }) {
-  // Assuming there will be one assets fragment where
-  // all appliations will append there global styles
-  // its up to the mfe's to clear them after hydration
-  // for example as shown in the material-ui example
-  // Just leaving this as a placeholder for now
+function serializeAssets({ assetsStream, bodyStream }) {
+  bodyStream.add(assetsStream);
 }
 
 /**
@@ -475,33 +511,27 @@ export function stringStream(str) {
   return readable;
 }
 
-function renderResultToStream(render, name) {
-  let appStream;
+function valueToStream(value, name) {
+  let stream;
 
-  try {
-    appStream = render();
-  } catch (err) {
-    appStream = renderError(name, err);
-  }
-
-  if (appStream && typeof appStream.then === "function") {
-    const promise = appStream;
-    appStream = merge2();
+  if (value && typeof value.then === "function") {
+    const promise = value;
+    stream = merge2();
     promise.then(
       (result) => {
-        appStream.add(
-          typeof result === "string" ? stringStream(result) : result
-        );
+        stream.add(typeof result === "string" ? stringStream(result) : result);
       },
       (err) => {
-        appStream.add(renderError(name, err));
+        stream.add(renderError(name, err));
       }
     );
-  } else if (typeof appStream === "string") {
-    appStream = stringStream(appStream);
+  } else if (typeof value === "string") {
+    stream = stringStream(value);
+  } else {
+    stream = value;
   }
 
-  return appStream;
+  return stream;
 }
 
 function renderError(name, err) {
