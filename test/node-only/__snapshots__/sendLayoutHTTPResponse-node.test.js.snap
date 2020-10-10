@@ -192,6 +192,94 @@ exports[`sendLayoutHTTPResponse response body allows for strings to be returned 
 </html>
 `;
 
+exports[`sendLayoutHTTPResponse response body allows for strings to be returned from renderApplication with assets 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <div id="single-spa-application:header">
+      <button>
+        App header
+      </button>
+    </div>
+    <div class="main-content">
+      <button>
+        Top level content
+      </button>
+      <div id="single-spa-application:app1">
+        <button>
+          App app1
+        </button>
+      </div>
+      Some raw text
+    </div>
+    <span>
+      <footer>
+        <a href="/about">
+          About
+        </a>
+      </footer>
+    </span>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
+    <style id="jss-server-side">
+      .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+          }
+    </style>
+    <style id="jss-server-side">
+      .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+          }
+    </style>
+    <single-spa-router mode="history"
+                       base="/"
+    >
+      <application name="header">
+      </application>
+      <div class="main-content">
+        <button>
+          Top level content
+        </button>
+        <application name="app1">
+        </application>
+        Some raw text
+      </div>
+      <span>
+        <footer>
+          <a href="/about">
+            About
+          </a>
+        </footer>
+      </span>
+    </single-spa-router>
+  </body>
+</html>
+`;
+
 exports[`sendLayoutHTTPResponse response body dom-elements.html fixture renders the app1 route correctly 1`] = `
 <!DOCTYPE html>
 <html lang="en">

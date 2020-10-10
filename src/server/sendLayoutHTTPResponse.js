@@ -26,7 +26,7 @@ const GT_REGEX = />/g;
  * res: import('http').ServerResponse;
  * serverLayout: import('./constructServerLayout').ServerLayout;
  * urlPath: string;
- * renderApplication(appToRender: AppToRender) => import('stream').Readable | string | Promise<string> | Promise<import('stream').Readable>;
+ * renderApplication(appToRender: AppToRender) => import('stream').Readable | string | Promise<string> | object | Promise<object> | Promise<import('stream').Readable>;
  * retrieveApplicationHeaders(appToRender AppToRender) => object;
  * renderFragment?(name: string) => import('stream').Readable | string | Promise<string> | Promise<import('stream').Readable>;
  * retrieveProp(name: string) => Promise<any> | any;
