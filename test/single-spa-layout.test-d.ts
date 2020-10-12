@@ -192,9 +192,11 @@ expectType<Promise<any>>(
       `;
       return {
         assets: `${
-          appName === "app1" ? `<style id="jss-server-side">${css}</style>` : ``
+          arg.appName === "app1"
+            ? `<style id="jss-server-side">${css}</style>`
+            : ``
         }`,
-        content: `<button>App ${appName}</button>`,
+        content: `<button>App ${arg.appName}</button>`,
       };
     },
     retrieveApplicationHeaders(arg) {
