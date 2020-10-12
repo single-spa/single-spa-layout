@@ -167,3 +167,46 @@ expectType<Promise<any>>(
     },
   })
 );
+
+expectType<Promise<any>>(
+  sendLayoutHTTPResponse({
+    res,
+    serverLayout,
+    urlPath: "/app1",
+    assembleFinalHeaders() {
+      return {};
+    },
+    renderApplication(arg) {
+      expectType<string>(arg.appName);
+      const css = `
+      .button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+      }
+      `;
+      return {
+        assets: `${
+          arg.appName === "app1"
+            ? `<style id="jss-server-side">${css}</style>`
+            : ``
+        }`,
+        content: `<button>App ${arg.appName}</button>`,
+      };
+    },
+    retrieveApplicationHeaders(arg) {
+      return { hi: "there" };
+    },
+    retrieveProp(name) {
+      return "hi";
+    },
+    renderFragment(name) {
+      return "hi";
+    },
+  })
+);

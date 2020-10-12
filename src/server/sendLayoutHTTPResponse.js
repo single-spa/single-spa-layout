@@ -22,13 +22,21 @@ const LT_REGEX = /</g;
 const GT_REGEX = />/g;
 
 /**
+ *
+ * @typedef {import('stream').Readable | string} RenderResult
+ *
+ * @typedef {{
+ *  assets: RenderResult | Promise<RenderResult>;
+ *  content: RenderResult | Promise<RenderResult>;
+ * }} ApplicationRenderResult
+ *
  * @typedef {{
  * res: import('http').ServerResponse;
  * serverLayout: import('./constructServerLayout').ServerLayout;
  * urlPath: string;
- * renderApplication(appToRender: AppToRender) => import('stream').Readable | string | Promise<string> | Promise<import('stream').Readable>;
+ * renderApplication(appToRender: AppToRender) => RenderResult | Promise<RenderResult> | ApplicationRenderResult | Promise<ApplicationRenderResult>;
  * retrieveApplicationHeaders(appToRender AppToRender) => object;
- * renderFragment?(name: string) => import('stream').Readable | string | Promise<string> | Promise<import('stream').Readable>;
+ * renderFragment?(name: string) => RenderResult | Promise<RenderResult>;
  * retrieveProp(name: string) => Promise<any> | any;
  * assembleFinalHeaders(appHeaders: AppHeaders[]) => object;
  * }} RenderOptions
@@ -45,6 +53,7 @@ const GT_REGEX = />/g;
  *
  * @typedef {{
  * node: import('parse5').Element;
+ * assetsStream: import('merge2').Merge2Stream;
  * bodyStream: import('merge2').Merge2Stream;
  * renderOptions: RenderOptions;
  * serverLayout: import('./constructServerLayout').serverLayout;
@@ -64,12 +73,17 @@ export async function sendLayoutHTTPResponse(renderOptions) {
     applicationPropPromises = {},
     headerPromises = {};
 
+  const assetsStream = merge2({
+    pipeError: true,
+  });
+
   const bodyStream = merge2({
     pipeError: true,
   });
 
   serializeChildNodes({
     node: renderOptions.serverLayout.parsedDocument,
+    assetsStream,
     bodyStream,
     renderOptions,
     propPromises,
@@ -119,6 +133,8 @@ function serializeChildNodes(args) {
       serialize = serializeRoute;
     } else if (isRouterContent(node)) {
       serialize = serializeRouterContent;
+    } else if (isAssetsNode(node)) {
+      serialize = serializeAssets;
     } else if (isFragmentNode(node)) {
       serialize = serializeFragment;
     } else if (treeAdapter.isElementNode(node)) {
@@ -169,6 +185,7 @@ function serializeRoute(args) {
  */
 function serializeApplication({
   node,
+  assetsStream,
   bodyStream,
   renderOptions,
   applicationPropPromises,
@@ -210,16 +227,51 @@ function serializeApplication({
     propsPromise,
   });
 
-  const appStream = renderResultToStream(
-    () => renderOptions.renderApplication({ appName, propsPromise }),
-    `Application ${appName}`
-  );
+  let renderResult, contentStream, assetStream;
+  try {
+    renderResult = renderOptions.renderApplication({ appName, propsPromise });
 
+    if (typeof renderResult.then === "function") {
+      contentStream = merge2();
+      assetStream = merge2();
+      renderResult.then(
+        (value) => {
+          const streams = valueToAppStreams(appName, value);
+          contentStream.add(streams.contentStream);
+          assetStream.add(streams.assetStream);
+        },
+        (err) => {
+          contentStream.add(renderError(appName, err));
+          assetStream.add(renderError(appName, err));
+        }
+      );
+    } else {
+      const streams = valueToAppStreams(appName, renderResult);
+      contentStream = streams.contentStream;
+      assetStream = streams.assetStream;
+    }
+  } catch (err) {
+    contentStream = renderError(appName, err);
+    assetStream = renderError(appName, err);
+  }
+  assetsStream.add(assetStream);
   bodyStream.add(stringStream(`<div id="single-spa-application:${appName}">`));
-
-  bodyStream.add(appStream);
-
+  bodyStream.add(contentStream);
   bodyStream.add(stringStream(`</div>`));
+}
+
+function valueToAppStreams(name, value) {
+  let contentStream, assetStream;
+
+  if (value) {
+    contentStream = valueToStream(value.content || value, name);
+    assetStream = valueToStream(value.assets || "", name);
+  } else {
+    contentStream = renderError(name, Error(`returned nothing`));
+    assetStream = renderError(name, Error(`returned nothing`));
+  }
+
+  return { contentStream, assetStream };
 }
 
 function isRouterContent(node) {
@@ -253,30 +305,40 @@ function isFragmentNode(node) {
   );
 }
 
+function isAssetsNode(node) {
+  return (
+    treeAdapter.isElementNode(node) && treeAdapter.getTagName(node) === "assets"
+  );
+}
+
 /**
  *
  * @param {SerializeArgs} args
  */
 function serializeLayoutData({ propPromises, bodyStream }) {
-  bodyStream.add(
-    renderResultToStream(async () => {
-      const propEntries = await Promise.all(
-        Object.entries(propPromises).map(([propName, propValuePromise]) => {
-          return propValuePromise.then((value) => {
-            return [propName, value];
-          });
-        })
-      );
-      const props = propEntries.reduce((acc, [propName, value]) => {
-        acc[propName] = value;
-        return acc;
-      }, {});
+  const getLayoutData = async () => {
+    const propEntries = await Promise.all(
+      Object.entries(propPromises).map(([propName, propValuePromise]) => {
+        return propValuePromise.then((value) => {
+          return [propName, value];
+        });
+      })
+    );
+    const props = propEntries.reduce((acc, [propName, value]) => {
+      acc[propName] = value;
+      return acc;
+    }, {});
 
-      return `<script>window.singleSpaLayoutData = ${JSON.stringify({
-        props,
-      })}</script>`;
-    }, `Serialize layout props`)
-  );
+    return `<script>window.singleSpaLayoutData = ${JSON.stringify({
+      props,
+    })}</script>`;
+  };
+
+  try {
+    bodyStream.add(valueToStream(getLayoutData()));
+  } catch (err) {
+    bodyStream.add(renderError(`Serialize layout props`, err));
+  }
 }
 
 /**
@@ -291,12 +353,25 @@ function serializeFragment({ node, bodyStream, renderOptions }) {
     throw Error(`<fragment> has unknown name`);
   }
 
-  bodyStream.add(
-    renderResultToStream(
-      () => renderOptions.renderFragment(attr.value),
+  let fragmentStream;
+  try {
+    fragmentStream = valueToStream(
+      renderOptions.renderFragment(attr.value),
       `Fragment ${attr.value}`
-    )
-  );
+    );
+  } catch (err) {
+    fragmentStream = renderError(`Fragment ${attr.name}`, err);
+  }
+
+  bodyStream.add(fragmentStream);
+}
+
+/**
+ *
+ * @param {SerializeArgs} serializeArgs
+ */
+function serializeAssets({ assetsStream, bodyStream }) {
+  bodyStream.add(assetsStream);
 }
 
 /**
@@ -441,33 +516,27 @@ export function stringStream(str) {
   return readable;
 }
 
-function renderResultToStream(render, name) {
-  let appStream;
+function valueToStream(value, name) {
+  let stream;
 
-  try {
-    appStream = render();
-  } catch (err) {
-    appStream = renderError(name, err);
-  }
-
-  if (appStream && typeof appStream.then === "function") {
-    const promise = appStream;
-    appStream = merge2();
+  if (value && typeof value.then === "function") {
+    const promise = value;
+    stream = merge2();
     promise.then(
       (result) => {
-        appStream.add(
-          typeof result === "string" ? stringStream(result) : result
-        );
+        stream.add(typeof result === "string" ? stringStream(result) : result);
       },
       (err) => {
-        appStream.add(renderError(name, err));
+        stream.add(renderError(name, err));
       }
     );
-  } else if (typeof appStream === "string") {
-    appStream = stringStream(appStream);
+  } else if (typeof value === "string") {
+    stream = stringStream(value);
+  } else {
+    stream = value;
   }
 
-  return appStream;
+  return stream;
 }
 
 function renderError(name, err) {
