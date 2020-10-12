@@ -334,14 +334,11 @@ function serializeLayoutData({ propPromises, bodyStream }) {
     })}</script>`;
   };
 
-  let value;
   try {
-    value = getLayoutData();
+    bodyStream.add(valueToStream(getLayoutData()));
   } catch (err) {
-    value = renderError(`Serialize layout props`, err);
+    bodyStream.add(renderError(`Serialize layout props`, err));
   }
-
-  bodyStream.add(valueToStream(value, `Serialize layout props`));
 }
 
 /**
