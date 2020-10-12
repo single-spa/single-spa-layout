@@ -484,6 +484,66 @@ describe(`sendLayoutHTTPResponse`, () => {
       expect(await responseBodyPromise).toMatchSnapshot();
     });
 
+    it(`renders assets and content in correct order`, async () => {
+      const html = fs
+        .readFileSync(
+          path.resolve(
+            process.cwd(),
+            "./test/fixtures/dom-elements-with-assets.html"
+          ),
+          "utf-8"
+        )
+        .toString();
+
+      const serverLayout = constructServerLayout({
+        html,
+      });
+
+      await sendLayoutHTTPResponse({
+        res,
+        serverLayout,
+        urlPath: "/app1",
+        assembleFinalHeaders() {
+          return {};
+        },
+        renderApplication({ appName, propsPromise }) {
+          const css = `
+          .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+          }
+          `;
+          return {
+            assets: new Promise((resolve) => {
+              setTimeout(
+                () =>
+                  resolve(
+                    `${
+                      appName === "app1"
+                        ? `<style id="jss-server-side">${css}</style>`
+                        : ``
+                    }`
+                  ),
+                200
+              );
+            }),
+            content: `<button>App ${appName}</button>`,
+          };
+        },
+        retrieveApplicationHeaders({ appName, propsPromise }) {
+          return {};
+        },
+      });
+
+      expect(await responseBodyPromise).toMatchSnapshot();
+    });
+
     it(`allows for promises to be returned from renderApplication`, async () => {
       const html = fs
         .readFileSync(
