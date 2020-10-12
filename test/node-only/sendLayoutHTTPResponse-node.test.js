@@ -468,7 +468,11 @@ describe(`sendLayoutHTTPResponse`, () => {
           }
           `;
           return {
-            assets: `<style id="jss-server-side">${css}</style>`,
+            assets: `${
+              appName === "app1"
+                ? `<style id="jss-server-side">${css}</style>`
+                : ``
+            }`,
             content: `<button>App ${appName}</button>`,
           };
         },

@@ -22,13 +22,21 @@ const LT_REGEX = /</g;
 const GT_REGEX = />/g;
 
 /**
+ *
+ * @typedef {import('stream').Readable | string} RenderResult
+ *
+ * @typedef {{
+ *  assets: RenderResult | Promise<RenderResult>;
+ *  content: RenderResult | Promise<RenderResult>;
+ * }} ApplicationRenderResult
+ *
  * @typedef {{
  * res: import('http').ServerResponse;
  * serverLayout: import('./constructServerLayout').ServerLayout;
  * urlPath: string;
- * renderApplication(appToRender: AppToRender) => import('stream').Readable | string | Promise<string> | object | Promise<object> | Promise<import('stream').Readable>;
+ * renderApplication(appToRender: AppToRender) => RenderResult | Promise<RenderResult> | ApplicationRenderResult | Promise<ApplicationRenderResult>;
  * retrieveApplicationHeaders(appToRender AppToRender) => object;
- * renderFragment?(name: string) => import('stream').Readable | string | Promise<string> | Promise<import('stream').Readable>;
+ * renderFragment?(name: string) => RenderResult | Promise<RenderResult>;
  * retrieveProp(name: string) => Promise<any> | any;
  * assembleFinalHeaders(appHeaders: AppHeaders[]) => object;
  * }} RenderOptions

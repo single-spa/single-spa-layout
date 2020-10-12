@@ -33,6 +33,7 @@
     "test": "concurrently -n w: 'yarn:test:*'",
     "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only --testPathIgnorePatterns=cypress",
     "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only --testPathIgnorePatterns=cypress",
+    "test:assets": "cross-env BABEL_ENV=test jest --testEnvironment=node test/node-only/sendLayoutHTTPResponse-node.test.js -t \"allows for strings to be returned from renderApplication with assets\"",
     "test:types": "tsd",
     "test:exports": "ls-exports path .",
     "test-e2e:firefox": "cypress run --browser firefox",
