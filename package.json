@@ -15,7 +15,7 @@
     "./server": {
       "node": {
         "import": "./dist/esm/single-spa-layout-server.min.js",
-        "require": "./dist/cjs/single-spa-layout-server.min.cjs"
+        "require": "./dist/umd/single-spa-layout-server.min.cjs"
       }
     }
   },
