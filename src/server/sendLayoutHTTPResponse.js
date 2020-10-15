@@ -129,7 +129,7 @@ function serializeChildNodes(args) {
 
     if (!inRouterElement && isApplicationNode(node)) {
       serialize = serializeApplication;
-    } else if (isRouteNode(node)) {
+    } else if (!inRouterElement && isRouteNode(node)) {
       serialize = serializeRoute;
     } else if (isRouterContent(node)) {
       serialize = serializeRouterContent;
@@ -413,6 +413,9 @@ function serializeElement(args) {
         : node;
 
     const inRouterElement = args.inRouterElement || tn === "single-spa-router";
+    if (inRouterElement) {
+      // console.log(node.childNodes)
+    }
     const newArgs = { ...args, node: childNodesHolder, inRouterElement };
     serializeChildNodes(newArgs);
     bodyStream.add(stringStream(`</${tn}>`));
