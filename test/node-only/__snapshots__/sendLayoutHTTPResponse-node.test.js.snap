@@ -45,12 +45,14 @@ exports[`sendLayoutHTTPResponse response body allows for promises that resolve w
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>
@@ -109,12 +111,14 @@ exports[`sendLayoutHTTPResponse response body allows for promises to be returned
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>
@@ -173,12 +177,14 @@ exports[`sendLayoutHTTPResponse response body allows for strings to be returned 
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>
@@ -249,12 +255,14 @@ exports[`sendLayoutHTTPResponse response body allows for strings to be returned 
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>
@@ -313,12 +321,14 @@ exports[`sendLayoutHTTPResponse response body dom-elements.html fixture renders 
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>
@@ -559,12 +569,14 @@ exports[`sendLayoutHTTPResponse response body renders an empty string when rende
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>
@@ -617,12 +629,14 @@ exports[`sendLayoutHTTPResponse response body renders an empty string when retur
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>
@@ -693,12 +707,14 @@ exports[`sendLayoutHTTPResponse response body renders assets and content in corr
       <application name="header">
       </application>
       <div class="main-content">
-        <button>
-          Top level content
-        </button>
-        <application name="app1">
-        </application>
-        Some raw text
+        <route path="app1">
+          <button>
+            Top level content
+          </button>
+          <application name="app1">
+          </application>
+          Some raw text
+        </route>
       </div>
       <span>
         <footer>

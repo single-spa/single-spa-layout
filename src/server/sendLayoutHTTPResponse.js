@@ -129,7 +129,7 @@ function serializeChildNodes(args) {
 
     if (!inRouterElement && isApplicationNode(node)) {
       serialize = serializeApplication;
-    } else if (isRouteNode(node)) {
+    } else if (!inRouterElement && isRouteNode(node)) {
       serialize = serializeRoute;
     } else if (isRouterContent(node)) {
       serialize = serializeRouterContent;
