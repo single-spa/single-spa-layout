@@ -381,7 +381,8 @@ describe(`constructApplications`, () => {
       `);
     }
 
-    expect(await loadPromise.catch((err) => err)).toBe(loadError);
+    expect(loadPromise).rejects.toThrow(loadError);
+    await Promise.allSettled([loadPromise]);
 
     if (inBrowser) {
       appEl = document.getElementById(`single-spa-application:app2`);
