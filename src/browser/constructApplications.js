@@ -173,6 +173,8 @@ function placeLoader(appName, appRoute, loadingPromise) {
       },
       (err) => {
         return finishUp().then(() => {
+          // rethrow the error, so that the application's loading function
+          // remains in rejected status
           throw err;
         });
       }
