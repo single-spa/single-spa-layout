@@ -159,14 +159,23 @@ function placeLoader(appName, appRoute, loadingPromise) {
 
     applicationEl = applicationElement;
 
+    function finishUp() {
+      return parcel.unmount().then(() => {
+        if (makeElementVisible) {
+          makeElementVisible();
+        }
+      });
+    }
+
     return Promise.all([parcel.mountPromise, loadingPromise]).then(
-      ([mountResult, app]) =>
-        parcel.unmount().then(() => {
-          if (makeElementVisible) {
-            makeElementVisible();
-          }
-          return app;
-        })
+      ([mountResult, app]) => {
+        return finishUp().then(() => app);
+      },
+      (err) => {
+        return finishUp().then(() => {
+          throw err;
+        });
+      }
     );
   });
 }
