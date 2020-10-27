@@ -334,6 +334,66 @@ describe(`constructApplications`, () => {
     }
   });
 
+  it(`removes the loader if loading the application fails`, async () => {
+    const routes = constructRoutes({
+      routes: [
+        {
+          type: "application",
+          name: "app2",
+          loader: `<img src="loading.gif">`,
+        },
+      ],
+    });
+
+    const loadError = Error("could not download app code");
+
+    const loadApp = (name) =>
+      new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(loadError);
+        }, 5);
+      });
+
+    const applications = constructApplications({ routes, loadApp });
+    let appEl;
+
+    if (inBrowser) {
+      appEl = document.getElementById(`single-spa-application:app2`);
+      expect(appEl).toBeNull();
+    }
+
+    // begin loading the app
+    const loadPromise = applications[0].app();
+
+    await tick();
+
+    if (inBrowser) {
+      appEl = document.getElementById(`single-spa-application:app2`);
+      expect(appEl).toMatchInlineSnapshot(`
+        <div
+          id="single-spa-application:app2"
+          style="display: none;"
+        >
+          <img
+            src="loading.gif"
+          />
+        </div>
+      `);
+    }
+
+    expect(loadPromise).rejects.toThrow(loadError);
+    await Promise.allSettled([loadPromise]);
+
+    if (inBrowser) {
+      appEl = document.getElementById(`single-spa-application:app2`);
+      expect(appEl).toMatchInlineSnapshot(`
+        <div
+          id="single-spa-application:app2"
+        />
+      `);
+    }
+  });
+
   // https://github.com/single-spa/single-spa-layout/issues/64
   it(`does not require trailing slashes after base path`, () => {
     const routes = constructRoutes({
