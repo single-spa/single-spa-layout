@@ -3,6 +3,7 @@ import babel from "@rollup/plugin-babel";
 import fs from "fs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import replace from "@rollup/plugin-replace";
 
 const packageJson = JSON.parse(fs.readFileSync("./package.json"));
 
@@ -37,6 +38,9 @@ function createConfig(format, server = false) {
       nodeResolve(),
       commonjs(),
       babel(babelOpts),
+      replace({
+        "process.env.BABEL_ENV": JSON.stringify("production"),
+      }),
       process.env.DEVELOPMENT !== "true" &&
         terser({
           compress: {

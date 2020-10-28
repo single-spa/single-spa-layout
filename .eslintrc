@@ -1,9 +1,10 @@
 {
   "extends": "important-stuff",
   "parser": "babel-eslint",
-  "plugins": [
-    "es5"
-  ],
+  "plugins": ["es5"],
+  "globals": {
+    "process": true
+  },
   "rules": {
     "es5/no-es6-methods": "error",
     "es5/no-es6-static-methods": "error",
