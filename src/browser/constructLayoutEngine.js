@@ -121,6 +121,10 @@ export function constructLayoutEngine({
         }
       );
     }
+
+    setTimeout(() => {
+      throw err;
+    });
   }
 
   function unmountErrorParcels({ detail: { newAppStatuses } }) {
