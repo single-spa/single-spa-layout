@@ -121,6 +121,12 @@ export function constructLayoutEngine({
         }
       );
     }
+
+    if (process.env.BABEL_ENV !== "test") {
+      setTimeout(() => {
+        throw err;
+      });
+    }
   }
 
   function unmountErrorParcels({ detail: { newAppStatuses } }) {
