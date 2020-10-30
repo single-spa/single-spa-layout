@@ -16,9 +16,10 @@ import { find } from "../utils/find";
 // The weird strings here are to trick rollup into not optimizing the import to avoid the * syntax
 const defaultStr = "d" + "efault";
 const pathToActiveWhenStr = "pathTo" + "ActiveWhen";
-const pathToActiveWhen = singleSpa[defaultStr]
-  ? singleSpa[defaultStr][pathToActiveWhenStr]
-  : singleSpa[pathToActiveWhenStr];
+const pathToActiveWhen =
+  typeof singleSpa[defaultStr] !== "undefined"
+    ? singleSpa[defaultStr][pathToActiveWhenStr]
+    : singleSpa[pathToActiveWhenStr];
 
 export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
 
