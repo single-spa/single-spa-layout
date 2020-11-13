@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <single-spa-router base="/custom">
+      <redirect from="/" to="login"></redirect>
+      <application name="nav"></application>
+      <route path="clients">
+        <application name="clients"></application>
+      </route>
+      <route path="settings">
+        <!--
+          I put this redirect here to test that single-spa-layout can handle
+          redirects that are nested within other elements
+        -->
+        <redirect from="/old-settings" to="settings"></redirect>
+        <application name="settings"></application>
+      </route>
+    </single-spa-router>
+  </body>
+</html>

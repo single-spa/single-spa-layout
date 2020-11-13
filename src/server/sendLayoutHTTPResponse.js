@@ -69,6 +69,17 @@ export async function sendLayoutHTTPResponse(renderOptions) {
     throw Error(`single-spa-layout (server): must provide renderOptions`);
   }
 
+  const redirects = renderOptions.serverLayout.resolvedRoutes.redirects;
+
+  for (let from in redirects) {
+    const to = redirects[from];
+
+    if (renderOptions.urlPath === from) {
+      renderOptions.res.redirect(to);
+      return;
+    }
+  }
+
   const propPromises = {},
     applicationPropPromises = {},
     headerPromises = {};

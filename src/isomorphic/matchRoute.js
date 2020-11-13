@@ -74,7 +74,7 @@ export function resolvePath(prefix, path) {
     result = prefix + "/" + path;
   }
 
-  if (result.substr(-1) === "/") {
+  if (result.substr(-1) === "/" && result.length > 1) {
     result = result.slice(0, result.length - 1);
   }
 

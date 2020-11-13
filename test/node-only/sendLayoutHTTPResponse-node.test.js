@@ -25,6 +25,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       bodyResolve(responseBodyStr);
     });
     res.setHeader = jest.fn();
+    res.redirect = jest.fn();
   });
 
   describe("response body", () => {
@@ -772,6 +773,89 @@ describe(`sendLayoutHTTPResponse`, () => {
           return appName;
         },
       });
+    });
+  });
+
+  describe("redirects", () => {
+    it(`redirects from / to /login`, async () => {
+      const html = fs
+        .readFileSync(
+          path.resolve(process.cwd(), "./test/fixtures/redirects.html"),
+          "utf-8"
+        )
+        .toString();
+
+      const serverLayout = constructServerLayout({
+        html,
+      });
+
+      await sendLayoutHTTPResponse({
+        res,
+        serverLayout,
+        urlPath: "/",
+        retrieveApplicationHeaders({ appName, propsPromise }) {
+          return { [appName]: true };
+        },
+        assembleFinalHeaders(allHeaders) {
+          return {};
+        },
+        renderApplication({ appName, propsPromise }) {
+          return appName;
+        },
+      });
+
+      expect(res.redirect).toHaveBeenCalledWith("/login");
+
+      res.redirect.mockReset();
+
+      await sendLayoutHTTPResponse({
+        res,
+        serverLayout,
+        urlPath: "/old-settings",
+        retrieveApplicationHeaders({ appName, propsPromise }) {
+          return { [appName]: true };
+        },
+        assembleFinalHeaders(allHeaders) {
+          return {};
+        },
+        renderApplication({ appName, propsPromise }) {
+          return appName;
+        },
+      });
+
+      expect(res.redirect).toHaveBeenCalledWith("/settings");
+    });
+
+    it(`correctly serializes a layout definition that includes redirects`, async () => {
+      const html = fs
+        .readFileSync(
+          path.resolve(process.cwd(), "./test/fixtures/redirects.html"),
+          "utf-8"
+        )
+        .toString();
+
+      const serverLayout = constructServerLayout({
+        html,
+      });
+
+      await sendLayoutHTTPResponse({
+        res,
+        serverLayout,
+        urlPath: "/settings",
+        retrieveApplicationHeaders({ appName, propsPromise }) {
+          return { [appName]: true };
+        },
+        assembleFinalHeaders(allHeaders) {
+          return {};
+        },
+        renderApplication({ appName, propsPromise }) {
+          return appName;
+        },
+      });
+
+      expect(res.redirect).not.toHaveBeenCalled();
+
+      expect(await responseBodyPromise).toMatchSnapshot();
     });
   });
 });

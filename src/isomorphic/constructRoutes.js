@@ -3,6 +3,7 @@ import {
   validateEnum,
   validateKeys,
   validateString,
+  validateFullPath,
   validateObject,
   validateContainerEl,
   validateBoolean,
@@ -34,6 +35,7 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * containerEl?: ContainerEl;
  * disableWarnings?: boolean;
  * routes: Array<Route>;
+ * redirects?: Redirects;
  * }} InputRoutesConfigObject
  *
  * @typedef {{
@@ -41,7 +43,12 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * base: string;
  * containerEl: ContainerEl;
  * routes: Array<ResolvedRouteChild>;
+ * redirects: Redirects;
  * }} ResolvedRoutesConfig
+ *
+ * @typedef {{
+ *   [from: string]: string;
+ * }} Redirects
  *
  * @typedef {UrlRoute | Application | Node} RouteChild
  *
@@ -129,6 +136,7 @@ function domToRoutesConfig(domElement, htmlLayoutData = {}) {
 
   const result = {
     routes: [],
+    redirects: {},
   };
 
   if (getAttribute(domElement, "mode")) {
@@ -145,7 +153,7 @@ function domToRoutesConfig(domElement, htmlLayoutData = {}) {
 
   for (let i = 0; i < domElement.childNodes.length; i++) {
     result.routes.push(
-      ...elementToJson(domElement.childNodes[i], htmlLayoutData)
+      ...elementToJson(domElement.childNodes[i], htmlLayoutData, result)
     );
   }
 
@@ -178,9 +186,10 @@ function hasAttribute(element, attrName) {
 /**
  * @param {HTMLElement} element
  * @param {HTMLLayoutData} htmlLayoutData
+ * @param {ResolvedRoutesConfig} resolvedRoutesConfig
  * @returns {Array<Route>}
  */
-function elementToJson(element, htmlLayoutData) {
+function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
   if (element.nodeName.toLowerCase() === "application") {
     if (element.childNodes.length > 0) {
       throw Error(
@@ -236,10 +245,19 @@ function elementToJson(element, htmlLayoutData) {
     setProps(element, route, htmlLayoutData);
     for (let i = 0; i < element.childNodes.length; i++) {
       route.routes.push(
-        ...elementToJson(element.childNodes[i], htmlLayoutData)
+        ...elementToJson(
+          element.childNodes[i],
+          htmlLayoutData,
+          resolvedRoutesConfig
+        )
       );
     }
     return [route];
+  } else if (element.nodeName.toLowerCase() === "redirect") {
+    resolvedRoutesConfig.redirects[
+      resolvePath("/", getAttribute(element, "from"))
+    ] = resolvePath("/", getAttribute(element, "to"));
+    return [];
   } else if (typeof Node !== "undefined" && element instanceof Node) {
     if (
       element.nodeType === Node.TEXT_NODE &&
@@ -251,7 +269,11 @@ function elementToJson(element, htmlLayoutData) {
         element.routes = [];
         for (let i = 0; i < element.childNodes.length; i++) {
           element.routes.push(
-            ...elementToJson(element.childNodes[i], htmlLayoutData)
+            ...elementToJson(
+              element.childNodes[i],
+              htmlLayoutData,
+              resolvedRoutesConfig
+            )
           );
         }
       }
@@ -265,7 +287,11 @@ function elementToJson(element, htmlLayoutData) {
     };
     for (let i = 0; i < element.childNodes.length; i++) {
       result.routes.push(
-        ...elementToJson(element.childNodes[i], htmlLayoutData)
+        ...elementToJson(
+          element.childNodes[i],
+          htmlLayoutData,
+          resolvedRoutesConfig
+        )
       );
     }
     return [result];
@@ -325,7 +351,7 @@ function validateAndSanitize(routesConfig) {
   validateKeys(
     "routesConfig",
     routesConfig,
-    ["mode", "base", "containerEl", "routes", "disableWarnings"],
+    ["mode", "base", "containerEl", "routes", "disableWarnings", "redirects"],
     disableWarnings
   );
 
@@ -345,6 +371,16 @@ function validateAndSanitize(routesConfig) {
     routesConfig.base = sanitizeBase(routesConfig.base);
   } else {
     routesConfig.base = "/";
+  }
+
+  if (routesConfig.hasOwnProperty("redirects")) {
+    validateObject(`routesConfig.redirects`, routesConfig.redirects);
+
+    for (let from in routesConfig.redirects) {
+      const to = routesConfig.redirects[from];
+      validateFullPath(`routesConfig.redirects key`, from);
+      validateFullPath(`routesConfig.redirects['${from}']`, to);
+    }
   }
 
   const pathname = inBrowser ? window.location.pathname : "/";

@@ -62,6 +62,15 @@ export function validateString(propertyName, val, strict = true) {
   }
 }
 
+export function validateFullPath(propertyName, val) {
+  validateString(propertyName, val);
+  if (val.indexOf("/") < 0) {
+    throw Error(
+      `Invalid ${propertyName}: received '${val}', but expected an absolute path that starts with /`
+    );
+  }
+}
+
 export function validateArray(propertyName, arr, cbk, ...extraArgs) {
   if (
     !Array.isArray(arr) &&

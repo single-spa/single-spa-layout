@@ -1,5 +1,45 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`sendLayoutHTTPResponse redirects correctly serializes a layout definition that includes redirects 1`] = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"
+    >
+    <title>
+      Document
+    </title>
+  </head>
+  <body>
+    <script>
+      window.singleSpaLayoutData = {"props":{}}
+    </script>
+    <single-spa-router base="/custom">
+      <redirect from="/"
+                to="login"
+      >
+      </redirect>
+      <application name="nav">
+      </application>
+      <route path="clients">
+        <application name="clients">
+        </application>
+      </route>
+      <route path="settings">
+        <redirect from="/old-settings"
+                  to="settings"
+        >
+        </redirect>
+        <application name="settings">
+        </application>
+      </route>
+    </single-spa-router>
+  </body>
+</html>
+`;
+
 exports[`sendLayoutHTTPResponse response body allows for promises that resolve with streams to be returned from renderApplication 1`] = `
 <!DOCTYPE html>
 <html lang="en">
