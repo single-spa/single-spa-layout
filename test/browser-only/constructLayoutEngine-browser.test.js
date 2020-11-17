@@ -3,9 +3,8 @@ import {
   constructRoutes,
   constructApplications,
 } from "../../src/single-spa-layout.js";
-import { screen } from "@testing-library/dom";
 import { parseFixture } from "../html-utils.js";
-import { addErrorHandler, getAppStatus } from "single-spa";
+import { addErrorHandler, getAppStatus, navigateToUrl } from "single-spa";
 
 jest.mock("single-spa", () => {
   const actualSingleSpa = jest.requireActual("single-spa");
@@ -13,6 +12,7 @@ jest.mock("single-spa", () => {
     ...actualSingleSpa,
     addErrorHandler: jest.fn(),
     getAppStatus: jest.fn(),
+    navigateToUrl: jest.fn(),
   };
 });
 
@@ -20,6 +20,7 @@ describe(`constructLayoutEngine browser`, () => {
   beforeEach(() => {
     addErrorHandler.mockReset();
     getAppStatus.mockReset();
+    navigateToUrl.mockReset();
   });
 
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
@@ -1005,6 +1006,100 @@ describe(`constructLayoutEngine browser`, () => {
       await tick();
 
       expect(parcelWasUnmounted).toBe(true);
+    });
+  });
+
+  describe(`redirects`, () => {
+    it(`calls navigateToUrl() for redirects`, async () => {
+      history.pushState(history.state, "some title", "/something-random");
+
+      expect(navigateToUrl).not.toHaveBeenCalled();
+      const { document, routerElement } = parseFixture("redirects.html");
+      const routes = constructRoutes(routerElement);
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+
+      // trigger redirect to login
+      history.pushState(history.state, document.title, "/");
+      const cancelNavigation = jest.fn();
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-routing-event", {
+          detail: {
+            cancelNavigation,
+          },
+        })
+      );
+
+      await tick();
+
+      expect(cancelNavigation).toHaveBeenCalled();
+      expect(navigateToUrl).toHaveBeenCalledWith("/login");
+
+      // trigger redirect to new settings page
+      history.pushState(history.state, document.title, "/old-settings");
+      cancelNavigation.mockReset();
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-routing-event", {
+          detail: {
+            cancelNavigation,
+          },
+        })
+      );
+
+      await tick();
+
+      expect(cancelNavigation).toHaveBeenCalled();
+      expect(navigateToUrl).toHaveBeenCalledWith("/settings");
+    });
+
+    it(`doesn't call navigateToUrl() for non-redirects`, async () => {
+      history.pushState(history.state, "some title", "/something-random");
+
+      expect(navigateToUrl).not.toHaveBeenCalled();
+      const { document, routerElement } = parseFixture("redirects.html");
+      const routes = constructRoutes(routerElement);
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+
+      // trigger redirect to login
+      history.pushState(history.state, document.title, "/something-else");
+      const cancelNavigation = jest.fn();
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-routing-event", {
+          detail: {
+            cancelNavigation,
+          },
+        })
+      );
+
+      await tick();
+
+      expect(cancelNavigation).not.toHaveBeenCalled();
+      expect(navigateToUrl).not.toHaveBeenCalled();
     });
   });
 });

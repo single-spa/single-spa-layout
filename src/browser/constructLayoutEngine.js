@@ -6,6 +6,7 @@ import {
   getAppStatus,
   SKIP_BECAUSE_BROKEN,
   LOAD_ERROR,
+  navigateToUrl,
 } from "single-spa";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
 
@@ -49,10 +50,7 @@ export function constructLayoutEngine({
       }
 
       if (inBrowser) {
-        window.addEventListener(
-          "single-spa:before-routing-event",
-          unmountErrorParcels
-        );
+        window.addEventListener("single-spa:before-routing-event", beforeRoute);
 
         window.addEventListener(
           "single-spa:before-mount-routing-event",
@@ -76,7 +74,7 @@ export function constructLayoutEngine({
       if (inBrowser) {
         window.removeEventListener(
           "single-spa:before-routing-event",
-          unmountErrorParcels
+          beforeRoute
         );
 
         window.removeEventListener(
@@ -129,7 +127,24 @@ export function constructLayoutEngine({
     }
   }
 
-  function unmountErrorParcels({ detail: { newAppStatuses } }) {
+  function beforeRoute({ detail: { newAppStatuses, cancelNavigation } }) {
+    const path = getPath(resolvedRoutes);
+
+    for (let from in resolvedRoutes.redirects) {
+      const to = resolvedRoutes.redirects[from];
+
+      if (from === path) {
+        if (!cancelNavigation) {
+          throw Error(
+            `single-spa-layout: <redirect> requires single-spa@>=5.7.0`
+          );
+        }
+        cancelNavigation();
+        navigateToUrl(to);
+        return;
+      }
+    }
+
     for (let appName in newAppStatuses) {
       if (
         errorParcelByAppName[appName] &&
@@ -143,7 +158,7 @@ export function constructLayoutEngine({
   }
 
   function arrangeDomElements() {
-    const path = location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
+    const path = getPath(resolvedRoutes);
 
     if (path.indexOf(baseWithoutSlash) !== 0) {
       // Base URL doesn't match, no need to recurse routes
@@ -365,4 +380,8 @@ function jsonToDom(obj) {
 
 function brokenStatus(status) {
   return status === SKIP_BECAUSE_BROKEN || status === LOAD_ERROR;
+}
+
+function getPath(resolvedRoutes) {
+  return location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
 }

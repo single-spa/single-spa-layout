@@ -86,6 +86,9 @@ const routes = constructRoutes({
       ],
     },
   ],
+  redirects: {
+    "/": "/login",
+  },
 });
 
 (routes.routes[0] as ResolvedUrlRoute).activeWhen(window.location);
@@ -95,6 +98,8 @@ expectType<string | singleSpa.ParcelConfig | undefined>(
   (routes.routes[0] as import("../src/isomorphic/constructRoutes").Application)
     .loader
 );
+
+expectType<string>(routes.redirects["/"]);
 
 const parse5Doc = parse(
   `<single-spa-router></single-spa-router>`

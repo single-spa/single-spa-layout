@@ -85,7 +85,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig: received invalid properties 'irrelevantProperty', but valid properties are mode, base, containerEl, routes, disableWarnings`
+        `Invalid routesConfig: received invalid properties 'irrelevantProperty', but valid properties are mode, base, containerEl, routes, disableWarnings, redirects`
       );
     });
 
@@ -138,6 +138,51 @@ describe("constructRoutes", () => {
           routes: [],
         });
       }).toThrowError("non-blank string");
+    });
+
+    it(`throws an error with invalid redirects`, () => {
+      expect(() => {
+        constructRoutes({
+          routes: [],
+          redirects: 123,
+        });
+      }).toThrowError("plain object");
+
+      expect(() => {
+        constructRoutes({
+          routes: [],
+          redirects: {
+            1: "/login",
+          },
+        });
+      }).toThrowError("absolute path");
+
+      expect(() => {
+        constructRoutes({
+          routes: [],
+          redirects: {
+            "/": 1,
+          },
+        });
+      }).toThrowError("non-blank string");
+
+      expect(() => {
+        constructRoutes({
+          routes: [],
+          redirects: {
+            home: "/login",
+          },
+        });
+      }).toThrowError("absolute path");
+
+      expect(() => {
+        constructRoutes({
+          routes: [],
+          redirects: {
+            "/home": "login",
+          },
+        });
+      }).toThrowError("absolute path");
     });
   });
 
@@ -767,6 +812,17 @@ describe("constructRoutes", () => {
 
     it(`assigns 'containerEl' when a valid value is passed as attribute`, () => {
       expect(routes.containerEl).toBe("#spa-container");
+    });
+  });
+
+  describe(`redirects`, () => {
+    it(`can parse redirects`, () => {
+      const { document, routerElement } = parseFixture("redirects.html");
+      const routes = constructRoutes(routerElement);
+      expect(routes.redirects).toEqual({
+        "/": "/login",
+        "/old-settings": "/settings",
+      });
     });
   });
 });
