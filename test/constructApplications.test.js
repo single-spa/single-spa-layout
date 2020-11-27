@@ -424,7 +424,7 @@ describe(`constructApplications`, () => {
   });
 });
 
-function tick() {
+function tick(millis = 0) {
   return new Promise((resolve) => {
     setTimeout(resolve);
   });

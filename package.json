@@ -105,7 +105,7 @@
     "rollup": "^2.28.2",
     "rollup-cli": "^1.0.9",
     "rollup-plugin-terser": "^7.0.2",
-    "single-spa": "^5.6.0",
+    "single-spa": "^5.8.2",
     "tsd": "^0.13.1",
     "typescript": "^4.0.3"
   },

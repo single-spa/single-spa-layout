@@ -81,9 +81,12 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * @typedef {{
  * loaders: {
  *   [key: string]: any;
- * };
+ * },
  * props: {
  *   [key: string]: any;
+ * },
+ * errors?: {
+ *   [key: string]: string | import('single-spa').ParcelConfig;
  * }
  * }} HTMLLayoutData
  *
