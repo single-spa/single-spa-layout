@@ -304,7 +304,7 @@ describe(`constructApplications`, () => {
     // begin loading the app
     const loadPromise = applications[0].app();
 
-    await tick();
+    await tick(10);
 
     if (inBrowser) {
       appEl = document.getElementById(`single-spa-application:app1`);
@@ -424,8 +424,8 @@ describe(`constructApplications`, () => {
   });
 });
 
-function tick() {
+function tick(millis = 0) {
   return new Promise((resolve) => {
-    setTimeout(resolve);
+    setTimeout(resolve, millis);
   });
 }
