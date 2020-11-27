@@ -306,20 +306,19 @@ describe(`constructApplications`, () => {
 
     await tick();
 
-    // This test is flaky
-    // if (inBrowser) {
-    //   appEl = document.getElementById(`single-spa-application:app1`);
-    //   expect(appEl).toMatchInlineSnapshot(`
-    //     <div
-    //       id="single-spa-application:app1"
-    //       style="display: none;"
-    //     >
-    //       <img
-    //         src="loading.gif"
-    //       />
-    //     </div>
-    //   `);
-    // }
+    if (inBrowser) {
+      appEl = document.getElementById(`single-spa-application:app1`);
+      expect(appEl).toMatchInlineSnapshot(`
+        <div
+          id="single-spa-application:app1"
+          style="display: none;"
+        >
+          <img
+            src="loading.gif"
+          />
+        </div>
+      `);
+    }
 
     const loadedApp = await loadPromise;
 
