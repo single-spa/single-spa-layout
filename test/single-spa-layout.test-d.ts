@@ -55,7 +55,27 @@ const loaderParcelConfig = {
 };
 
 constructRoutes(
-  window.document.querySelector("#single-spa-layout") as HTMLTemplateElement
+  window.document.querySelector("#single-spa-layout") as HTMLTemplateElement,
+  {
+    loaders: {
+      loader1: "<div>loader</div>",
+      loader2: {
+        async mount() {},
+        async unmount() {},
+      },
+    },
+    props: {
+      prop1: "val",
+    },
+    errors: {
+      error1: "<div>Error</div>",
+      error2: {
+        async bootstrap() {},
+        async mount() {},
+        async unmount() {},
+      },
+    },
+  }
 );
 
 constructRoutes(
