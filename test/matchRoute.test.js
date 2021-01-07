@@ -310,6 +310,56 @@ describe(`matchRoute`, () => {
       });
     });
   });
+
+  describe("exact route matches", () => {
+    it("properly matches exact route matches in JSON", () => {
+      const routes = constructRoutes({
+        routes: [
+          {
+            type: "route",
+            path: "user/:id/settings",
+            exact: true,
+            routes: [{ type: "application", name: "user-settings" }],
+          },
+        ],
+      });
+
+      expect(matchRoute(routes, "/user/1/settings")).toMatchObject({
+        routes: [
+          {
+            type: "route",
+            path: "user/:id/settings",
+            exact: true,
+            routes: [{ type: "application", name: "user-settings" }],
+          },
+        ],
+      });
+
+      expect(matchRoute(routes, "/user/1/settings/more")).toMatchObject({
+        routes: [],
+      });
+    });
+
+    it("properly matches exact route matches in HTML", () => {
+      const { document, routerElement } = parseFixture("exact-matches.html");
+      const routes = constructRoutes(routerElement);
+
+      expect(matchRoute(routes, "/user/1/settings")).toMatchObject({
+        routes: [
+          {
+            type: "route",
+            path: "user/:id/settings",
+            exact: true,
+            routes: [{ type: "application", name: "user-settings" }],
+          },
+        ],
+      });
+
+      expect(matchRoute(routes, "/user/1/settings/more")).toMatchObject({
+        routes: [],
+      });
+    });
+  });
 });
 
 function expectApplicationMatched(match, name) {

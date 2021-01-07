@@ -229,7 +229,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes, props, default`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes, props, default, exact`
       );
     });
 
@@ -353,8 +353,22 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes, props, default"
+        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes, props, default, exact"
       );
+    });
+
+    it(`correctly validates the route.exact property`, () => {
+      expect(() => {
+        constructRoutes({
+          routes: [{ type: "route", path: "/", exact: "strings are invalid" }],
+        });
+      }).toThrowError(
+        `Invalid routesConfig.routes[0].exact: received string, but expected a boolean`
+      );
+
+      constructRoutes({
+        routes: [{ type: "route", path: "/", exact: true }],
+      });
     });
 
     it(`throws when containerEl is invalid`, () => {
