@@ -61,6 +61,7 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * path: string;
  * routes: Array<Route>;
  * default?: boolean;
+ * exact?: boolean;
  * activeWhen: import('single-spa').ActivityFn;
  * }} ResolvedUrlRoute
  *
@@ -69,6 +70,7 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * path: string;
  * routes: Array<Route>;
  * default?: boolean;
+ * exact?: boolean;
  * }} UrlRoute
  *
  * @typedef {{
@@ -245,6 +247,9 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
     if (hasAttribute(element, "default")) {
       route.default = true;
     }
+    if (hasAttribute(element, "exact")) {
+      route.exact = true;
+    }
     setProps(element, route, htmlLayoutData);
     for (let i = 0; i < element.childNodes.length; i++) {
       route.routes.push(
@@ -416,9 +421,12 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "path", "routes", "props", "default"],
+        ["type", "path", "routes", "props", "default", "exact"],
         disableWarnings
       );
+
+      if (route.hasOwnProperty("exact"))
+        validateBoolean(`${propertyName}.exact`, route.exact);
 
       const hasPath = route.hasOwnProperty("path");
       const hasDefault = route.hasOwnProperty("default");
@@ -427,7 +435,7 @@ function validateAndSanitize(routesConfig) {
       if (hasPath) {
         validateString(`${propertyName}.path`, route.path);
         fullPath = resolvePath(parentPath, route.path);
-        route.activeWhen = pathToActiveWhen(fullPath);
+        route.activeWhen = pathToActiveWhen(fullPath, route.exact);
         siblingActiveWhens.push(route.activeWhen);
       } else if (hasDefault) {
         validateBoolean(`${propertyName}.default`, route.default);

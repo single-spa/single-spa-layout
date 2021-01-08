@@ -103,6 +103,7 @@ const routes = constructRoutes({
         { type: "application", name: "app2", loader: `<img src="loader">` },
         { type: "application", name: "app3", loader: loaderParcelConfig },
         { type: "route", default: true },
+        { type: "route", path: "/home", exact: true },
       ],
     },
   ],
@@ -113,6 +114,8 @@ const routes = constructRoutes({
 
 (routes.routes[0] as ResolvedUrlRoute).activeWhen(window.location);
 expectType<boolean | undefined>((routes.routes[1] as ResolvedUrlRoute).default);
+
+expectType<boolean | undefined>((routes.routes[4] as ResolvedUrlRoute).exact);
 
 expectType<string | singleSpa.ParcelConfig | undefined>(
   (routes.routes[0] as import("../src/isomorphic/constructRoutes").Application)
