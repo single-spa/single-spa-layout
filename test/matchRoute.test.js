@@ -343,6 +343,10 @@ describe(`matchRoute`, () => {
     it("properly matches exact route matches in HTML", () => {
       const { document, routerElement } = parseFixture("exact-matches.html");
       const routes = constructRoutes(routerElement);
+      routes.routes = routes.routes.filter((r) => r.type !== "#text");
+      routes.routes[0].routes = routes.routes[0].routes.filter(
+        (r) => r.type !== "#text"
+      );
 
       expect(matchRoute(routes, "/user/1/settings")).toMatchObject({
         routes: [
