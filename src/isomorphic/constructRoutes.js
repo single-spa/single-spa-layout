@@ -50,9 +50,9 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  *   [from: string]: string;
  * }} Redirects
  *
- * @typedef {UrlRoute | Application | Node} RouteChild
+ * @typedef {UrlRoute | Application | Node | RouterLink} Route
  *
- * @typedef {ResolvedUrlRoute | Application | Node} ResolvedRouteChild
+ * @typedef {ResolvedUrlRoute | Application | Node | RouterLink} ResolvedRouteChild
  *
  * @typedef {string | Element | import('parse5').Element} ContainerEl
  *
@@ -65,14 +65,19 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * }} ResolvedUrlRoute
  *
  * @typedef {{
- * type: string;
- * path: string;
+ * type: "router-link";
+ * to: string;
+ * }} RouterLink
+ *
+ * @typedef {{
+ * type: "route";
+ * path?: string;
  * routes: Array<Route>;
  * default?: boolean;
  * }} UrlRoute
  *
  * @typedef {{
- * type: string;
+ * type: "application";
  * name: string;
  * props?: object;
  * loader?: string | import('single-spa').ParcelConfig;
@@ -450,6 +455,9 @@ function validateAndSanitize(routesConfig) {
           parentPath: fullPath,
           siblingActiveWhens: [],
         });
+    } else if (route.type === "router-link") {
+      validateKeys(propertyName, route, ["to"], disableWarnings);
+      validateString(propertyName, route.to);
     } else {
       if (typeof Node !== "undefined" && route instanceof Node) {
         // HTMLElements are allowed
