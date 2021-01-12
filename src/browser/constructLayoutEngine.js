@@ -7,6 +7,7 @@ import {
   SKIP_BECAUSE_BROKEN,
   LOAD_ERROR,
   navigateToUrl,
+  checkActivityFunctions,
 } from "single-spa";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
 
@@ -179,20 +180,42 @@ export function constructLayoutEngine({
     });
   }
 
-  function handleRoutingEvent({ detail: { appsByNewStatus } }) {
+  function handleRoutingEvent({ detail: { appsByNewStatus, newUrl } }) {
     pendingRemovals.forEach((remove) => remove());
     pendingRemovals = [];
 
-    appsByNewStatus.NOT_MOUNTED.concat(appsByNewStatus.NOT_LOADED).forEach(
-      (name) => {
-        const applicationElement = document.getElementById(
-          applicationElementId(name)
-        );
-        if (applicationElement && applicationElement.isConnected) {
-          applicationElement.parentNode.removeChild(applicationElement);
-        }
-      }
+    const appsToUnmount = appsByNewStatus.NOT_MOUNTED.concat(
+      appsByNewStatus.NOT_LOADED
     );
+
+    const appsThatShouldBeActive = checkActivityFunctions(newUrl);
+
+    for (let appName in errorParcelByAppName) {
+      if (appsThatShouldBeActive.indexOf(appName) < 0) {
+        appsToUnmount.push(appName);
+      }
+    }
+
+    appsToUnmount.forEach((name) => {
+      if (errorParcelByAppName[name]) {
+        errorParcelByAppName[name].unmount().catch((err) => {
+          console.error(
+            `single-spa-layout: Error parcel for application ${name} failed to unmount`
+          );
+          setTimeout(() => {
+            throw err;
+          });
+        });
+        delete errorParcelByAppName[name];
+      }
+
+      const applicationElement = document.getElementById(
+        applicationElementId(name)
+      );
+      if (applicationElement && applicationElement.isConnected) {
+        applicationElement.parentNode.removeChild(applicationElement);
+      }
+    });
   }
 }
 

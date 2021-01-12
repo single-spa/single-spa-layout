@@ -868,14 +868,24 @@ describe(`constructLayoutEngine browser`, () => {
 
     it(`works with error handlers defined in HTML`, async () => {
       const { routerElement } = parseFixture("error-handlers.html");
+
+      let numMainContentErrorMounts = 0,
+        numMainContentUnmounts = 0;
+
       const data = {
         errors: {
-          headerError: {
+          mainContentError: {
             async bootstrap() {},
-            async mount() {},
-            async unmount() {},
+            async mount(props) {
+              numMainContentErrorMounts++;
+              props.domElement.textContent = "error parcel mounted";
+            },
+            async unmount(props) {
+              numMainContentUnmounts++;
+              props.domElement.textContent = "";
+            },
           },
-          mainContentError: `<div>Oops! An error occurred!</div>`,
+          headerError: `<div>Oops! An error occurred!</div>`,
         },
       };
 
@@ -903,14 +913,59 @@ describe(`constructLayoutEngine browser`, () => {
         new CustomEvent("single-spa:before-mount-routing-event")
       );
 
-      errorHandlers.forEach((cb) =>
+      window.dispatchEvent(
+        new CustomEvent("single-spa:routing-event", {
+          detail: {
+            appsByNewStatus: {
+              MOUNTED: [],
+              NOT_MOUNTED: [],
+              NOT_LOADED: [],
+            },
+          },
+        })
+      );
+
+      errorHandlers.forEach((cb) => {
         cb({
           appOrParcelName: "app1",
+        });
+
+        cb({
+          appOrParcelName: "header",
+        });
+      });
+
+      await tick();
+
+      expect(numMainContentErrorMounts).toBe(1);
+      expect(numMainContentUnmounts).toBe(0);
+      expect(document.body).toMatchSnapshot();
+
+      // https://github.com/single-spa/single-spa-layout/issues/105
+      // Go back to / route and verify the parcel is unmounted
+      history.pushState(history.state, document.title, "/");
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:before-mount-routing-event")
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:routing-event", {
+          newUrl: location.href,
+          detail: {
+            appsByNewStatus: {
+              MOUNTED: [],
+              NOT_MOUNTED: [],
+              NOT_LOADED: [],
+            },
+          },
         })
       );
 
       await tick();
 
+      expect(numMainContentErrorMounts).toBe(1);
+      expect(numMainContentUnmounts).toBe(1);
       expect(document.body).toMatchSnapshot();
     });
 
