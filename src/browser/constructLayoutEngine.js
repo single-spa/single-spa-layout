@@ -184,6 +184,7 @@ export function constructLayoutEngine({
     pendingRemovals.forEach((remove) => remove());
     pendingRemovals = [];
 
+    // Remove the container elements for all applications that were just unmounted/unloaded
     const appsToUnmount = appsByNewStatus.NOT_MOUNTED.concat(
       appsByNewStatus.NOT_LOADED
     );
@@ -192,20 +193,14 @@ export function constructLayoutEngine({
 
     for (let appName in errorParcelByAppName) {
       if (appsThatShouldBeActive.indexOf(appName) < 0) {
+        // Unmount container elements for application that should be inactive, but is broken
         appsToUnmount.push(appName);
       }
     }
 
     appsToUnmount.forEach((name) => {
       if (errorParcelByAppName[name]) {
-        errorParcelByAppName[name].unmount().catch((err) => {
-          console.error(
-            `single-spa-layout: Error parcel for application ${name} failed to unmount`
-          );
-          setTimeout(() => {
-            throw err;
-          });
-        });
+        errorParcelByAppName[name].unmount();
         delete errorParcelByAppName[name];
       }
 
