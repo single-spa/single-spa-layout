@@ -4,10 +4,19 @@ node_js:
 addons:
   firefox: latest
   chrome: stable
+cache:
+  npm: false
+  directories:
+    - "~/.pnpm-store"
+before_install:
+  - curl -L https://unpkg.com/@pnpm/self-installer | node
+  - pnpm config set store-dir ~/.pnpm-store
+install:
+  - pnpm install
 script:
-  - yarn build
-  - yarn lint
-  - yarn test
-  - yarn cypress install
-  - yarn test-e2e:firefox
-  - yarn test-e2e:chrome
+  - pnpm run build
+  - pnpm run lint
+  - pnpm test
+  - ./node_modules/.bin/cypress install
+  - pnpm run test-e2e:firefox
+  - pnpm run test-e2e:chrome
