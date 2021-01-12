@@ -347,6 +347,8 @@ function findApplicationRoute({ applicationName, location, routes }) {
 }
 
 /**
+ * This function is called when application container elements need
+ * to be appended to the dom, but no new nodes should be visible.
  *
  * @param {Node} node
  * @param {Node} container
