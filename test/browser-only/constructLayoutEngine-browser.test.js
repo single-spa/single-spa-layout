@@ -5,6 +5,7 @@ import {
 } from "../../src/single-spa-layout.js";
 import { parseFixture } from "../html-utils.js";
 import { addErrorHandler, getAppStatus, navigateToUrl } from "single-spa";
+import { getPositionOfLineAndCharacter } from "typescript";
 
 jest.mock("single-spa", () => {
   const actualSingleSpa = jest.requireActual("single-spa");
@@ -17,10 +18,14 @@ jest.mock("single-spa", () => {
 });
 
 describe(`constructLayoutEngine browser`, () => {
+  let newUrl;
+
   beforeEach(() => {
     addErrorHandler.mockReset();
     getAppStatus.mockReset();
     navigateToUrl.mockReset();
+
+    changeUrl("/");
   });
 
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
@@ -152,14 +157,19 @@ describe(`constructLayoutEngine browser`, () => {
     );
     expect(document.body).toMatchSnapshot();
 
-    // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
+    changeUrl("/app1");
+
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["@org-name/app1"],
             NOT_MOUNTED: [],
@@ -193,9 +203,13 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to / route
-    history.pushState(history.state, document.title, "/");
+    newUrl = pathToFullUrl("/");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
@@ -205,6 +219,7 @@ describe(`constructLayoutEngine browser`, () => {
             NOT_MOUNTED: ["@org-name/app1"],
             NOT_LOADED: [],
           },
+          newUrl,
         },
       })
     );
@@ -262,9 +277,14 @@ describe(`constructLayoutEngine browser`, () => {
     });
 
     // transition to /cart route
-    history.pushState(history.state, document.title, "/cart");
+    changeUrl("/cart");
+
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
@@ -274,6 +294,7 @@ describe(`constructLayoutEngine browser`, () => {
             NOT_MOUNTED: [],
             NOT_LOADED: [],
           },
+          newUrl,
         },
       })
     );
@@ -305,13 +326,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition to /settings route
-    history.pushState(history.state, document.title, "/settings");
+    changeUrl("/settings");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: [],
             NOT_MOUNTED: [],
@@ -348,9 +374,13 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to /cart route
-    history.pushState(history.state, document.title, "/cart");
+    changeUrl("/cart");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
 
     headerEl = document.getElementById(
@@ -377,6 +407,19 @@ describe(`constructLayoutEngine browser`, () => {
       Node.DOCUMENT_POSITION_FOLLOWING
     );
 
+    window.dispatchEvent(
+      new CustomEvent("single-spa:routing-event", {
+        detail: {
+          appsByNewStatus: {
+            MOUNTED: [app1El, app2El],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+          newUrl,
+        },
+      })
+    );
+
     expect(document.body).toMatchSnapshot();
   });
 
@@ -390,13 +433,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /settings route
-    history.pushState(history.state, document.title, "/settings");
+    changeUrl("/settings");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["@org/settings"],
             NOT_MOUNTED: [],
@@ -409,13 +457,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    history.pushState(history.state, document.title, "/");
+    changeUrl("/");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: [],
             NOT_MOUNTED: ["@org/settings"],
@@ -427,13 +480,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
+    changeUrl("/app1");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["@org/main-sidenav", "@org/app1"],
             NOT_MOUNTED: [],
@@ -445,13 +503,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    history.pushState(history.state, document.title, "/");
+    changeUrl("/");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: [],
             NOT_MOUNTED: ["@org/main-sidenav", "@org/app1"],
@@ -463,13 +526,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app2 route
-    history.pushState(history.state, document.title, "/app2");
+    changeUrl("/app2");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["@org/main-sidenav", "@org/app2"],
             NOT_MOUNTED: [],
@@ -481,13 +549,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
+    changeUrl("/app1");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["@org/app1"],
             NOT_MOUNTED: ["@org/app2"],
@@ -507,11 +580,16 @@ describe(`constructLayoutEngine browser`, () => {
     layoutEngine = constructLayoutEngine({ routes, applications });
 
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["header"],
             NOT_MOUNTED: [],
@@ -524,13 +602,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
+    changeUrl("/app1");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["app1"],
             NOT_MOUNTED: [],
@@ -542,13 +625,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    history.pushState(history.state, document.title, "/");
+    newUrl = pathToFullUrl("/");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: [],
             NOT_MOUNTED: ["app1"],
@@ -572,13 +660,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings
-    history.pushState(history.state, document.title, "/settings");
+    changeUrl("/settings");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["settings-not-found"],
             NOT_MOUNTED: ["not-found"],
@@ -590,13 +683,18 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings/app1
-    history.pushState(history.state, document.title, "/settings/app1");
+    changeUrl("/settings/app1");
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
     );
     window.dispatchEvent(
       new CustomEvent("single-spa:routing-event", {
         detail: {
+          newUrl,
           appsByNewStatus: {
             MOUNTED: ["app1"],
             NOT_MOUNTED: ["settings-not-found"],
@@ -644,7 +742,7 @@ describe(`constructLayoutEngine browser`, () => {
 
     expect(document.body).toMatchSnapshot();
 
-    history.pushState(history.state, document.title, "/app1");
+    changeUrl("/app1");
     const loadPromise = applications[0].app();
 
     await tick();
@@ -654,7 +752,23 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
+    );
+    window.dispatchEvent(
+      new CustomEvent("single-spa:routing-event", {
+        detail: {
+          newUrl,
+          appsByNewStatus: {
+            MOUNTED: ["app1"],
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+          },
+        },
+      })
     );
     expect(document.body).toMatchSnapshot();
   });
@@ -729,11 +843,27 @@ describe(`constructLayoutEngine browser`, () => {
       applications,
     });
 
-    history.pushState(history.state, document.title, "/app1");
-    const loadPromise = applications[0].app();
+    changeUrl("/app1");
 
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("single-spa:routing-event", {
+        detail: {
+          newUrl,
+          appsByNewStatus: {
+            NOT_MOUNTED: [],
+            NOT_LOADED: [],
+            MOUNTED: ["app1"],
+          },
+        },
+      })
     );
 
     expect(document.body).toMatchSnapshot();
@@ -782,10 +912,27 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      history.pushState(history.state, document.title, "/app1");
+      changeUrl("/app1");
 
       window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
+        new CustomEvent("single-spa:before-mount-routing-event", {
+          detail: {
+            newUrl,
+          },
+        })
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:routing-event", {
+          detail: {
+            newUrl,
+            appsByNewStatus: {
+              MOUNTED: ["app1"],
+              NOT_MOUNTED: [],
+              NOT_LOADED: [],
+            },
+          },
+        })
       );
 
       errorHandlers.forEach((cb) =>
@@ -849,10 +996,27 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      history.pushState(history.state, document.title, "/app1");
+      changeUrl("/app1");
 
       window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
+        new CustomEvent("single-spa:before-mount-routing-event", {
+          detail: {
+            newUrl,
+          },
+        })
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:routing-event", {
+          detail: {
+            newUrl,
+            appsByNewStatus: {
+              MOUNTED: ["app1"],
+              NOT_MOUNTED: [],
+              NOT_LOADED: [],
+            },
+          },
+        })
       );
 
       errorHandlers.forEach((cb) =>
@@ -897,10 +1061,27 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      history.pushState(history.state, document.title, "/app1");
+      changeUrl("/app1");
 
       window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
+        new CustomEvent("single-spa:before-mount-routing-event", {
+          detail: {
+            newUrl,
+          },
+        })
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:routing-event", {
+          detail: {
+            newUrl,
+            appsByNewStatus: {
+              MOUNTED: ["app1"],
+              NOT_MOUNTED: [],
+              NOT_LOADED: [],
+            },
+          },
+        })
       );
 
       errorHandlers.forEach((cb) =>
@@ -971,10 +1152,27 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      history.pushState(history.state, document.title, "/app1");
+      changeUrl("/app1");
 
       window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
+        new CustomEvent("single-spa:before-mount-routing-event", {
+          detail: {
+            newUrl,
+          },
+        })
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("single-spa:routing-event", {
+          detail: {
+            newUrl,
+            appsByNewStatus: {
+              MOUNTED: ["app1"],
+              NOT_LOADED: [],
+              NOT_MOUNTED: [],
+            },
+          },
+        })
       );
 
       errorHandlers.forEach((cb) =>
@@ -989,7 +1187,11 @@ describe(`constructLayoutEngine browser`, () => {
       expect(parcelWasUnmounted).toBe(false);
 
       window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
+        new CustomEvent("single-spa:before-mount-routing-event", {
+          detail: {
+            newUrl,
+          },
+        })
       );
 
       // indicate that the application has been unloaded
@@ -997,7 +1199,7 @@ describe(`constructLayoutEngine browser`, () => {
         new CustomEvent("single-spa:before-routing-event", {
           detail: {
             newAppStatuses: {
-              app1: "MOUNTED",
+              app1: "NOT_LOADED",
             },
           },
         })
@@ -1032,7 +1234,7 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       // trigger redirect to login
-      history.pushState(history.state, document.title, "/");
+      changeUrl("/");
       const cancelNavigation = jest.fn();
       window.dispatchEvent(
         new CustomEvent("single-spa:before-routing-event", {
@@ -1065,7 +1267,7 @@ describe(`constructLayoutEngine browser`, () => {
     });
 
     it(`doesn't call navigateToUrl() for non-redirects`, async () => {
-      history.pushState(history.state, "some title", "/something-random");
+      changeUrl("/something-random");
 
       expect(navigateToUrl).not.toHaveBeenCalled();
       const { document, routerElement } = parseFixture("redirects.html");
@@ -1086,7 +1288,7 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       // trigger redirect to login
-      history.pushState(history.state, document.title, "/something-else");
+      changeUrl("/something-else");
       const cancelNavigation = jest.fn();
       window.dispatchEvent(
         new CustomEvent("single-spa:before-routing-event", {
@@ -1102,10 +1304,19 @@ describe(`constructLayoutEngine browser`, () => {
       expect(navigateToUrl).not.toHaveBeenCalled();
     });
   });
+
+  function changeUrl(path) {
+    history.pushState(history.state, document.title, path);
+    newUrl = new URL(path, location).href;
+  }
 });
 
 function tick() {
   return new Promise((resolve) => {
     setTimeout(resolve);
   });
+}
+
+function pathToFullUrl(path) {
+  return `http://example.com${path}`;
 }

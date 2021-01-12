@@ -33,6 +33,7 @@ export function constructLayoutEngine({
 }) {
   let isActive = false;
   let pendingRemovals = [];
+  let pendingMakeVisibles = [];
   let errorParcelByAppName = {};
 
   const baseWithoutSlash = resolvedRoutes.base.slice(
@@ -62,6 +63,7 @@ export function constructLayoutEngine({
         addErrorHandler(errorHandler);
 
         arrangeDomElements();
+        handleRoutingEvent();
       }
     },
     deactivate() {
@@ -157,7 +159,7 @@ export function constructLayoutEngine({
     }
   }
 
-  function arrangeDomElements() {
+  function arrangeDomElements(evt) {
     const path = getPath(resolvedRoutes);
 
     if (path.indexOf(baseWithoutSlash) !== 0) {
@@ -170,29 +172,41 @@ export function constructLayoutEngine({
         ? document.querySelector(resolvedRoutes.containerEl)
         : resolvedRoutes.containerEl;
 
+    const location = evt ? strToLocation(evt.detail.newUrl) : window.location;
+
     recurseRoutes({
-      location: window.location,
+      location,
       routes: resolvedRoutes.routes,
       parentContainer,
       shouldMount: true,
       pendingRemovals,
+      pendingMakeVisibles,
     });
   }
 
-  function handleRoutingEvent({ detail: { appsByNewStatus } }) {
+  function handleRoutingEvent(evt) {
     pendingRemovals.forEach((remove) => remove());
     pendingRemovals = [];
 
-    appsByNewStatus.NOT_MOUNTED.concat(appsByNewStatus.NOT_LOADED).forEach(
-      (name) => {
-        const applicationElement = document.getElementById(
-          applicationElementId(name)
-        );
-        if (applicationElement && applicationElement.isConnected) {
-          applicationElement.parentNode.removeChild(applicationElement);
+    if (evt) {
+      const {
+        detail: { appsByNewStatus },
+      } = evt;
+
+      appsByNewStatus.NOT_MOUNTED.concat(appsByNewStatus.NOT_LOADED).forEach(
+        (name) => {
+          const applicationElement = document.getElementById(
+            applicationElementId(name)
+          );
+          if (applicationElement && applicationElement.isConnected) {
+            applicationElement.parentNode.removeChild(applicationElement);
+          }
         }
-      }
-    );
+      );
+    }
+
+    pendingMakeVisibles.forEach((makeVisible) => makeVisible());
+    pendingMakeVisibles = [];
   }
 }
 
@@ -219,6 +233,7 @@ function recurseRoutes({
   previousSibling,
   shouldMount,
   pendingRemovals,
+  pendingMakeVisibles,
 }) {
   routes.forEach((route, index) => {
     if (route.type === "application") {
@@ -230,7 +245,12 @@ function recurseRoutes({
           applicationElement = document.createElement("div");
           applicationElement.id = htmlId;
         }
-        insertNode(applicationElement, parentContainer, previousSibling);
+        pendingInsertNode(
+          applicationElement,
+          parentContainer,
+          previousSibling,
+          pendingMakeVisibles
+        );
         previousSibling = applicationElement;
       }
     } else if (route.type === "route") {
@@ -241,6 +261,7 @@ function recurseRoutes({
         previousSibling,
         shouldMount: shouldMount && route.activeWhen(location),
         pendingRemovals,
+        pendingMakeVisibles,
       });
     } else if (route instanceof Node || typeof route.type === "string") {
       if (shouldMount) {
@@ -250,7 +271,12 @@ function recurseRoutes({
           route.connectedNode = newNode;
         }
 
-        insertNode(route.connectedNode, parentContainer, previousSibling);
+        pendingInsertNode(
+          route.connectedNode,
+          parentContainer,
+          previousSibling,
+          pendingMakeVisibles
+        );
 
         if (route.routes) {
           recurseRoutes({
@@ -260,6 +286,7 @@ function recurseRoutes({
             previousSibling: null,
             shouldMount,
             pendingRemovals,
+            pendingMakeVisibles,
           });
         }
 
@@ -324,7 +351,49 @@ function findApplicationRoute({ applicationName, location, routes }) {
  * @param {Node} node
  * @param {Node} container
  * @param {Node=} previousSibling
+ * @param {Array} pendingMakeVisibles
  */
+function pendingInsertNode(
+  node,
+  container,
+  previousSibling,
+  pendingMakeVisibles
+) {
+  switch (node.nodeType) {
+    // Element
+    case 1:
+      // Insert the element, but hidden
+      const originalDisplay = node.style.display;
+      node.style.display = "none";
+      pendingMakeVisibles.push(() => {
+        node.style.display = originalDisplay;
+        if (node.getAttribute("style") === "") {
+          node.removeAttribute("style");
+        }
+      });
+      insertNode(node, container, previousSibling);
+      break;
+
+    // Text
+    case 3:
+      // Since you can't hide text content (css display: none doesn't apply to text nodes),
+      // we insert an empty string text node and then replace it with a new node
+      // once we're ready to show the text.
+      const placeholderNode = document.createTextNode("");
+      insertNode(placeholderNode, container, previousSibling);
+
+      pendingMakeVisibles.push(() => {
+        container.replaceChild(node, placeholderNode);
+      });
+      break;
+
+    // Comment nodes and any other nodes
+    default:
+      insertNode(node, container, previousSibling);
+      break;
+  }
+}
+
 function insertNode(node, container, previousSibling) {
   if (previousSibling && previousSibling.nextSibling) {
     // move to be immediately after previousSibling
@@ -384,4 +453,15 @@ function brokenStatus(status) {
 
 function getPath(resolvedRoutes) {
   return location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
+}
+
+function strToLocation(str) {
+  if (typeof URL !== "undefined") {
+    return new URL(str);
+  } else {
+    // IE11 doesn't support new URL
+    const a = document.createElement("a");
+    a.href = str;
+    return a;
+  }
 }
