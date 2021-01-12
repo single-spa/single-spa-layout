@@ -5,7 +5,6 @@ import {
 } from "../../src/single-spa-layout.js";
 import { parseFixture } from "../html-utils.js";
 import { addErrorHandler, getAppStatus, navigateToUrl } from "single-spa";
-import { getPositionOfLineAndCharacter } from "typescript";
 
 jest.mock("single-spa", () => {
   const actualSingleSpa = jest.requireActual("single-spa");
@@ -25,7 +24,7 @@ describe(`constructLayoutEngine browser`, () => {
     getAppStatus.mockReset();
     navigateToUrl.mockReset();
 
-    changeUrl("/");
+    navigate("/");
   });
 
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
@@ -157,27 +156,10 @@ describe(`constructLayoutEngine browser`, () => {
     );
     expect(document.body).toMatchSnapshot();
 
-    changeUrl("/app1");
+    navigate("/app1");
 
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["@org-name/app1"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    fireBeforeMount();
+    fireRoutingEvent(["@org-name/app1"]);
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -203,26 +185,9 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to / route
-    newUrl = pathToFullUrl("/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["@org-name/app1"],
-            NOT_LOADED: [],
-          },
-          newUrl,
-        },
-      })
-    );
+    navigate("/");
+    fireBeforeMount();
+    fireRoutingEvent([], ["@org-name/app1"]);
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -277,27 +242,9 @@ describe(`constructLayoutEngine browser`, () => {
     });
 
     // transition to /cart route
-    changeUrl("/cart");
-
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-          newUrl,
-        },
-      })
-    );
+    navigate("/cart");
+    fireBeforeMount();
+    fireRoutingEvent();
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -326,26 +273,9 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition to /settings route
-    changeUrl("/settings");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/settings");
+    fireBeforeMount();
+    fireRoutingEvent();
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -374,14 +304,8 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to /cart route
-    changeUrl("/cart");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
+    navigate("/cart");
+    fireBeforeMount();
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -407,18 +331,7 @@ describe(`constructLayoutEngine browser`, () => {
       Node.DOCUMENT_POSITION_FOLLOWING
     );
 
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [app1El, app2El],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-          newUrl,
-        },
-      })
-    );
+    fireRoutingEvent(["app1", "app2"]);
 
     expect(document.body).toMatchSnapshot();
   });
@@ -433,142 +346,40 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /settings route
-    changeUrl("/settings");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["@org/settings"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/settings");
+    fireBeforeMount();
+    fireRoutingEvent(["@org/settings"]);
     // At /settings route: navbar, settings, and footer are mounted
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    changeUrl("/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["@org/settings"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/");
+    fireBeforeMount();
+    fireRoutingEvent([], ["@org/settings"]);
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    changeUrl("/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["@org/main-sidenav", "@org/app1"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/app1");
+    fireBeforeMount();
+    fireRoutingEvent(["@org/main-sidenav", "@org/app1"]);
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    changeUrl("/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["@org/main-sidenav", "@org/app1"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/");
+    fireBeforeMount();
+    fireRoutingEvent([], ["@org/main-sidenav", "@org/app1"]);
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app2 route
-    changeUrl("/app2");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["@org/main-sidenav", "@org/app2"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/app2");
+    fireBeforeMount();
+    fireRoutingEvent(["@org/main-sidenav", "@org/app2"]);
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    changeUrl("/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["@org/app1"],
-            NOT_MOUNTED: ["@org/app2"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/app1");
+    fireBeforeMount();
+    fireRoutingEvent(["@org/app1"], ["@org/app2"]);
     expect(document.querySelector("body")).toMatchSnapshot();
   });
 
@@ -579,72 +390,21 @@ describe(`constructLayoutEngine browser`, () => {
     const applications = constructApplications({ routes, loadApp });
     layoutEngine = constructLayoutEngine({ routes, applications });
 
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["header"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    fireBeforeMount();
+    fireRoutingEvent(["header"]);
 
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    changeUrl("/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["app1"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/app1");
+    fireBeforeMount();
+    fireRoutingEvent(["app1"]);
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    newUrl = pathToFullUrl("/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["app1"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/");
+    fireBeforeMount();
+    fireRoutingEvent([], ["app1"]);
     expect(document.querySelector("body")).toMatchSnapshot();
   });
 
@@ -660,49 +420,15 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings
-    changeUrl("/settings");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["settings-not-found"],
-            NOT_MOUNTED: ["not-found"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/settings");
+    fireBeforeMount();
+    fireRoutingEvent(["settings-not-found"], ["not-found"]);
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings/app1
-    changeUrl("/settings/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["app1"],
-            NOT_MOUNTED: ["settings-not-found"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    navigate("/settings/app1");
+    fireBeforeMount();
+    fireRoutingEvent(["app1"], ["settings-not-found"]);
     expect(document.body).toMatchSnapshot();
   });
 
@@ -742,7 +468,7 @@ describe(`constructLayoutEngine browser`, () => {
 
     expect(document.body).toMatchSnapshot();
 
-    changeUrl("/app1");
+    navigate("/app1");
     const loadPromise = applications[0].app();
 
     await tick();
@@ -751,25 +477,8 @@ describe(`constructLayoutEngine browser`, () => {
     await loadPromise;
     expect(document.body).toMatchSnapshot();
 
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            MOUNTED: ["app1"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    fireBeforeMount();
+    fireRoutingEvent(["app1"]);
     expect(document.body).toMatchSnapshot();
   });
 
@@ -843,28 +552,10 @@ describe(`constructLayoutEngine browser`, () => {
       applications,
     });
 
-    changeUrl("/app1");
+    navigate("/app1");
 
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event", {
-        detail: {
-          newUrl,
-        },
-      })
-    );
-
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          newUrl,
-          appsByNewStatus: {
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-            MOUNTED: ["app1"],
-          },
-        },
-      })
-    );
+    fireBeforeMount();
+    fireRoutingEvent(["app1"], [], []);
 
     expect(document.body).toMatchSnapshot();
   });
@@ -912,28 +603,11 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      changeUrl("/app1");
+      navigate("/app1");
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event", {
-          detail: {
-            newUrl,
-          },
-        })
-      );
+      fireBeforeMount();
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:routing-event", {
-          detail: {
-            newUrl,
-            appsByNewStatus: {
-              MOUNTED: ["app1"],
-              NOT_MOUNTED: [],
-              NOT_LOADED: [],
-            },
-          },
-        })
-      );
+      fireRoutingEvent(["app1"]);
 
       errorHandlers.forEach((cb) =>
         cb({
@@ -996,28 +670,11 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      changeUrl("/app1");
+      navigate("/app1");
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event", {
-          detail: {
-            newUrl,
-          },
-        })
-      );
+      fireBeforeMount();
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:routing-event", {
-          detail: {
-            newUrl,
-            appsByNewStatus: {
-              MOUNTED: ["app1"],
-              NOT_MOUNTED: [],
-              NOT_LOADED: [],
-            },
-          },
-        })
-      );
+      fireRoutingEvent(["app1"]);
 
       errorHandlers.forEach((cb) =>
         cb({
@@ -1061,28 +718,11 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      changeUrl("/app1");
+      navigate("/app1");
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event", {
-          detail: {
-            newUrl,
-          },
-        })
-      );
+      fireBeforeMount();
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:routing-event", {
-          detail: {
-            newUrl,
-            appsByNewStatus: {
-              MOUNTED: ["app1"],
-              NOT_MOUNTED: [],
-              NOT_LOADED: [],
-            },
-          },
-        })
-      );
+      fireRoutingEvent(["app1"]);
 
       errorHandlers.forEach((cb) =>
         cb({
@@ -1152,28 +792,11 @@ describe(`constructLayoutEngine browser`, () => {
         applications,
       });
 
-      changeUrl("/app1");
+      navigate("/app1");
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event", {
-          detail: {
-            newUrl,
-          },
-        })
-      );
+      fireBeforeMount();
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:routing-event", {
-          detail: {
-            newUrl,
-            appsByNewStatus: {
-              MOUNTED: ["app1"],
-              NOT_LOADED: [],
-              NOT_MOUNTED: [],
-            },
-          },
-        })
-      );
+      fireRoutingEvent(["app1"]);
 
       errorHandlers.forEach((cb) =>
         cb({
@@ -1186,24 +809,10 @@ describe(`constructLayoutEngine browser`, () => {
       expect(parcelWasMounted).toBe(true);
       expect(parcelWasUnmounted).toBe(false);
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event", {
-          detail: {
-            newUrl,
-          },
-        })
-      );
+      fireBeforeMount();
 
       // indicate that the application has been unloaded
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            newAppStatuses: {
-              app1: "NOT_LOADED",
-            },
-          },
-        })
-      );
+      fireBeforeRoutingEvent(null, [], [], ["app1"]);
 
       await tick();
 
@@ -1234,15 +843,9 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       // trigger redirect to login
-      changeUrl("/");
+      navigate("/");
       const cancelNavigation = jest.fn();
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            cancelNavigation,
-          },
-        })
-      );
+      fireBeforeRoutingEvent(cancelNavigation);
 
       await tick();
 
@@ -1252,13 +855,7 @@ describe(`constructLayoutEngine browser`, () => {
       // trigger redirect to new settings page
       history.pushState(history.state, document.title, "/old-settings");
       cancelNavigation.mockReset();
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            cancelNavigation,
-          },
-        })
-      );
+      fireBeforeRoutingEvent(cancelNavigation);
 
       await tick();
 
@@ -1267,7 +864,7 @@ describe(`constructLayoutEngine browser`, () => {
     });
 
     it(`doesn't call navigateToUrl() for non-redirects`, async () => {
-      changeUrl("/something-random");
+      navigate("/something-random");
 
       expect(navigateToUrl).not.toHaveBeenCalled();
       const { document, routerElement } = parseFixture("redirects.html");
@@ -1288,15 +885,9 @@ describe(`constructLayoutEngine browser`, () => {
       });
 
       // trigger redirect to login
-      changeUrl("/something-else");
+      navigate("/something-else");
       const cancelNavigation = jest.fn();
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            cancelNavigation,
-          },
-        })
-      );
+      fireBeforeRoutingEvent(cancelNavigation);
 
       await tick();
 
@@ -1305,9 +896,54 @@ describe(`constructLayoutEngine browser`, () => {
     });
   });
 
-  function changeUrl(path) {
+  function navigate(path) {
     history.pushState(history.state, document.title, path);
     newUrl = new URL(path, location).href;
+  }
+
+  function fireBeforeMount() {
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-mount-routing-event", {
+        detail: {
+          newUrl,
+        },
+      })
+    );
+  }
+
+  function fireRoutingEvent(mounted = [], unmounted = [], unloaded = []) {
+    window.dispatchEvent(
+      new CustomEvent("single-spa:routing-event", {
+        detail: {
+          newUrl,
+          appsByNewStatus: {
+            MOUNTED: mounted,
+            NOT_MOUNTED: unmounted,
+            NOT_LOADED: unloaded,
+          },
+        },
+      })
+    );
+  }
+
+  function fireBeforeRoutingEvent(
+    cancelNavigation,
+    mounted = [],
+    unmounted = [],
+    unloaded = []
+  ) {
+    const newAppStatuses = {};
+    mounted.forEach((m) => (newAppStatuses[m] = "MOUNTED"));
+    unmounted.forEach((u) => (newAppStatuses[u] = "UNMOUNTED"));
+    unloaded.forEach((u) => (newAppStatuses[u] = "UNLOADED"));
+    window.dispatchEvent(
+      new CustomEvent("single-spa:before-routing-event", {
+        detail: {
+          cancelNavigation,
+          newAppStatuses,
+        },
+      })
+    );
   }
 });
 
@@ -1315,8 +951,4 @@ function tick() {
   return new Promise((resolve) => {
     setTimeout(resolve);
   });
-}
-
-function pathToFullUrl(path) {
-  return `http://example.com${path}`;
 }
