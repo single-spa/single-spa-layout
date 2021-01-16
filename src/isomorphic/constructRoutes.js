@@ -15,12 +15,13 @@ import { find } from "../utils/find";
 
 // This can be replaced with a named import once single-spa changes its package.json exports or type
 // The weird logic here is to trick NodeJS, Rollup, and Webpack to work before that happens
+const pathToActiveWhenStr = "pathTo" + "ActiveWhen";
 const pathToActiveWhen = Object.prototype.hasOwnProperty.call(
   singleSpa,
   "default"
 )
   ? Object.getOwnPropertyDescriptor(singleSpa, "default").value.pathToActiveWhen
-  : singleSpa.pathToActiveWhen;
+  : singleSpa[pathToActiveWhenStr];
 
 export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
 
