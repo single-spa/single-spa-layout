@@ -7,6 +7,7 @@ import {
   SKIP_BECAUSE_BROKEN,
   LOAD_ERROR,
   navigateToUrl,
+  getAppNames,
   checkActivityFunctions,
 } from "single-spa";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
@@ -180,23 +181,23 @@ export function constructLayoutEngine({
     });
   }
 
-  function handleRoutingEvent({ detail: { appsByNewStatus, newUrl } }) {
+  function handleRoutingEvent({ detail: { newUrl } }) {
     pendingRemovals.forEach((remove) => remove());
     pendingRemovals = [];
 
-    // Remove the container elements for all applications that were just unmounted/unloaded
-    const appsToUnmount = appsByNewStatus.NOT_MOUNTED.concat(
-      appsByNewStatus.NOT_LOADED
+    const appsToUnmount = [];
+    const appsThatShouldBeActive = checkActivityFunctions(newUrl);
+    console.log(
+      "appsThatShouldBeActive",
+      newUrl || window.location.href,
+      appsThatShouldBeActive
     );
 
-    const appsThatShouldBeActive = checkActivityFunctions(newUrl);
-
-    for (let appName in errorParcelByAppName) {
-      if (appsThatShouldBeActive.indexOf(appName) < 0) {
-        // Unmount container elements for application that should be inactive, but is broken
-        appsToUnmount.push(appName);
+    getAppNames().forEach((app) => {
+      if (appsThatShouldBeActive.indexOf(app) < 0) {
+        appsToUnmount.push(app);
       }
-    }
+    });
 
     appsToUnmount.forEach((name) => {
       if (errorParcelByAppName[name]) {
