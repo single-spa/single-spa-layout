@@ -14,15 +14,13 @@ import { resolvePath } from "./matchRoute.js";
 import { find } from "../utils/find";
 
 // This can be replaced with a named import once single-spa changes its package.json exports or type
-// The weird strings here are to trick rollup into not optimizing the import to avoid the * syntax
-const defaultStr = "d" + "efault";
-const pathToActiveWhenStr = "pathTo" + "ActiveWhen";
+// The weird logic here is to trick NodeJS, Rollup, and Webpack to work before that happens
 const pathToActiveWhen = Object.prototype.hasOwnProperty.call(
   singleSpa,
   "default"
 )
-  ? singleSpa[defaultStr][pathToActiveWhenStr]
-  : singleSpa[pathToActiveWhenStr];
+  ? Object.getOwnPropertyDescriptor(singleSpa, "default").value.pathToActiveWhen
+  : singleSpa.pathToActiveWhen;
 
 export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
 
