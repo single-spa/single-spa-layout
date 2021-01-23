@@ -6,32 +6,19 @@ import {
 import { parseFixture } from "../html-utils.js";
 import {
   addErrorHandler,
-  removeErrorHandler,
   getAppStatus,
   navigateToUrl,
   getAppNames,
   registerApplication,
   unregisterApplication,
+  triggerAppChange,
+  start,
+  unloadApplication,
 } from "single-spa";
-
-jest.mock("single-spa", () => {
-  const actualSingleSpa = jest.requireActual("single-spa");
-  return {
-    ...actualSingleSpa,
-    addErrorHandler: jest.fn((...args) =>
-      actualSingleSpa.addErrorHandler(...args)
-    ),
-    navigateToUrl: jest.fn(),
-  };
-});
+import { prettyDOM } from "@testing-library/dom";
 
 describe(`constructLayoutEngine browser`, () => {
-  beforeEach(() => {
-    addErrorHandler.mock.calls.forEach((call) => removeErrorHandler(call[0]));
-    addErrorHandler.mockReset();
-    navigateToUrl.mockReset();
-    getAppNames().forEach((app) => unregisterApplication(app));
-  });
+  beforeEach(reset);
 
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
   let layoutEngine;
@@ -121,7 +108,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(layoutEngine.isActive()).toBe(true);
   });
 
-  it(`can successfully construct a layout engine and respond to routing events`, () => {
+  it(`can successfully construct a layout engine and respond to routing events`, async () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
       containerEl: "body",
@@ -138,8 +125,18 @@ describe(`constructLayoutEngine browser`, () => {
       ],
     });
 
+    const applications = constructApplications({
+      routes,
+      async loadApp({ name }) {
+        return noopApp();
+      },
+    });
+
+    applications.forEach(registerApplication);
+
     layoutEngine = constructLayoutEngine({
       routes,
+      applications,
     });
 
     // start at / route
@@ -163,21 +160,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["@org-name/app1"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/app1");
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -203,21 +186,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to / route
-    history.pushState(history.state, document.title, "/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["@org-name/app1"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/");
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -237,7 +206,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
   });
 
-  it(`can successfully rearrange dom elements during route transitions`, () => {
+  it(`can successfully rearrange dom elements during route transitions`, async () => {
     let headerEl, footerEl, app1El, app2El;
 
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
@@ -272,21 +241,7 @@ describe(`constructLayoutEngine browser`, () => {
     });
 
     // transition to /cart route
-    history.pushState(history.state, document.title, "/cart");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/cart");
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -315,21 +270,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition to /settings route
-    history.pushState(history.state, document.title, "/settings");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/settings");
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -358,10 +299,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
 
     // transition back to /cart route
-    history.pushState(history.state, document.title, "/cart");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
+    await transition("/cart");
 
     headerEl = document.getElementById(
       `single-spa-application:@org-name/header`
@@ -390,7 +328,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.body).toMatchSnapshot();
   });
 
-  it(`can process the layout in the medium.html fixture`, () => {
+  it(`can process the layout in the medium.html fixture`, async () => {
     const { routerElement } = parseFixture("medium.html");
     const loadApp = jest.fn();
     const routes = constructRoutes(routerElement);
@@ -401,116 +339,32 @@ describe(`constructLayoutEngine browser`, () => {
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /settings route
-    history.pushState(history.state, document.title, "/settings");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["@org/settings"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/settings");
     // At /settings route: navbar, settings, and footer are mounted
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    history.pushState(history.state, document.title, "/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["@org/settings"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/");
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["@org/main-sidenav", "@org/app1"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/app1");
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    history.pushState(history.state, document.title, "/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["@org/main-sidenav", "@org/app1"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/");
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app2 route
-    history.pushState(history.state, document.title, "/app2");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["@org/main-sidenav", "@org/app2"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/app2");
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["@org/app1"],
-            NOT_MOUNTED: ["@org/app2"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/app1");
     expect(document.querySelector("body")).toMatchSnapshot();
   });
 
-  it(`can process the dom elements fixture`, () => {
+  it(`can process the dom elements fixture`, async () => {
     const { routerElement } = parseFixture("dom-elements.html");
     const loadApp = jest.fn();
     const routes = constructRoutes(routerElement);
@@ -518,61 +372,20 @@ describe(`constructLayoutEngine browser`, () => {
     layoutEngine = constructLayoutEngine({ routes, applications });
     applications.forEach(registerApplication);
 
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["header"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/");
 
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to /app1 route
-    history.pushState(history.state, document.title, "/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["app1"],
-            NOT_MOUNTED: [],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/app1");
     expect(document.querySelector("body")).toMatchSnapshot();
 
     // transition to / route
-    history.pushState(history.state, document.title, "/");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: [],
-            NOT_MOUNTED: ["app1"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/");
     expect(document.querySelector("body")).toMatchSnapshot();
   });
 
-  it(`can process the nested-default-route fixture`, () => {
+  it(`can process the nested-default-route fixture`, async () => {
     history.pushState(history.state, document.title, "/");
 
     const { routerElement } = parseFixture("nested-default-route.html");
@@ -582,42 +395,15 @@ describe(`constructLayoutEngine browser`, () => {
     layoutEngine = constructLayoutEngine({ routes, applications });
     applications.forEach(registerApplication);
 
+    await transition("/");
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings
-    history.pushState(history.state, document.title, "/settings");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["settings-not-found"],
-            NOT_MOUNTED: ["not-found"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/settings");
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings/app1
-    history.pushState(history.state, document.title, "/settings/app1");
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
-    window.dispatchEvent(
-      new CustomEvent("single-spa:routing-event", {
-        detail: {
-          appsByNewStatus: {
-            MOUNTED: ["app1"],
-            NOT_MOUNTED: ["settings-not-found"],
-            NOT_LOADED: [],
-          },
-        },
-      })
-    );
+    await transition("/settings/app1");
     expect(document.body).toMatchSnapshot();
   });
 
@@ -646,7 +432,7 @@ describe(`constructLayoutEngine browser`, () => {
       routes,
       loadApp: (name) => {
         return new Promise((resolve) => {
-          setTimeout(resolve, 5);
+          setTimeout(() => resolve(noopApp()), 5);
         });
       },
     });
@@ -656,9 +442,11 @@ describe(`constructLayoutEngine browser`, () => {
     });
     applications.forEach(registerApplication);
 
+    await transition("/");
+
     expect(document.body).toMatchSnapshot();
 
-    history.pushState(history.state, document.title, "/app1");
+    const transitionPromise = transition("/app1");
     const loadPromise = applications[0].app();
 
     await tick();
@@ -667,13 +455,11 @@ describe(`constructLayoutEngine browser`, () => {
     await loadPromise;
     expect(document.body).toMatchSnapshot();
 
-    window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
-    );
+    await transitionPromise;
     expect(document.body).toMatchSnapshot();
   });
 
-  it(`can render dom elements from json`, () => {
+  it(`can render dom elements from json`, async () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
       containerEl: "body",
@@ -729,13 +515,7 @@ describe(`constructLayoutEngine browser`, () => {
 
     const applications = constructApplications({
       routes,
-      loadApp: async (name) => {
-        return {
-          async bootstrap() {},
-          async mount() {},
-          async unmount() {},
-        };
-      },
+      loadApp: async (name) => noopApp(),
     });
 
     layoutEngine = constructLayoutEngine({
@@ -744,8 +524,7 @@ describe(`constructLayoutEngine browser`, () => {
     });
     applications.forEach(registerApplication);
 
-    history.pushState(history.state, document.title, "/app1");
-    const loadPromise = applications[0].app();
+    await transition("/app1");
 
     window.dispatchEvent(
       new CustomEvent("single-spa:before-mount-routing-event")
@@ -755,6 +534,8 @@ describe(`constructLayoutEngine browser`, () => {
   });
 
   describe(`error handling`, () => {
+    beforeEach(reset);
+
     it(`shows an error UI when an application goes into SKIP_BECAUSE_BROKEN status`, async () => {
       /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
       const routes = constructRoutes({
@@ -779,17 +560,8 @@ describe(`constructLayoutEngine browser`, () => {
       const applications = constructApplications({
         routes,
         loadApp: async (name) => {
-          return {
-            async bootstrap() {},
-            async mount() {},
-            async unmount() {},
-          };
+          throw Error();
         },
-      });
-
-      const errorHandlers = [];
-      addErrorHandler.mockImplementation((handler) => {
-        errorHandlers.push(handler);
       });
 
       layoutEngine = constructLayoutEngine({
@@ -798,19 +570,7 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      history.pushState(history.state, document.title, "/app1");
-
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
-      );
-
-      errorHandlers.forEach((cb) =>
-        cb({
-          appOrParcelName: "app1",
-        })
-      );
-
-      await tick();
+      await transition("/app1");
 
       expect(document.body).toMatchSnapshot();
     });
@@ -847,17 +607,8 @@ describe(`constructLayoutEngine browser`, () => {
       const applications = constructApplications({
         routes,
         loadApp: async (name) => {
-          return {
-            async bootstrap() {},
-            async mount() {},
-            async unmount() {},
-          };
+          throw Error();
         },
-      });
-
-      const errorHandlers = [];
-      addErrorHandler.mockImplementation((handler) => {
-        errorHandlers.push(handler);
       });
 
       layoutEngine = constructLayoutEngine({
@@ -866,19 +617,7 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      history.pushState(history.state, document.title, "/app1");
-
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
-      );
-
-      errorHandlers.forEach((cb) =>
-        cb({
-          appOrParcelName: "app1",
-        })
-      );
-
-      await tick();
+      await transition("/app1");
 
       expect(document.body).toMatchSnapshot();
     });
@@ -914,46 +653,13 @@ describe(`constructLayoutEngine browser`, () => {
         },
       });
 
-      const errorHandlers = [];
-      addErrorHandler.mockImplementation((handler) => {
-        errorHandlers.push(handler);
-      });
-
       layoutEngine = constructLayoutEngine({
         routes,
         applications,
       });
       applications.forEach(registerApplication);
 
-      history.pushState(history.state, document.title, "/app1");
-
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
-      );
-
-      window.dispatchEvent(
-        new CustomEvent("single-spa:routing-event", {
-          detail: {
-            appsByNewStatus: {
-              MOUNTED: [],
-              NOT_MOUNTED: [],
-              NOT_LOADED: [],
-            },
-          },
-        })
-      );
-
-      errorHandlers.forEach((cb) => {
-        cb({
-          appOrParcelName: "app1",
-        });
-
-        cb({
-          appOrParcelName: "header",
-        });
-      });
-
-      await tick();
+      await transition("/app1");
 
       expect(numMainContentErrorMounts).toBe(1);
       expect(numMainContentUnmounts).toBe(0);
@@ -961,26 +667,7 @@ describe(`constructLayoutEngine browser`, () => {
 
       // https://github.com/single-spa/single-spa-layout/issues/105
       // Go back to / route and verify the parcel is unmounted
-      history.pushState(history.state, document.title, "/");
-
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
-      );
-
-      window.dispatchEvent(
-        new CustomEvent("single-spa:routing-event", {
-          newUrl: location.href,
-          detail: {
-            appsByNewStatus: {
-              MOUNTED: [],
-              NOT_MOUNTED: [],
-              NOT_LOADED: [],
-            },
-          },
-        })
-      );
-
-      await tick();
+      await transition("/");
 
       expect(numMainContentErrorMounts).toBe(1);
       expect(numMainContentUnmounts).toBe(1);
@@ -1025,19 +712,9 @@ describe(`constructLayoutEngine browser`, () => {
       const applications = constructApplications({
         routes,
         loadApp: async (name) => {
-          return {
-            async bootstrap() {},
-            async mount() {},
-            async unmount() {},
-          };
+          throw Error();
         },
       });
-
-      const errorHandlers = [];
-      addErrorHandler.mockImplementation((handler) => {
-        errorHandlers.push(handler);
-      });
-      getAppStatus.mockReturnValue("SKIP_BECAUSE_BROKEN");
 
       layoutEngine = constructLayoutEngine({
         routes,
@@ -1045,60 +722,30 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      history.pushState(history.state, document.title, "/app1");
-
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
-      );
-
-      errorHandlers.forEach((cb) =>
-        cb({
-          appOrParcelName: "app1",
-        })
-      );
-
-      await tick();
+      await transition("/app1");
 
       expect(parcelWasMounted).toBe(true);
       expect(parcelWasUnmounted).toBe(false);
 
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-mount-routing-event")
-      );
-
-      // indicate that the application has been unloaded
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            newAppStatuses: {
-              app1: "MOUNTED",
-            },
-          },
-        })
-      );
-
-      await tick();
+      await transition("/");
+      unloadApplication("app1");
 
       expect(parcelWasUnmounted).toBe(true);
     });
   });
 
   describe(`redirects`, () => {
-    it(`calls navigateToUrl() for redirects`, async () => {
-      history.pushState(history.state, "some title", "/something-random");
+    beforeEach(reset);
 
-      expect(navigateToUrl).not.toHaveBeenCalled();
+    it(`successfully redirects`, async () => {
+      await transition("/something-random");
+      await triggerAppChange();
+
       const { document, routerElement } = parseFixture("redirects.html");
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => {
-          return {
-            async bootstrap() {},
-            async mount() {},
-            async unmount() {},
-          };
-        },
+        loadApp: async (name) => noopApp(),
       });
       layoutEngine = constructLayoutEngine({
         routes,
@@ -1106,43 +753,39 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
+      let numNavigationCancels = 0;
+
+      window.addEventListener("single-spa:routing-event", checkForCancelation);
+
       // trigger redirect to login
-      history.pushState(history.state, document.title, "/");
-      const cancelNavigation = jest.fn();
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            cancelNavigation,
-          },
-        })
-      );
+      await transition("/");
+      await triggerAppChange();
 
-      await tick();
+      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
 
-      expect(cancelNavigation).toHaveBeenCalled();
-      expect(navigateToUrl).toHaveBeenCalledWith("/login");
+      expect(location.pathname).toBe("/login");
 
       // trigger redirect to new settings page
-      history.pushState(history.state, document.title, "/old-settings");
-      cancelNavigation.mockReset();
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            cancelNavigation,
-          },
-        })
+      numNavigationCancels = 0;
+      await transition("/old-settings");
+
+      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
+
+      window.removeEventListener(
+        "single-spa:routing-event",
+        checkForCancelation
       );
 
-      await tick();
-
-      expect(cancelNavigation).toHaveBeenCalled();
-      expect(navigateToUrl).toHaveBeenCalledWith("/settings");
+      function checkForCancelation({ detail: { navigationIsCanceled } }) {
+        if (navigationIsCanceled) {
+          numNavigationCancels++;
+        }
+      }
     });
 
     it(`doesn't call navigateToUrl() for non-redirects`, async () => {
-      history.pushState(history.state, "some title", "/something-random");
+      await transition("/something-random");
 
-      expect(navigateToUrl).not.toHaveBeenCalled();
       const { document, routerElement } = parseFixture("redirects.html");
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
@@ -1161,27 +804,55 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
+      window.addEventListener("single-spa:routing-event", checkForCancelation);
+
+      let numNavigationCancels = 0;
+
       // trigger redirect to login
-      history.pushState(history.state, document.title, "/something-else");
-      const cancelNavigation = jest.fn();
-      window.dispatchEvent(
-        new CustomEvent("single-spa:before-routing-event", {
-          detail: {
-            cancelNavigation,
-          },
-        })
+      await transition("/");
+
+      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
+
+      window.removeEventListener(
+        "single-spa:routing-event",
+        checkForCancelation
       );
 
-      await tick();
-
-      expect(cancelNavigation).not.toHaveBeenCalled();
-      expect(navigateToUrl).not.toHaveBeenCalled();
+      function checkForCancelation({ detail: { navigationIsCanceled } }) {
+        if (navigationIsCanceled) {
+          numNavigationCancels++;
+        }
+      }
     });
   });
+
+  async function reset() {
+    start();
+    if (layoutEngine) {
+      layoutEngine.deactivate();
+    }
+    getAppNames().forEach(unregisterApplication);
+    navigateToUrl("/");
+    await triggerAppChange();
+    await tick();
+  }
 });
 
 function tick() {
   return new Promise((resolve) => {
     setTimeout(resolve);
   });
+}
+
+function noopApp() {
+  return {
+    async mount() {},
+    async unmount() {},
+  };
+}
+
+async function transition(url) {
+  navigateToUrl(url);
+  await triggerAppChange();
+  await tick();
 }

@@ -252,7 +252,6 @@ exports[`constructLayoutEngine browser can show a loader properly 2`] = `
 <body>
   <div
     id="single-spa-application:app1"
-    style="display: none;"
   >
     <img
       src="loading.gif"
@@ -376,18 +375,6 @@ exports[`constructLayoutEngine browser error handling shows an error UI when an 
 </body>
 `;
 
-exports[`constructLayoutEngine browser error handling unmounts the error parcel when the application gets unloaded 1`] = `
-<body>
-  <div
-    id="single-spa-application:app1"
-  >
-    <div>
-      App 1 is broken (parcel)
-    </div>
-  </div>
-</body>
-`;
-
 exports[`constructLayoutEngine browser error handling works with a parcel provided for the error UI 1`] = `
 <body>
   <div
@@ -423,6 +410,13 @@ exports[`constructLayoutEngine browser error handling works with error handlers 
 
 exports[`constructLayoutEngine browser error handling works with error handlers defined in HTML 2`] = `
 <body>
+  <div
+    id="single-spa-application:header"
+  >
+    <div>
+      Oops! An error occurred!
+    </div>
+  </div>
   <div
     class="main-content"
   />
