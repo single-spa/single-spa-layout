@@ -1,6 +1,6 @@
 {
   "name": "single-spa-layout",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Layout engine for single-spa applications",
   "main": "dist/umd/single-spa-layout.min.cjs",
   "module": "dist/esm/single-spa-layout.min.js",
@@ -21,16 +21,16 @@
   },
   "types": "dist/types/single-spa-layout-interface.d.ts",
   "scripts": {
-    "prepublishOnly": "yarn build",
-    "build": "rimraf dist && concurrently -n w: 'yarn:build:*'",
+    "prepublishOnly": "pnpm run build",
+    "build": "rimraf dist && concurrently -n w: 'pnpm:build:*'",
     "build:lib": "rollup -c",
     "build:types:browser": "tsc --project tsconfig.json",
     "build:types:server": "tsc --project tsconfig.node.json",
     "watch-build": "rollup -cw --environment DEVELOPMENT",
-    "check-format": "prettier --check './**/*'",
+    "check-format": "prettier --check .",
     "lint": "eslint src",
-    "format": "prettier --write './**/*'",
-    "test": "concurrently -n w: 'yarn:test:*'",
+    "format": "prettier --write .",
+    "test": "concurrently -n w: 'pnpm:test:*'",
     "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only --testPathIgnorePatterns=cypress",
     "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only --testPathIgnorePatterns=cypress",
     "test:types": "tsd",
@@ -50,7 +50,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged && yarn lint"
+      "pre-commit": "pretty-quick --staged && pnpm run lint"
     }
   },
   "repository": {
