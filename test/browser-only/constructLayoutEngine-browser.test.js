@@ -4,23 +4,33 @@ import {
   constructApplications,
 } from "../../src/single-spa-layout.js";
 import { parseFixture } from "../html-utils.js";
-import { addErrorHandler, getAppStatus, navigateToUrl } from "single-spa";
+import {
+  addErrorHandler,
+  removeErrorHandler,
+  getAppStatus,
+  navigateToUrl,
+  getAppNames,
+  registerApplication,
+  unregisterApplication,
+} from "single-spa";
 
 jest.mock("single-spa", () => {
   const actualSingleSpa = jest.requireActual("single-spa");
   return {
     ...actualSingleSpa,
-    addErrorHandler: jest.fn(),
-    getAppStatus: jest.fn(),
+    addErrorHandler: jest.fn((...args) =>
+      actualSingleSpa.addErrorHandler(...args)
+    ),
     navigateToUrl: jest.fn(),
   };
 });
 
 describe(`constructLayoutEngine browser`, () => {
   beforeEach(() => {
+    addErrorHandler.mock.calls.forEach((call) => removeErrorHandler(call[0]));
     addErrorHandler.mockReset();
-    getAppStatus.mockReset();
     navigateToUrl.mockReset();
+    getAppNames().forEach((app) => unregisterApplication(app));
   });
 
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
@@ -386,6 +396,7 @@ describe(`constructLayoutEngine browser`, () => {
     const routes = constructRoutes(routerElement);
     const applications = constructApplications({ routes, loadApp });
     layoutEngine = constructLayoutEngine({ routes, applications });
+    applications.forEach(registerApplication);
 
     expect(document.querySelector("body")).toMatchSnapshot();
 
@@ -505,6 +516,7 @@ describe(`constructLayoutEngine browser`, () => {
     const routes = constructRoutes(routerElement);
     const applications = constructApplications({ routes, loadApp });
     layoutEngine = constructLayoutEngine({ routes, applications });
+    applications.forEach(registerApplication);
 
     window.dispatchEvent(
       new CustomEvent("single-spa:before-mount-routing-event")
@@ -568,6 +580,7 @@ describe(`constructLayoutEngine browser`, () => {
     const routes = constructRoutes(routerElement);
     const applications = constructApplications({ routes, loadApp });
     layoutEngine = constructLayoutEngine({ routes, applications });
+    applications.forEach(registerApplication);
 
     expect(document.body).toMatchSnapshot();
 
@@ -641,6 +654,7 @@ describe(`constructLayoutEngine browser`, () => {
     layoutEngine = constructLayoutEngine({
       routes,
     });
+    applications.forEach(registerApplication);
 
     expect(document.body).toMatchSnapshot();
 
@@ -728,6 +742,7 @@ describe(`constructLayoutEngine browser`, () => {
       routes,
       applications,
     });
+    applications.forEach(registerApplication);
 
     history.pushState(history.state, document.title, "/app1");
     const loadPromise = applications[0].app();
@@ -781,6 +796,7 @@ describe(`constructLayoutEngine browser`, () => {
         routes,
         applications,
       });
+      applications.forEach(registerApplication);
 
       history.pushState(history.state, document.title, "/app1");
 
@@ -848,6 +864,7 @@ describe(`constructLayoutEngine browser`, () => {
         routes,
         applications,
       });
+      applications.forEach(registerApplication);
 
       history.pushState(history.state, document.title, "/app1");
 
@@ -906,6 +923,7 @@ describe(`constructLayoutEngine browser`, () => {
         routes,
         applications,
       });
+      applications.forEach(registerApplication);
 
       history.pushState(history.state, document.title, "/app1");
 
@@ -1025,6 +1043,7 @@ describe(`constructLayoutEngine browser`, () => {
         routes,
         applications,
       });
+      applications.forEach(registerApplication);
 
       history.pushState(history.state, document.title, "/app1");
 
@@ -1085,6 +1104,7 @@ describe(`constructLayoutEngine browser`, () => {
         routes,
         applications,
       });
+      applications.forEach(registerApplication);
 
       // trigger redirect to login
       history.pushState(history.state, document.title, "/");
@@ -1139,6 +1159,7 @@ describe(`constructLayoutEngine browser`, () => {
         routes,
         applications,
       });
+      applications.forEach(registerApplication);
 
       // trigger redirect to login
       history.pushState(history.state, document.title, "/something-else");
