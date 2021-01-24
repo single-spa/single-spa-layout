@@ -5,8 +5,6 @@ import {
 } from "../../src/single-spa-layout.js";
 import { parseFixture } from "../html-utils.js";
 import {
-  addErrorHandler,
-  getAppStatus,
   navigateToUrl,
   getAppNames,
   registerApplication,
@@ -15,7 +13,6 @@ import {
   start,
   unloadApplication,
 } from "single-spa";
-import { prettyDOM } from "@testing-library/dom";
 
 describe(`constructLayoutEngine browser`, () => {
   beforeEach(reset);
@@ -531,6 +528,80 @@ describe(`constructLayoutEngine browser`, () => {
     );
 
     expect(document.body).toMatchSnapshot();
+  });
+
+  // https://github.com/single-spa/single-spa-layout/issues/103
+  it(`unmounts all dom elements for the old route before mounting any new ones`, async () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      routes: [
+        {
+          type: "route",
+          default: true,
+          routes: [
+            {
+              type: "div",
+              attrs: [
+                {
+                  name: "id",
+                  value: "404",
+                },
+              ],
+              routes: [
+                {
+                  type: "#text",
+                  value: "404 not found",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "route",
+          path: "/app1",
+          routes: [
+            {
+              type: "#text",
+              value: "App1",
+            },
+          ],
+        },
+      ],
+    });
+
+    const applications = constructApplications({
+      routes,
+      loadApp: async (name) => noopApp(),
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+      applications,
+    });
+    applications.forEach(registerApplication);
+
+    await transition("/");
+
+    expect(document.getElementById("404")).toBeTruthy();
+
+    window.addEventListener(
+      "single-spa:before-mount-routing-event",
+      beforeMount
+    );
+
+    await transition("/app1");
+
+    expect(document.getElementById("404")).toBeFalsy();
+
+    function beforeMount() {
+      // This event listener will fire after the equivalent listener in constructLayoutEngine,
+      // since we added it after calling `constructLayoutEngine`
+      expect(document.getElementById("404")).toBeFalsy();
+      window.removeEventListener(
+        "single-spa:before-mount-routing-event",
+        beforeMount
+      );
+    }
   });
 
   describe(`error handling`, () => {
