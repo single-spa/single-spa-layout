@@ -252,7 +252,6 @@ exports[`constructLayoutEngine browser can show a loader properly 2`] = `
 <body>
   <div
     id="single-spa-application:app1"
-    style="display: none;"
   >
     <img
       src="loading.gif"
@@ -392,17 +391,34 @@ exports[`constructLayoutEngine browser error handling works with error handlers 
 <body>
   <div
     id="single-spa-application:header"
-  />
+  >
+    <div>
+      Oops! An error occurred!
+    </div>
+  </div>
   <div
     class="main-content"
   >
     <div
       id="single-spa-application:app1"
     >
-      <div>
-        Oops! An error occurred!
-      </div>
+      error parcel mounted
     </div>
   </div>
+</body>
+`;
+
+exports[`constructLayoutEngine browser error handling works with error handlers defined in HTML 2`] = `
+<body>
+  <div
+    id="single-spa-application:header"
+  >
+    <div>
+      Oops! An error occurred!
+    </div>
+  </div>
+  <div
+    class="main-content"
+  />
 </body>
 `;

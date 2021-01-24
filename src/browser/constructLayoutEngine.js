@@ -7,6 +7,8 @@ import {
   SKIP_BECAUSE_BROKEN,
   LOAD_ERROR,
   navigateToUrl,
+  getAppNames,
+  checkActivityFunctions,
 } from "single-spa";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
 
@@ -127,8 +129,10 @@ export function constructLayoutEngine({
     }
   }
 
-  function beforeRoute({ detail: { newAppStatuses, cancelNavigation } }) {
-    const path = getPath(resolvedRoutes);
+  function beforeRoute({
+    detail: { newAppStatuses, cancelNavigation, newUrl },
+  }) {
+    const path = getPath(resolvedRoutes, strToLocation(newUrl));
 
     for (let from in resolvedRoutes.redirects) {
       const to = resolvedRoutes.redirects[from];
@@ -139,8 +143,15 @@ export function constructLayoutEngine({
             `single-spa-layout: <redirect> requires single-spa@>=5.7.0`
           );
         }
+
+        // Calling cancelNavigation sends us back to the old URL
         cancelNavigation();
-        navigateToUrl(to);
+
+        // We must wait until single-spa starts sending us back to the old URL
+        // before attempting to send to the redirect URL
+        setTimeout(() => {
+          navigateToUrl(to);
+        });
         return;
       }
     }
@@ -179,20 +190,34 @@ export function constructLayoutEngine({
     });
   }
 
-  function handleRoutingEvent({ detail: { appsByNewStatus } }) {
+  function handleRoutingEvent({ detail: { newUrl } }) {
     pendingRemovals.forEach((remove) => remove());
     pendingRemovals = [];
 
-    appsByNewStatus.NOT_MOUNTED.concat(appsByNewStatus.NOT_LOADED).forEach(
-      (name) => {
-        const applicationElement = document.getElementById(
-          applicationElementId(name)
-        );
-        if (applicationElement && applicationElement.isConnected) {
-          applicationElement.parentNode.removeChild(applicationElement);
-        }
-      }
+    const appsToUnmount = [];
+    const appsThatShouldBeActive = checkActivityFunctions(
+      newUrl ? strToLocation(newUrl) : location
     );
+
+    getAppNames().forEach((app) => {
+      if (appsThatShouldBeActive.indexOf(app) < 0) {
+        appsToUnmount.push(app);
+      }
+    });
+
+    appsToUnmount.forEach((name) => {
+      if (errorParcelByAppName[name]) {
+        errorParcelByAppName[name].unmount();
+        delete errorParcelByAppName[name];
+      }
+
+      const applicationElement = document.getElementById(
+        applicationElementId(name)
+      );
+      if (applicationElement && applicationElement.isConnected) {
+        applicationElement.parentNode.removeChild(applicationElement);
+      }
+    });
   }
 }
 
@@ -382,6 +407,17 @@ function brokenStatus(status) {
   return status === SKIP_BECAUSE_BROKEN || status === LOAD_ERROR;
 }
 
-function getPath(resolvedRoutes) {
-  return location[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
+function getPath(resolvedRoutes, l = location) {
+  return l[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
+}
+
+function strToLocation(str) {
+  if (typeof URL !== "undefined") {
+    return new URL(str);
+  } else {
+    // IE11
+    const a = document.createElement("a");
+    a.href = str;
+    return a;
+  }
 }
