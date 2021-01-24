@@ -34,7 +34,6 @@ export function constructLayoutEngine({
   active = true,
 }) {
   let isActive = false;
-  let pendingRemovals = [];
   let errorParcelByAppName = {};
 
   const baseWithoutSlash = resolvedRoutes.base.slice(
@@ -186,14 +185,10 @@ export function constructLayoutEngine({
       routes: resolvedRoutes.routes,
       parentContainer,
       shouldMount: true,
-      pendingRemovals,
     });
   }
 
   function handleRoutingEvent({ detail: { newUrl } }) {
-    pendingRemovals.forEach((remove) => remove());
-    pendingRemovals = [];
-
     const appsToUnmount = [];
     const appsThatShouldBeActive = checkActivityFunctions(
       newUrl ? strToLocation(newUrl) : location
@@ -228,7 +223,6 @@ export function constructLayoutEngine({
  * parentContainer: HTMLElement,
  * previousSibling?: HTMLElement,
  * shouldMount: boolean;
- * pendingRemovals: Array<Function>;
  * }} DomChangeInput
  *
  * We do all of this in a single recursive pass for performance, even though
@@ -243,7 +237,6 @@ function recurseRoutes({
   parentContainer,
   previousSibling,
   shouldMount,
-  pendingRemovals,
 }) {
   routes.forEach((route, index) => {
     if (route.type === "application") {
@@ -265,7 +258,6 @@ function recurseRoutes({
         parentContainer,
         previousSibling,
         shouldMount: shouldMount && route.activeWhen(location),
-        pendingRemovals,
       });
     } else if (route instanceof Node || typeof route.type === "string") {
       if (shouldMount) {
@@ -284,17 +276,13 @@ function recurseRoutes({
             parentContainer: route.connectedNode,
             previousSibling: null,
             shouldMount,
-            pendingRemovals,
           });
         }
 
         previousSibling = route.connectedNode;
       } else {
-        // we should remove this dom element at the next single-spa:routing-event
-        pendingRemovals.push(() => {
-          removeNode(route.connectedNode);
-          delete route.connectedNode;
-        });
+        removeNode(route.connectedNode);
+        delete route.connectedNode;
       }
     }
   });
