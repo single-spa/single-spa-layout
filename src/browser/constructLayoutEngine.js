@@ -181,6 +181,7 @@ export function constructLayoutEngine({
         ? document.querySelector(resolvedRoutes.containerEl)
         : resolvedRoutes.containerEl;
 
+    // We need to move, not destroy + recreate, application container elements
     const applicationContainers = getMountedApps().reduce(
       (applicationContainers, appName) => {
         applicationContainers[appName] = document.getElementById(
