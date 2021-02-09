@@ -604,6 +604,82 @@ describe(`constructLayoutEngine browser`, () => {
     }
   });
 
+  // https://github.com/single-spa/single-spa-layout/issues/115
+  it(`reuses the same dom element container for applications when the container moves to a different part of the DOM`, async () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      containerEl: "body",
+      base: "/",
+      mode: "history",
+      routes: [
+        {
+          type: "route",
+          path: "/settings",
+          routes: [
+            {
+              type: "div",
+              routes: [
+                {
+                  type: "application",
+                  name: "auth",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "route",
+          path: "/permissions",
+          routes: [
+            {
+              type: "div",
+              routes: [
+                {
+                  type: "application",
+                  name: "auth",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const applications = constructApplications({
+      routes,
+      loadApp: async (name) => {
+        return {
+          async mount() {},
+          async unmount() {},
+        };
+      },
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+      applications,
+    });
+    applications.forEach(registerApplication);
+
+    await transition("/settings");
+
+    const originalAppEl = document.getElementById(
+      `single-spa-application:auth`
+    );
+
+    expect(originalAppEl).toBeInTheDocument();
+
+    await transition("/permissions");
+
+    expect(
+      document.getElementById(`single-spa-application:auth`)
+    ).toBeInTheDocument();
+
+    expect(document.getElementById(`single-spa-application:auth`)).toBe(
+      originalAppEl
+    );
+  });
+
   describe(`error handling`, () => {
     beforeEach(reset);
 

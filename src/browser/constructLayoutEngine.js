@@ -9,6 +9,7 @@ import {
   navigateToUrl,
   getAppNames,
   checkActivityFunctions,
+  getMountedApps,
 } from "single-spa";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
 
@@ -180,11 +181,22 @@ export function constructLayoutEngine({
         ? document.querySelector(resolvedRoutes.containerEl)
         : resolvedRoutes.containerEl;
 
+    const applicationContainers = getMountedApps().reduce(
+      (applicationContainers, appName) => {
+        applicationContainers[appName] = document.getElementById(
+          applicationElementId(appName)
+        );
+        return applicationContainers;
+      },
+      {}
+    );
+
     recurseRoutes({
       location: window.location,
       routes: resolvedRoutes.routes,
       parentContainer,
       shouldMount: true,
+      applicationContainers,
     });
   }
 
@@ -237,14 +249,24 @@ function recurseRoutes({
   parentContainer,
   previousSibling,
   shouldMount,
+  applicationContainers,
 }) {
   routes.forEach((route, index) => {
     if (route.type === "application") {
-      const htmlId = applicationElementId(route.name);
-      let applicationElement = document.getElementById(htmlId);
-
       if (shouldMount) {
-        if (!applicationElement) {
+        let applicationElement;
+        const htmlId = applicationElementId(route.name);
+
+        if (applicationContainers[route.name]) {
+          // The application is already active, we just need to
+          // place it in the correct part of the DOM. Importantly,
+          // we need to reuse the DOM element instead of destroying/recreating
+          applicationElement = applicationContainers[route.name];
+        } else if (document.getElementById(htmlId)) {
+          // The application container exists but is not yet in use.
+          applicationElement = document.getElementById(htmlId);
+        } else {
+          // The application isn't active yet, nor the container, so we need to create it
           applicationElement = document.createElement("div");
           applicationElement.id = htmlId;
         }
@@ -258,6 +280,7 @@ function recurseRoutes({
         parentContainer,
         previousSibling,
         shouldMount: shouldMount && route.activeWhen(location),
+        applicationContainers,
       });
     } else if (route instanceof Node || typeof route.type === "string") {
       if (shouldMount) {
@@ -276,6 +299,7 @@ function recurseRoutes({
             parentContainer: route.connectedNode,
             previousSibling: null,
             shouldMount,
+            applicationContainers,
           });
         }
 
