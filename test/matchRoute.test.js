@@ -236,6 +236,25 @@ describe(`matchRoute`, () => {
     });
   });
 
+  describe(`issue-119`, () => {
+    beforeEach(() => {
+      const { document, routerElement } = parseFixture("issue-119.html");
+      routesConfig = constructRoutes(routerElement);
+    });
+
+    it(`matches /nested to the planets app`, () => {
+      const match = matchRoute(routesConfig, "/nested");
+      expectApplicationMatched(match, "planets");
+      expectApplicationNotMatched(match, "people");
+    });
+
+    it(`matches / to the people app (not planets)`, () => {
+      const match = matchRoute(routesConfig, "/");
+      expectApplicationNotMatched(match, "planets");
+      expectApplicationMatched(match, "people");
+    });
+  });
+
   describe(`multiple default routes`, () => {
     beforeEach(() => {
       routesConfig = constructRoutes({
@@ -365,6 +384,15 @@ describe(`matchRoute`, () => {
     });
   });
 });
+
+function expectApplicationNotMatched(match, name) {
+  const application = findApplication(match.routes, name);
+  if (application) {
+    fail(
+      `Expected application '${name}' to not be returned by matchRoute, but it was`
+    );
+  }
+}
 
 function expectApplicationMatched(match, name) {
   const application = findApplication(match.routes, name);

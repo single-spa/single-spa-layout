@@ -395,13 +395,14 @@ function validateAndSanitize(routesConfig) {
 
   validateArray("routesConfig.routes", routesConfig.routes, validateRoute, {
     parentPath: hashPrefix + routesConfig.base,
+    parentActiveWhen: () => true,
     siblingActiveWhens: [],
   });
 
   function validateRoute(
     route,
     propertyName,
-    { parentPath, siblingActiveWhens }
+    { parentPath, siblingActiveWhens, parentActiveWhen }
   ) {
     validateObject(propertyName, route);
 
@@ -439,7 +440,7 @@ function validateAndSanitize(routesConfig) {
       } else if (hasDefault) {
         validateBoolean(`${propertyName}.default`, route.default);
         fullPath = parentPath;
-        route.activeWhen = defaultRoute(siblingActiveWhens);
+        route.activeWhen = defaultRoute(siblingActiveWhens, parentActiveWhen);
       } else {
         throw Error(
           `Invalid ${propertyName}: routes must have either a path or default property.`
@@ -456,6 +457,7 @@ function validateAndSanitize(routesConfig) {
         validateArray(`${propertyName}.routes`, route.routes, validateRoute, {
           parentPath: fullPath,
           siblingActiveWhens: [],
+          parentActiveWhen: route.activeWhen,
         });
     } else {
       if (typeof Node !== "undefined" && route instanceof Node) {
@@ -471,6 +473,7 @@ function validateAndSanitize(routesConfig) {
         validateArray(`${propertyName}.routes`, route.routes, validateRoute, {
           parentPath,
           siblingActiveWhens,
+          parentActiveWhen,
         });
     }
   }
@@ -478,9 +481,12 @@ function validateAndSanitize(routesConfig) {
   delete routesConfig.disableWarnings;
 }
 
-function defaultRoute(otherActiveWhens) {
+function defaultRoute(siblingActiveWhens, parentActiveWhen) {
   return (location) => {
-    return !otherActiveWhens.some((activeWhen) => activeWhen(location));
+    return (
+      parentActiveWhen(location) &&
+      !siblingActiveWhens.some((activeWhen) => activeWhen(location))
+    );
   };
 }
 
