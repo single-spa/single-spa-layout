@@ -28,6 +28,7 @@ devDependencies:
   jest: 26.6.3
   jest-cli: 26.6.3
   jest-serializer-html: 7.0.0
+  js-correct-lockfile: 1.0.0
   jsdom: 16.4.0
   ls-exports: 1.1.0
   prettier: 2.2.1
@@ -4963,6 +4964,11 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-lGS5PXGAzR4RF7V5+XObhqz2KZIDUA1yD0DG6pBVmy10eh0ZIXQImRuzocsI/N2XZ1GrLFwTS27In2i2jlpq1Q==
+  /js-correct-lockfile/1.0.0:
+    dev: true
+    hasBin: true
+    resolution:
+      integrity: sha512-f4nFNNgL36OYaf4psgICuVhgezkvkJucRQiiXzEDsUW+XnVBC9xO+lDOP9m3gERqs0ZeOQf5W3etdQ4HWDEW4w==
   /js-tokens/4.0.0:
     dev: true
     resolution:
@@ -6679,7 +6685,7 @@ packages:
       request-promise-core: 1.1.4_request@2.88.2
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
-    deprecated: "request-promise-native has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142"
+    deprecated: request-promise-native has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142
     dev: true
     engines:
       node: ">=0.12.0"
@@ -6709,7 +6715,7 @@ packages:
       tough-cookie: 2.5.0
       tunnel-agent: 0.6.0
       uuid: 3.4.0
-    deprecated: "request has been deprecated, see https://github.com/request/request/issues/3142"
+    deprecated: request has been deprecated, see https://github.com/request/request/issues/3142
     dev: true
     engines:
       node: ">= 6"
@@ -6752,7 +6758,7 @@ packages:
     resolution:
       integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==
   /resolve-url/0.2.1:
-    deprecated: "https://github.com/lydell/resolve-url#deprecated"
+    deprecated: https://github.com/lydell/resolve-url#deprecated
     dev: true
     resolution:
       integrity: sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo=
@@ -7807,7 +7813,7 @@ packages:
     resolution:
       integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   /urix/0.1.0:
-    deprecated: "Please see https://github.com/lydell/urix#deprecated"
+    deprecated: Please see https://github.com/lydell/urix#deprecated
     dev: true
     resolution:
       integrity: sha1-2pN/emLiH+wf0Y1Js1wpNQZ6bHI=
@@ -8193,6 +8199,7 @@ specifiers:
   jest: ^26.4.2
   jest-cli: ^26.4.2
   jest-serializer-html: ^7.0.0
+  js-correct-lockfile: ^1.0.0
   jsdom: ^16.4.0
   ls-exports: ^1.0.2
   merge2: ^1.4.1
