@@ -426,7 +426,7 @@ function getPath(resolvedRoutes, l = location) {
 
 function strToLocation(str) {
   try {
-    new URL(str);
+    return new URL(str);
   } catch (err) {
     // IE11
     const a = document.createElement("a");
