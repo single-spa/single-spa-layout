@@ -425,9 +425,9 @@ function getPath(resolvedRoutes, l = location) {
 }
 
 function strToLocation(str) {
-  if (typeof URL !== "undefined") {
-    return new URL(str);
-  } else {
+  try {
+    new URL(str);
+  } catch (err) {
     // IE11
     const a = document.createElement("a");
     a.href = str;
