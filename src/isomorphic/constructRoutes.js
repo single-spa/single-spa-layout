@@ -26,7 +26,7 @@ const pathToActiveWhen = Object.prototype.hasOwnProperty.call(
 export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
 
 /**
- * @typedef {InputRoutesConfigObject | Element | import('parse5').DefaultTreeDocument} RoutesConfig
+ * @typedef {InputRoutesConfigObject | Element | import('parse5').DefaultTreeDocument | string} RoutesConfig
  *
  * @typedef {{
  * mode?: string;
@@ -96,10 +96,25 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * @returns {ResolvedRoutesConfig}
  */
 export function constructRoutes(routesConfig, htmlLayoutData) {
-  if (routesConfig && routesConfig.nodeName) {
+  if (
+    (routesConfig && routesConfig.nodeName) ||
+    typeof routesConfig === "string"
+  ) {
     if (inBrowser && !htmlLayoutData && window.singleSpaLayoutData) {
       htmlLayoutData = window.singleSpaLayoutData;
     }
+
+    if (typeof routesConfig === "string") {
+      routesConfig = new DOMParser()
+        .parseFromString(routesConfig, "text/html")
+        .documentElement.querySelector("single-spa-router");
+      if (!routesConfig) {
+        throw Error(
+          `constructRoutes should be called with a string HTML document that contains a <single-spa-router> element.`
+        );
+      }
+    }
+
     routesConfig = domToRoutesConfig(routesConfig, htmlLayoutData);
   } else if (htmlLayoutData) {
     throw Error(
