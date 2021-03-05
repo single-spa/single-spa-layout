@@ -78,11 +78,11 @@ describe("constructRoutes", () => {
 
       expect(() => {
         constructRoutes("");
-      }).toThrowError(/single-spa-router/);
+      }).toThrowError(/string on the server/);
 
       expect(() => {
         constructRoutes("<div></div>");
-      }).toThrowError(/single-spa-router/);
+      }).toThrowError(/string on the server/);
 
       expect(() => {
         constructRoutes(undefined);

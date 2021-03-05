@@ -105,12 +105,18 @@ export function constructRoutes(routesConfig, htmlLayoutData) {
     }
 
     if (typeof routesConfig === "string") {
-      routesConfig = new DOMParser()
-        .parseFromString(routesConfig, "text/html")
-        .documentElement.querySelector("single-spa-router");
-      if (!routesConfig) {
+      if (inBrowser) {
+        routesConfig = new DOMParser()
+          .parseFromString(routesConfig, "text/html")
+          .documentElement.querySelector("single-spa-router");
+        if (!routesConfig) {
+          throw Error(
+            `constructRoutes should be called with a string HTML document that contains a <single-spa-router> element.`
+          );
+        }
+      } else {
         throw Error(
-          `constructRoutes should be called with a string HTML document that contains a <single-spa-router> element.`
+          `calling constructRoutes with a string on the server is not yet supported`
         );
       }
     }
