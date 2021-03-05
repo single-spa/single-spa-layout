@@ -76,13 +76,23 @@ describe("constructRoutes", () => {
         constructRoutes(null);
       }).toThrowError(/expected a plain object/);
 
-      expect(() => {
-        constructRoutes("");
-      }).toThrowError(/string on the server/);
+      if (inBrowser) {
+        expect(() => {
+          constructRoutes("");
+        }).toThrowError(/single-spa-router/);
 
-      expect(() => {
-        constructRoutes("<div></div>");
-      }).toThrowError(/string on the server/);
+        expect(() => {
+          constructRoutes("<div></div>");
+        }).toThrowError(/single-spa-router/);
+      } else {
+        expect(() => {
+          constructRoutes("");
+        }).toThrowError(/string on the server/);
+
+        expect(() => {
+          constructRoutes("<div></div>");
+        }).toThrowError(/string on the server/);
+      }
 
       expect(() => {
         constructRoutes(undefined);
