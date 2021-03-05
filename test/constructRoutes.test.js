@@ -1,6 +1,7 @@
 import { inBrowser } from "../src/utils/environment-helpers.js";
 import { constructRoutes } from "../src/single-spa-layout.js";
 import { parseFixture } from "./html-utils";
+import fs from "fs/promises";
 
 jest.spyOn(console, "warn");
 
@@ -20,6 +21,16 @@ describe("constructRoutes", () => {
       const { document, routerElement } = parseFixture("dom-elements.html");
       const routes = constructRoutes(routerElement);
     });
+
+    if (inBrowser) {
+      it(`can parse an html layout from string`, async () => {
+        const htmlString = await fs.readFile(
+          "./test/fixtures/medium.html",
+          "utf-8"
+        );
+        const routes = constructRoutes(htmlString);
+      });
+    }
   });
 
   describe(`validates top level properties`, () => {
@@ -65,9 +76,23 @@ describe("constructRoutes", () => {
         constructRoutes(null);
       }).toThrowError(/expected a plain object/);
 
-      expect(() => {
-        constructRoutes("");
-      }).toThrowError(/expected a plain object/);
+      if (inBrowser) {
+        expect(() => {
+          constructRoutes("");
+        }).toThrowError(/single-spa-router/);
+
+        expect(() => {
+          constructRoutes("<div></div>");
+        }).toThrowError(/single-spa-router/);
+      } else {
+        expect(() => {
+          constructRoutes("");
+        }).toThrowError(/string on the server/);
+
+        expect(() => {
+          constructRoutes("<div></div>");
+        }).toThrowError(/string on the server/);
+      }
 
       expect(() => {
         constructRoutes(undefined);

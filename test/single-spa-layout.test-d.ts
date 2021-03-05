@@ -78,6 +78,8 @@ constructRoutes(
   }
 );
 
+constructRoutes("<single-spa-router></single-spa-router>");
+
 constructRoutes(
   {
     routes: [],
