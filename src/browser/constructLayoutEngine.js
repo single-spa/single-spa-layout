@@ -365,11 +365,22 @@ function findApplicationRoute({ applicationName, location, routes }) {
  */
 function insertNode(node, container, previousSibling) {
   if (previousSibling && previousSibling.nextSibling) {
-    // move to be immediately after previousSibling
-    previousSibling.parentNode.insertBefore(node, previousSibling.nextSibling);
+    // Only call insertBefore() if necessary
+    // https://github.com/single-spa/single-spa-layout/issues/123
+    if (previousSibling.nextSibling !== node) {
+      // move to be immediately after previousSibling
+      previousSibling.parentNode.insertBefore(
+        node,
+        previousSibling.nextSibling
+      );
+    }
   } else {
-    // append to end of the container
-    container.appendChild(node);
+    // Only call appendChild() if necessary
+    // https://github.com/single-spa/single-spa-layout/issues/123
+    if (container.lastChild !== node) {
+      // append to end of the container
+      container.appendChild(node);
+    }
   }
 }
 
