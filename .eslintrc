@@ -1,6 +1,6 @@
 {
   "extends": "important-stuff",
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "plugins": ["es5"],
   "globals": {
     "process": true
