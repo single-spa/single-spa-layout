@@ -367,13 +367,9 @@ function findApplicationRoute({ applicationName, location, routes }) {
  * @param {Node=} previousSibling
  */
 function insertNode(node, container, previousSibling) {
-  let nextSibling;
-
-  if (previousSibling) {
-    nextSibling = previousSibling.nextSibling;
-  } else {
-    nextSibling = container.firstChild;
-  }
+  const nextSibling = previousSibling
+    ? previousSibling.nextSibling
+    : container.firstChild;
 
   // Only call insertBefore() if necessary
   // https://github.com/single-spa/single-spa-layout/issues/123
