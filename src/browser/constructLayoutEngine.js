@@ -358,29 +358,23 @@ function findApplicationRoute({ applicationName, location, routes }) {
 }
 
 /**
+ * This function inserts a node right after the previousSibling, if provided.
+ * If previousSibling is not provided, this functions inserts the node as the
+ * first child node of container.
  *
  * @param {Node} node
  * @param {Node} container
  * @param {Node=} previousSibling
  */
 function insertNode(node, container, previousSibling) {
-  if (previousSibling && previousSibling.nextSibling) {
-    // Only call insertBefore() if necessary
-    // https://github.com/single-spa/single-spa-layout/issues/123
-    if (previousSibling.nextSibling !== node) {
-      // move to be immediately after previousSibling
-      previousSibling.parentNode.insertBefore(
-        node,
-        previousSibling.nextSibling
-      );
-    }
-  } else {
-    // Only call appendChild() if necessary
-    // https://github.com/single-spa/single-spa-layout/issues/123
-    if (container.lastChild !== node) {
-      // append to end of the container
-      container.appendChild(node);
-    }
+  const nextSibling = previousSibling
+    ? previousSibling.nextSibling
+    : container.firstChild;
+
+  // Only call insertBefore() if necessary
+  // https://github.com/single-spa/single-spa-layout/issues/123
+  if (nextSibling !== node) {
+    container.insertBefore(node, nextSibling);
   }
 }
 
