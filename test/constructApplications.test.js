@@ -422,6 +422,41 @@ describe(`constructApplications`, () => {
       app1.activeWhen.some((fn) => fn(new URL("http://example.com/something")))
     ).toBe(true);
   });
+
+  // https://github.com/single-spa/single-spa-layout/issues/132
+  it(`activity functions not impacted by query strings`, () => {
+    const routes = constructRoutes({
+      mode: "history",
+      base: "/something",
+      routes: [
+        {
+          type: "route",
+          path: "/",
+          routes: [
+            {
+              type: "application",
+              name: "app1",
+            },
+          ],
+        },
+      ],
+    });
+
+    async function loadApp() {}
+
+    const applications = constructApplications({ routes, loadApp });
+    expect(applications.length).toBe(1);
+    const app1 = applications[0];
+    expect(
+      app1.activeWhen.some((fn) => fn(new URL("http://example.com/something")))
+    ).toBe(true);
+
+    expect(
+      app1.activeWhen.some((fn) =>
+        fn(new URL("http://example.com/something?page=1"))
+      )
+    ).toBe(true);
+  });
 });
 
 function tick(millis = 0) {
