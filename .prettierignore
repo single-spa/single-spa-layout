@@ -4,3 +4,4 @@ LICENSE
 yarn-error.log
 yarn.lock
 dist
+pnpm-lock.yaml
