@@ -36,7 +36,10 @@ export function constructLayoutEngine({
 }) {
   let isActive = false;
   let errorParcelByAppName = {};
-
+  if (!resolvedRoutes)
+    throw Error(
+      `unexpected value passed to the "routes"-attribute on constructLayoutEngine. Value was ${typeof resolvedRoutes}`
+    );
   const baseWithoutSlash = resolvedRoutes.base.slice(
     0,
     resolvedRoutes.base.length - 1
