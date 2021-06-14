@@ -152,6 +152,7 @@ application
 
 // test constructLayoutEngine
 expectError(constructLayoutEngine({ routes, applications, active: "NOPE" }));
+expectError(constructLayoutEngine({ routes: undefined, applications }));
 
 const layoutEngine = constructLayoutEngine({ routes, applications });
 
