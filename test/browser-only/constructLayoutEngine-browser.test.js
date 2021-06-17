@@ -683,6 +683,10 @@ describe(`constructLayoutEngine browser`, () => {
   describe(`error handling`, () => {
     beforeEach(reset);
 
+    it(`throws an error if constructLayoutEngine is called with incorrect arguments`, async () => {
+      expect(() => constructLayoutEngine({})).toThrowError("must be provided");
+    });
+
     it(`shows an error UI when an application goes into SKIP_BECAUSE_BROKEN status`, async () => {
       /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
       const routes = constructRoutes({

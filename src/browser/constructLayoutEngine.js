@@ -38,7 +38,7 @@ export function constructLayoutEngine({
   let errorParcelByAppName = {};
   if (!resolvedRoutes)
     throw Error(
-      `unexpected value passed to the "routes"-attribute on constructLayoutEngine. Value was ${typeof resolvedRoutes}`
+      `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`
     );
   const baseWithoutSlash = resolvedRoutes.base.slice(
     0,
