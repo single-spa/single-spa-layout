@@ -36,7 +36,10 @@ export function constructLayoutEngine({
 }) {
   let isActive = false;
   let errorParcelByAppName = {};
-
+  if (!resolvedRoutes)
+    throw Error(
+      `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`
+    );
   const baseWithoutSlash = resolvedRoutes.base.slice(
     0,
     resolvedRoutes.base.length - 1
