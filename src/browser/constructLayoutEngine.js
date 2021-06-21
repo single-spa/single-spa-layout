@@ -132,9 +132,7 @@ export function constructLayoutEngine({
     }
   }
 
-  function beforeRoute({
-    detail: { newAppStatuses, cancelNavigation, newUrl },
-  }) {
+  function beforeRoute({ detail: { cancelNavigation, newUrl } }) {
     const path = getPath(resolvedRoutes, strToLocation(newUrl));
 
     for (let from in resolvedRoutes.redirects) {
@@ -159,15 +157,19 @@ export function constructLayoutEngine({
       }
     }
 
-    for (let appName in newAppStatuses) {
-      if (
-        errorParcelByAppName[appName] &&
-        brokenStatus(getAppStatus(appName)) &&
-        !brokenStatus(newAppStatuses[appName])
-      ) {
-        errorParcelByAppName[appName].unmount();
-        delete errorParcelByAppName[appName];
+    const errorParcelUnmountPromises = [];
+    getAppsToUnmount(newUrl).forEach((name) => {
+      if (errorParcelByAppName[name]) {
+        errorParcelUnmountPromises.push(errorParcelByAppName[name].unmount());
+        delete errorParcelByAppName[name];
       }
+    });
+
+    if (errorParcelUnmountPromises.length > 0) {
+      cancelNavigation();
+      Promise.all(errorParcelUnmountPromises).then(() => {
+        navigateToUrl(newUrl);
+      });
     }
   }
 
@@ -205,23 +207,7 @@ export function constructLayoutEngine({
   }
 
   function handleRoutingEvent({ detail: { newUrl } }) {
-    const appsToUnmount = [];
-    const appsThatShouldBeActive = checkActivityFunctions(
-      newUrl ? strToLocation(newUrl) : location
-    );
-
-    getAppNames().forEach((app) => {
-      if (appsThatShouldBeActive.indexOf(app) < 0) {
-        appsToUnmount.push(app);
-      }
-    });
-
-    appsToUnmount.forEach((name) => {
-      if (errorParcelByAppName[name]) {
-        errorParcelByAppName[name].unmount();
-        delete errorParcelByAppName[name];
-      }
-
+    getAppsToUnmount(newUrl).forEach((name) => {
       const applicationElement = document.getElementById(
         applicationElementId(name)
       );
@@ -424,10 +410,6 @@ function jsonToDom(obj) {
   }
 }
 
-function brokenStatus(status) {
-  return status === SKIP_BECAUSE_BROKEN || status === LOAD_ERROR;
-}
-
 function getPath(resolvedRoutes, l = location) {
   return l[resolvedRoutes.mode === "hash" ? "hash" : "pathname"];
 }
@@ -441,4 +423,19 @@ function strToLocation(str) {
     a.href = str;
     return a;
   }
+}
+
+function getAppsToUnmount(newUrl) {
+  const appsToUnmount = [];
+  const appsThatShouldBeActive = checkActivityFunctions(
+    newUrl ? strToLocation(newUrl) : location
+  );
+
+  getAppNames().forEach((app) => {
+    if (appsThatShouldBeActive.indexOf(app) < 0) {
+      appsToUnmount.push(app);
+    }
+  });
+
+  return appsToUnmount;
 }
