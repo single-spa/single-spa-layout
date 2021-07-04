@@ -883,6 +883,83 @@ describe(`constructLayoutEngine browser`, () => {
 
       expect(parcelWasUnmounted).toBe(true);
     });
+
+    // https://github.com/single-spa/single-spa-layout/issues/137
+    it(`waits for error parcel unmounting before mounting new applications during route transition`, async () => {
+      let errorParcelUnmountTime, app2MountTime;
+
+      /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+      const routes = constructRoutes({
+        containerEl: "body",
+        base: "/",
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/app1",
+            routes: [
+              {
+                type: "application",
+                name: "app1",
+                error: {
+                  async bootstrap() {},
+                  async mount(props) {},
+                  async unmount(props) {
+                    errorParcelUnmountTime = Date.now();
+                  },
+                },
+              },
+            ],
+          },
+          {
+            type: "route",
+            path: "/app2",
+            routes: [
+              {
+                type: "application",
+                name: "app2",
+              },
+            ],
+          },
+        ],
+      });
+
+      const applications = constructApplications({
+        routes,
+        loadApp: async (props) => {
+          if (props.name === "app1") {
+            throw Error();
+          } else {
+            return Promise.resolve({
+              async mount() {
+                app2MountTime = Date.now();
+              },
+              async unmount() {},
+            });
+          }
+        },
+      });
+
+      await transition("/app1");
+
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+      applications.forEach(registerApplication);
+
+      await transition("/app1");
+
+      expect(errorParcelUnmountTime).toBeUndefined();
+      expect(app2MountTime).toBeUndefined();
+
+      await transition("/app2");
+
+      expect(errorParcelUnmountTime).toBeDefined();
+      expect(app2MountTime).toBeDefined();
+
+      expect(errorParcelUnmountTime).toBeLessThan(app2MountTime);
+    });
   });
 
   describe(`redirects`, () => {
