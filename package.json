@@ -1,119 +1,99 @@
 {
-  "name": "single-spa-layout",
-  "version": "1.5.4",
+  "name": "@codecb/single-spa-layout",
+  "version": "0.0.6",
   "description": "Layout engine for single-spa applications",
-  "main": "dist/umd/single-spa-layout.min.cjs",
-  "module": "dist/esm/single-spa-layout.min.js",
   "type": "module",
   "exports": {
-    ".": {
-      "default": {
-        "import": "./dist/esm/single-spa-layout.min.js",
-        "require": "./dist/umd/single-spa-layout.min.cjs"
-      }
-    },
+    "./browser": "./dist/esm/browser.mjs",
     "./server": {
-      "node": {
-        "import": "./dist/esm/single-spa-layout-server.min.js",
-        "require": "./dist/umd/single-spa-layout-server.min.cjs"
-      }
+      "import": "./dist/esm/server.mjs",
+      "require": "./dist/cjs/server.cjs"
     }
   },
-  "types": "dist/types/single-spa-layout-interface.d.ts",
+  "typesVersions": {
+    "*": {
+      "browser": [
+        "./dist/esm/browser.d.ts"
+      ],
+      "server": [
+        "./dist/esm/server.d.ts"
+      ]
+    }
+  },
   "scripts": {
-    "prepublishOnly": "pnpm run build",
-    "build": "rimraf dist && concurrently -n w: 'pnpm:build:*'",
-    "build:lib": "rollup -c",
-    "build:types:browser": "tsc --project tsconfig.json",
-    "build:types:server": "tsc --project tsconfig.node.json",
-    "watch-build": "rollup -cw --environment DEVELOPMENT",
+    "prepublishOnly": "yarn build",
+    "build": "rm -rf dist && rollup -c rollup.config.ts --configPlugin rollup-plugin-ts",
     "check-format": "prettier --check .",
+    "dev:build": "yarn build -w",
     "lint": "eslint src",
     "format": "prettier --write .",
-    "test": "concurrently -n w: 'pnpm:test:*'",
+    "test": "concurrently -n w: 'yarn:test:*'",
     "test:browser": "cross-env BABEL_ENV=test jest --testEnvironment=jsdom --testPathIgnorePatterns=test/node-only --testPathIgnorePatterns=cypress",
     "test:node": "cross-env BABEL_ENV=test jest --testEnvironment=node --testPathIgnorePatterns=test/browser-only --testPathIgnorePatterns=cypress",
     "test:types": "tsd",
     "test:exports": "ls-exports path .",
-    "test:lockfile": "js-correct-lockfile pnpm",
     "test-e2e:firefox": "cypress run --browser firefox",
-    "test-e2e:chrome": "cypress run --browser chrome"
+    "test-e2e:chrome": "cypress run --browser chrome",
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=16"
   },
   "files": [
-    "dist",
-    "dist/types/single-spa-layout-interface.d.ts"
+    "dist"
   ],
   "tsd": {
     "directory": "test"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged && pnpm run lint"
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/single-spa/single-spa-layout.git"
-  },
   "author": "",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/single-spa/single-spa-layout/issues"
-  },
-  "homepage": "https://github.com/single-spa/single-spa-layout#readme",
   "browserslist": [
-    "ie >= 11",
     "last 4 Safari major versions",
     "last 10 Chrome major versions",
     "last 10 Firefox major versions",
     "last 4 Edge major versions"
   ],
   "devDependencies": {
-    "@babel/core": "^7.11.6",
-    "@babel/eslint-parser": "^7.13.14",
-    "@babel/plugin-transform-modules-commonjs": "^7.10.4",
-    "@babel/preset-env": "^7.11.5",
-    "@rollup/plugin-babel": "^5.2.1",
-    "@rollup/plugin-commonjs": "^15.1.0",
-    "@rollup/plugin-node-resolve": "^9.0.0",
-    "@rollup/plugin-replace": "^2.3.4",
-    "@testing-library/dom": "^7.29.4",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@types/jest": "^26.0.14",
-    "@types/jsdom": "^16.2.4",
-    "@types/systemjs": "^6.1.0",
-    "babel-jest": "^26.3.0",
-    "concurrently": "^5.3.0",
+    "@babel/core": "^7.18.5",
+    "@babel/eslint-parser": "^7.18.2",
+    "@babel/plugin-transform-modules-commonjs": "^7.18.2",
+    "@babel/preset-env": "^7.18.2",
+    "@codecb/tsconfigs": "^0.0.7",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-replace": "^4.0.0",
+    "@testing-library/dom": "^8.14.0",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@types/jsdom": "^16.2.13",
+    "@types/node": "^18.0.0",
+    "@types/systemjs": "^6.1.1",
+    "babel-jest": "^28.1.1",
+    "concurrently": "^7.2.2",
     "cross-env": "^7.0.2",
-    "cypress": "^5.2.0",
-    "eslint": "^7.10.0",
+    "cypress": "^10.2.0",
+    "eslint": "^8.18.0",
     "eslint-config-important-stuff": "^1.1.0",
-    "eslint-config-node-important-stuff": "^1.1.0",
+    "eslint-config-node-important-stuff": "^2.0.0",
     "eslint-plugin-es5": "^1.5.0",
-    "husky": "^4.3.0",
-    "jest": "^26.4.2",
-    "jest-cli": "^26.4.2",
+    "jest": "^28.1.1",
+    "jest-cli": "^28.1.1",
     "jest-serializer-html": "^7.0.0",
     "js-correct-lockfile": "^1.0.0",
-    "jsdom": "^16.4.0",
+    "jsdom": "^20.0.0",
     "ls-exports": "^1.0.2",
-    "prettier": "^2.1.2",
-    "pretty-quick": "^3.0.2",
+    "parse5": "^7.0.0",
+    "parse5-htmlparser2-tree-adapter": "^7.0.0",
+    "prettier": "^2.7.1",
+    "pretty-quick": "^3.1.1",
     "rimraf": "^3.0.2",
-    "rollup": "^2.28.2",
-    "rollup-cli": "^1.0.9",
+    "rollup": "^2.75.7",
     "rollup-plugin-terser": "^7.0.2",
-    "single-spa": "^5.9.0",
-    "tsd": "^0.13.1",
-    "typescript": "^4.0.3"
+    "rollup-plugin-ts": "^3.0.2",
+    "single-spa": "^6.0.0-beta.3",
+    "tsd": "^0.21.0",
+    "typescript": "4.7.4"
   },
-  "dependencies": {
-    "@types/parse5": "^5.0.3",
-    "merge2": "^1.4.1",
-    "parse5": "^6.0.1",
-    "single-spa": ">=5"
+  "peerDependencies": {
+    "parse5": "^7.0.0",
+    "parse5-htmlparser2-tree-adapter": "^7.0.0",
+    "single-spa": "^6.0.0-beta.3"
   }
 }

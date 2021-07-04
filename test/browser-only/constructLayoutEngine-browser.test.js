@@ -14,15 +14,20 @@ import {
   unloadApplication,
 } from "single-spa";
 
+start();
+
 describe(`constructLayoutEngine browser`, () => {
   beforeEach(reset);
 
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
   let layoutEngine;
 
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
   afterEach(() => {
     history.pushState(history.state, document.title, "/");
-    document.body.innerHTML = "";
     if (layoutEngine) {
       layoutEngine.deactivate();
     }
@@ -883,6 +888,83 @@ describe(`constructLayoutEngine browser`, () => {
 
       expect(parcelWasUnmounted).toBe(true);
     });
+
+    // https://github.com/single-spa/single-spa-layout/issues/137
+    it(`waits for error parcel unmounting before mounting new applications during route transition`, async () => {
+      let errorParcelUnmountTime, app2MountTime;
+
+      /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+      const routes = constructRoutes({
+        containerEl: "body",
+        base: "/",
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/app1",
+            routes: [
+              {
+                type: "application",
+                name: "app1",
+                error: {
+                  async bootstrap() {},
+                  async mount(props) {},
+                  async unmount(props) {
+                    errorParcelUnmountTime = Date.now();
+                  },
+                },
+              },
+            ],
+          },
+          {
+            type: "route",
+            path: "/app2",
+            routes: [
+              {
+                type: "application",
+                name: "app2",
+              },
+            ],
+          },
+        ],
+      });
+
+      const applications = constructApplications({
+        routes,
+        loadApp: async (props) => {
+          if (props.name === "app1") {
+            throw Error();
+          } else {
+            return Promise.resolve({
+              async mount() {
+                app2MountTime = Date.now();
+              },
+              async unmount() {},
+            });
+          }
+        },
+      });
+
+      await transition("/app1");
+
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+      applications.forEach(registerApplication);
+
+      await transition("/app1");
+
+      expect(errorParcelUnmountTime).toBeUndefined();
+      expect(app2MountTime).toBeUndefined();
+
+      await transition("/app2");
+
+      expect(errorParcelUnmountTime).toBeDefined();
+      expect(app2MountTime).toBeDefined();
+
+      expect(errorParcelUnmountTime).toBeLessThan(app2MountTime);
+    });
   });
 
   describe(`redirects`, () => {
@@ -904,34 +986,16 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      let numNavigationCancels = 0;
-
-      window.addEventListener("single-spa:routing-event", checkForCancelation);
-
       // trigger redirect to login
       await transition("/");
       await triggerAppChange();
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
       expect(location.pathname).toBe("/login");
 
       // trigger redirect to new settings page
-      numNavigationCancels = 0;
       await transition("/old-settings");
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
-      window.removeEventListener(
-        "single-spa:routing-event",
-        checkForCancelation
-      );
-
-      function checkForCancelation({ detail: { navigationIsCanceled } }) {
-        if (navigationIsCanceled) {
-          numNavigationCancels++;
-        }
-      }
+      expect(location.pathname).toBe("/settings");
     });
 
     it(`doesn't call navigateToUrl() for non-redirects`, async () => {
@@ -955,30 +1019,116 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      window.addEventListener("single-spa:routing-event", checkForCancelation);
-
-      let numNavigationCancels = 0;
-
       // trigger redirect to login
       await transition("/");
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
+      expect(location.pathname).toBe("/login");
+    });
+  });
 
-      window.removeEventListener(
-        "single-spa:routing-event",
-        checkForCancelation
+  describe(`hydration`, () => {
+    it(`handles hydrate-basic fixture starting on / route`, async () => {
+      await transition("/");
+
+      const {
+        document: doc,
+        routerElement,
+        serverRenderedBody,
+      } = parseFixture("hydrate-basic.html");
+
+      // Simulate server rendering of the content
+      document.body.innerHTML = serverRenderedBody;
+      window.singleSpaLayoutData = {};
+
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
+
+      const routes = constructRoutes(routerElement);
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+      applications.forEach(registerApplication);
+
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
+
+      expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /");
+
+      await transition("/app1");
+
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "02 client-side navigation to /app1"
       );
 
-      function checkForCancelation({ detail: { navigationIsCanceled } }) {
-        if (navigationIsCanceled) {
-          numNavigationCancels++;
-        }
-      }
+      await transition("/");
+
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "03 client-side navigation back to /"
+      );
+    });
+
+    it(`handles hydrate-app1 fixture starting on /app1 route`, async () => {
+      await transition("/app1");
+
+      const {
+        document: doc,
+        routerElement,
+        serverRenderedBody,
+      } = parseFixture("hydrate-app1.html");
+
+      // Simulate server rendering of the content
+      document.body.innerHTML = serverRenderedBody;
+      window.singleSpaLayoutData = {};
+
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
+
+      const routes = constructRoutes(routerElement);
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+      applications.forEach(registerApplication);
+
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
+
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "01 initial hydration /app1"
+      );
+
+      await transition("/");
+
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "02 client-side navigation to /"
+      );
+
+      await transition("/app1");
+
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "03 client-side navigation back to /app1"
+      );
     });
   });
 
   async function reset() {
-    start();
     if (layoutEngine) {
       layoutEngine.deactivate();
     }

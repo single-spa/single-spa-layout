@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="single-spa-application:header">
+      <header>Hello</header>
+    </div>
+    <div class="main-content">
+      <button>Top level content</button>
+      <div id="single-spa-application:app1">
+        <div>App 1 content</div>
+      </div>
+      <!-- Comments and raw text should work -->
+      Some raw text
+    </div>
+    <span>
+      <!-- The footer -->
+      <footer>
+        <a href="/about">About</a>
+      </footer>
+    </span>
+    <single-spa-router mode="history" base="/">
+      <application name="header"></application>
+      <div class="main-content">
+        <route path="app1">
+          <button>Top level content</button>
+          <application name="app1"></application>
+          <!-- Comments and raw text should work -->
+          Some raw text
+        </route>
+      </div>
+      <span>
+        <!-- The footer -->
+        <footer>
+          <a href="/about">About</a>
+        </footer>
+      </span>
+    </single-spa-router>
+  </body>
+</html>
