@@ -43,10 +43,6 @@ const { window } = new JSDOM(`
 // test constructRoutes
 expectError(constructRoutes());
 
-expectError(constructRoutes([]));
-
-expectError(constructRoutes({}));
-
 const loaderParcelConfig = {
   async bootstrap() {},
   async mount() {},
