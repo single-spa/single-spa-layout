@@ -18,11 +18,11 @@ import {
   constructServerLayout,
   sendLayoutHTTPResponse,
 } from "../src/server/index";
-import { parse, Element, DefaultTreeDocument } from "parse5";
+import { parse, Document } from "parse5";
 import { ResolvedUrlRoute } from "../src/isomorphic/constructRoutes";
 import { JSDOM } from "jsdom";
 import stream from "stream";
-import http, { ClientRequest, IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from "http";
 import { Socket } from "net";
 
 const { window } = new JSDOM(`
@@ -126,22 +126,19 @@ expectType<string | singleSpa.ParcelConfig | undefined>(
 
 expectType<string>(routes.redirects["/"]);
 
-const parse5Doc = parse(
-  `<single-spa-router></single-spa-router>`
-) as DefaultTreeDocument;
+const parse5Doc = parse(`<single-spa-router></single-spa-router>`) as Document;
 
 const routes2 = constructRoutes(parse5Doc);
 
 // test constructApplication
-const applications: Array<
-  RegisterApplicationConfig & WithLoadFunction
-> = constructApplications({
-  routes,
-  loadApp: (props) => {
-    expectType<AppProps>(props);
-    return System.import<Application<{}>>(props.name);
-  },
-});
+const applications: Array<RegisterApplicationConfig & WithLoadFunction> =
+  constructApplications({
+    routes,
+    loadApp: (props) => {
+      expectType<AppProps>(props);
+      return System.import<Application<{}>>(props.name);
+    },
+  });
 applications.forEach(registerApplication);
 const application = applications[0];
 application
