@@ -23,7 +23,7 @@ specifiers:
   eslint-config-important-stuff: ^1.1.0
   eslint-config-node-important-stuff: ^1.1.0
   eslint-plugin-es5: ^1.5.0
-  husky: '7'
+  husky: ^7.0.0
   jest: ^27.0.6
   jest-cli: ^27.0.6
   jest-serializer-html: ^7.0.0
@@ -46,6 +46,7 @@ dependencies:
   '@types/parse5': 6.0.0
   merge2: 1.4.1
   parse5: 6.0.1
+  single-spa: 6.0.0-beta.0
 
 devDependencies:
   '@babel/core': 7.14.6
@@ -82,7 +83,6 @@ devDependencies:
   rollup: 2.52.7
   rollup-cli: 1.0.9
   rollup-plugin-terser: 7.0.2_rollup@2.52.7
-  single-spa: 6.0.0-beta.0
   tsd: 0.17.0
   typescript: 4.3.5
 
@@ -5968,7 +5968,7 @@ packages:
 
   /single-spa/6.0.0-beta.0:
     resolution: {integrity: sha512-kz2HqQJy8vD5q/aTQpy8m4W4clzX5Cb1vcK2c3oB4qR2PtZuvO0tNCatJpfLMvpG9EuiIZ5+a8lsVFtQbNym3A==}
-    dev: true
+    dev: false
 
   /sisteransi/1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}

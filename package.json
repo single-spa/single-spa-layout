@@ -102,13 +102,13 @@
     "rollup": "^2.52.7",
     "rollup-cli": "^1.0.9",
     "rollup-plugin-terser": "^7.0.2",
-    "single-spa": "^6.0.0-beta.0",
     "tsd": "^0.17.0",
     "typescript": "^4.3.5"
   },
   "dependencies": {
     "@types/parse5": "^6.0.0",
     "merge2": "^1.4.1",
-    "parse5": "^6.0.1"
+    "parse5": "^6.0.1",
+    "single-spa": "^6.0.0-beta.0"
   }
 }
