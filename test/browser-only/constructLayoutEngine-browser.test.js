@@ -14,6 +14,8 @@ import {
   unloadApplication,
 } from "single-spa";
 
+start();
+
 describe(`constructLayoutEngine browser`, () => {
   beforeEach(reset);
 
@@ -981,34 +983,16 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      let numNavigationCancels = 0;
-
-      window.addEventListener("single-spa:routing-event", checkForCancelation);
-
       // trigger redirect to login
       await transition("/");
       await triggerAppChange();
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
       expect(location.pathname).toBe("/login");
 
       // trigger redirect to new settings page
-      numNavigationCancels = 0;
       await transition("/old-settings");
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
-      window.removeEventListener(
-        "single-spa:routing-event",
-        checkForCancelation
-      );
-
-      function checkForCancelation({ detail: { navigationIsCanceled } }) {
-        if (navigationIsCanceled) {
-          numNavigationCancels++;
-        }
-      }
+      expect(location.pathname).toBe("/settings");
     });
 
     it(`doesn't call navigateToUrl() for non-redirects`, async () => {
@@ -1032,30 +1016,14 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      window.addEventListener("single-spa:routing-event", checkForCancelation);
-
-      let numNavigationCancels = 0;
-
       // trigger redirect to login
       await transition("/");
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
-      window.removeEventListener(
-        "single-spa:routing-event",
-        checkForCancelation
-      );
-
-      function checkForCancelation({ detail: { navigationIsCanceled } }) {
-        if (navigationIsCanceled) {
-          numNavigationCancels++;
-        }
-      }
+      expect(location.pathname).toBe("/login");
     });
   });
 
   async function reset() {
-    start();
     if (layoutEngine) {
       layoutEngine.deactivate();
     }
