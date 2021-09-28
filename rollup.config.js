@@ -40,6 +40,7 @@ function createConfig(format, server = false) {
       babel(babelOpts),
       replace({
         "process.env.BABEL_ENV": JSON.stringify("production"),
+        preventAssignment: true,
       }),
       process.env.DEVELOPMENT !== "true" &&
         terser({

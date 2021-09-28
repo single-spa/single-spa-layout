@@ -14,6 +14,8 @@ import {
   unloadApplication,
 } from "single-spa";
 
+start();
+
 describe(`constructLayoutEngine browser`, () => {
   beforeEach(reset);
 
@@ -984,34 +986,16 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      let numNavigationCancels = 0;
-
-      window.addEventListener("single-spa:routing-event", checkForCancelation);
-
       // trigger redirect to login
       await transition("/");
       await triggerAppChange();
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
       expect(location.pathname).toBe("/login");
 
       // trigger redirect to new settings page
-      numNavigationCancels = 0;
       await transition("/old-settings");
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
-      window.removeEventListener(
-        "single-spa:routing-event",
-        checkForCancelation
-      );
-
-      function checkForCancelation({ detail: { navigationIsCanceled } }) {
-        if (navigationIsCanceled) {
-          numNavigationCancels++;
-        }
-      }
+      expect(location.pathname).toBe("/settings");
     });
 
     it(`doesn't call navigateToUrl() for non-redirects`, async () => {
@@ -1035,25 +1019,10 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      window.addEventListener("single-spa:routing-event", checkForCancelation);
-
-      let numNavigationCancels = 0;
-
       // trigger redirect to login
       await transition("/");
 
-      expect(numNavigationCancels).toBeGreaterThanOrEqual(1);
-
-      window.removeEventListener(
-        "single-spa:routing-event",
-        checkForCancelation
-      );
-
-      function checkForCancelation({ detail: { navigationIsCanceled } }) {
-        if (navigationIsCanceled) {
-          numNavigationCancels++;
-        }
-      }
+      expect(location.pathname).toBe("/login");
     });
   });
 
@@ -1061,9 +1030,11 @@ describe(`constructLayoutEngine browser`, () => {
     it(`handles hydrate-basic fixture starting on / route`, async () => {
       await transition("/");
 
-      const { document: doc, routerElement, serverRenderedBody } = parseFixture(
-        "hydrate-basic.html"
-      );
+      const {
+        document: doc,
+        routerElement,
+        serverRenderedBody,
+      } = parseFixture("hydrate-basic.html");
 
       // Simulate server rendering of the content
       document.body.innerHTML = serverRenderedBody;
@@ -1110,9 +1081,11 @@ describe(`constructLayoutEngine browser`, () => {
     it(`handles hydrate-app1 fixture starting on /app1 route`, async () => {
       await transition("/app1");
 
-      const { document: doc, routerElement, serverRenderedBody } = parseFixture(
-        "hydrate-app1.html"
-      );
+      const {
+        document: doc,
+        routerElement,
+        serverRenderedBody,
+      } = parseFixture("hydrate-app1.html");
 
       // Simulate server rendering of the content
       document.body.innerHTML = serverRenderedBody;
@@ -1161,7 +1134,6 @@ describe(`constructLayoutEngine browser`, () => {
   });
 
   async function reset() {
-    start();
     if (layoutEngine) {
       layoutEngine.deactivate();
     }
