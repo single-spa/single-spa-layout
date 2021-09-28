@@ -228,8 +228,6 @@ export function constructLayoutEngine({
 
     let prevNode = { nextSibling: domNode.childNodes[0] };
 
-    console.log("hydrating", "\n\n", domNode.outerHTML, "\n\n", routes);
-
     for (let i = 0; i < routes.length; i++) {
       const route = routes[i];
 
@@ -244,27 +242,17 @@ export function constructLayoutEngine({
         node?.nodeType === Node.TEXT_NODE &&
         node.textContent.trim() === ""
       ) {
-        console.log("skipping", node.textContent);
         node = node.nextSibling;
       }
 
       prevNode = node;
 
-      if (isDomRoute(route)) {
-        if (nodeEqualsRoute(node, route)) {
-          console.log("setting connected node", node.outerHTML, route);
-          route.connectedNode = node;
-        } else {
-          console.log("node doesnt equal route");
-        }
-      } else {
-        console.log("not dom route");
+      if (isDomRoute(route) && nodeEqualsRoute(node, route)) {
+        route.connectedNode = node;
       }
 
       if (route.routes) {
         hydrate(node, route.routes);
-      } else {
-        console.log("not hydrating children", route);
       }
     }
   }
@@ -297,7 +285,6 @@ function nodeEqualsRoute(node, route) {
   if (!node) {
     return false;
   } else {
-    console.log("node equals route", node.outerHTML, route.outerHTML);
     let routeNode = route instanceof Node ? route : createNodeFromRoute(route);
     return shallowEqualNode(node, routeNode);
   }
@@ -332,12 +319,9 @@ function createNodeFromRoute(route) {
 function shallowEqualNode(first, second) {
   return (
     first.nodeType === second.nodeType &&
-    // && !console.log("node type equal")
     first.nodeName === second.nodeName &&
-    // && !console.log("node name equal")
     equalAttributes(first, second)
   );
-  // && !console.log("equal attrs")
 }
 
 function equalAttributes(first, second) {
@@ -347,8 +331,6 @@ function equalAttributes(first, second) {
   const secondAttrNames = first.getAttributeNames
     ? first.getAttributeNames().sort()
     : [];
-
-  // console.log(firstAttrNames, secondAttrNames)
 
   return (
     firstAttrNames.length === secondAttrNames.length &&
@@ -418,13 +400,6 @@ function recurseRoutes({
           const newNode =
             route instanceof Node ? route.cloneNode(false) : jsonToDom(route);
           route.connectedNode = newNode;
-          console.log(
-            "created new node",
-            newNode.outerHTML || newNode.textContent,
-            route.outerHTML || route.textContent
-          );
-        } else {
-          // console.log(`didn't create new node`)
         }
 
         insertNode(route.connectedNode, parentContainer, previousSibling);
@@ -442,10 +417,7 @@ function recurseRoutes({
 
         previousSibling = route.connectedNode;
       } else {
-        // console.log('removing', Boolean(route.connectedNode), document.body.contains(route.connectedNode), '\n\n', route.outerHTML || route.textContent, '\n\n', route.connectedNode?.outerHTML, '\n\n', document.body.innerHTML)
-        // console.log('buttons', document.querySelectorAll('button').length)
         removeNode(route.connectedNode);
-        // console.log('finished removing', document.body.contains(route.connectedNode), document.body.innerHTML)
         delete route.connectedNode;
       }
     }
