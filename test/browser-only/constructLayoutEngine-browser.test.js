@@ -1059,8 +1059,6 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      start();
-
       expect(document.querySelectorAll(".main-content").length).toBe(1);
 
       expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /");
@@ -1110,15 +1108,12 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      start();
-
       expect(document.querySelectorAll(".main-content").length).toBe(1);
 
       expect(document.body.outerHTML).toMatchSnapshot(
         "01 initial hydration /app1"
       );
 
-      console.log("--------------------------------------------------------");
       await transition("/");
 
       expect(document.body.outerHTML).toMatchSnapshot(

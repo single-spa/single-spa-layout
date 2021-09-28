@@ -495,69 +495,6 @@ exports[`constructLayoutEngine browser hydration handles hydrate-app1 fixture st
 </body>
 `;
 
-exports[`constructLayoutEngine browser hydration handles hydrate-basic fixture starting on / route 1`] = `
-<body>
-  <div id="single-spa-application:header">
-    <header>
-      Hello
-    </header>
-  </div>
-  <div class="main-content">
-  </div>
-  <span>
-    <footer>
-      <a href="/about">
-        About
-      </a>
-    </footer>
-  </span>
-</body>
-`;
-
-exports[`constructLayoutEngine browser hydration handles hydrate-basic fixture starting on / route 2`] = `
-<body>
-  <div id="single-spa-application:header">
-    <header>
-      Hello
-    </header>
-  </div>
-  <div class="main-content">
-    <button>
-      Top level content
-    </button>
-    <div id="single-spa-application:app1">
-    </div>
-    Some raw text
-  </div>
-  <span>
-    <footer>
-      <a href="/about">
-        About
-      </a>
-    </footer>
-  </span>
-</body>
-`;
-
-exports[`constructLayoutEngine browser hydration handles hydrate-basic fixture starting on / route 3`] = `
-<body>
-  <div id="single-spa-application:header">
-    <header>
-      Hello
-    </header>
-  </div>
-  <div class="main-content">
-  </div>
-  <span>
-    <footer>
-      <a href="/about">
-        About
-      </a>
-    </footer>
-  </span>
-</body>
-`;
-
 exports[`constructLayoutEngine browser hydration handles hydrate-basic fixture starting on / route: 01 initial hydration / 1`] = `
 <body>
   <div id="single-spa-application:header">
