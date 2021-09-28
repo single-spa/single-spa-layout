@@ -33,7 +33,7 @@ export function constructLayoutEngine({
 }) {
   let isActive = false;
   let errorParcelByAppName = {};
-  const wasServerRendered = Boolean(window.singleSpaLayoutData)
+  const wasServerRendered = Boolean(window.singleSpaLayoutData);
   if (!resolvedRoutes)
     throw Error(
       `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`
@@ -217,129 +217,145 @@ export function constructLayoutEngine({
   /**
    * The purpose of the hydrate function is to set route.connectedNode to the
    * correct value
-   * 
+   *
    * @param {Node} domNode
    * @param {import("../isomorphic/constructRoutes").ResolvedRoutesConfig.routes} routes
    */
   function hydrate(domNode, routes) {
     if (!domNode || !domNode.childNodes || !routes) {
-      return
+      return;
     }
 
-    let prevNode = { nextSibling: domNode.childNodes[0] }
+    let prevNode = { nextSibling: domNode.childNodes[0] };
 
-    console.log('hydrating', '\n\n', domNode.outerHTML, '\n\n', routes)
+    console.log("hydrating", "\n\n", domNode.outerHTML, "\n\n", routes);
 
     for (let i = 0; i < routes.length; i++) {
-      const route = routes[i]
+      const route = routes[i];
 
       if (route.type === "route") {
-        hydrate(domNode, route.routes)
+        hydrate(domNode, route.routes);
         continue;
       }
 
-      let node = prevNode?.nextSibling
+      let node = prevNode?.nextSibling;
 
-      while(node?.nodeType === Node.TEXT_NODE && node.textContent.trim() === "") {
-        console.log('skipping', node.textContent)
-        node = node.nextSibling
+      while (
+        node?.nodeType === Node.TEXT_NODE &&
+        node.textContent.trim() === ""
+      ) {
+        console.log("skipping", node.textContent);
+        node = node.nextSibling;
       }
 
-      prevNode = node
+      prevNode = node;
 
       if (isDomRoute(route)) {
         if (nodeEqualsRoute(node, route)) {
-          console.log("setting connected node", node.outerHTML, route)
-          route.connectedNode = node
+          console.log("setting connected node", node.outerHTML, route);
+          route.connectedNode = node;
         } else {
-          console.log('node doesnt equal route')
+          console.log("node doesnt equal route");
         }
       } else {
-        console.log('not dom route')
+        console.log("not dom route");
       }
 
       if (route.routes) {
-        hydrate(node, route.routes)
+        hydrate(node, route.routes);
       } else {
-        console.log('not hydrating children', route)
+        console.log("not hydrating children", route);
       }
     }
   }
 
   function getParentContainer() {
-   return typeof resolvedRoutes.containerEl === "string"
-        ? document.querySelector(resolvedRoutes.containerEl)
-        : resolvedRoutes.containerEl;
+    return typeof resolvedRoutes.containerEl === "string"
+      ? document.querySelector(resolvedRoutes.containerEl)
+      : resolvedRoutes.containerEl;
   }
 }
 
 function isDomRoute(route) {
-  return !includes(['application', 'route', 'fragment', 'assets', 'redirect'], route.type)
+  return !includes(
+    ["application", "route", "fragment", "assets", "redirect"],
+    route.type
+  );
 }
 
 function includes(haystack, needle) {
-  return haystack.some(i => i === needle)
+  return haystack.some((i) => i === needle);
 }
 
 /**
- * 
- * @param {Node} node 
- * @param {import('../isomorphic/constructRoutes').RouteChild} route 
+ *
+ * @param {Node} node
+ * @param {import('../isomorphic/constructRoutes').RouteChild} route
  * @returns {boolean}
  */
 function nodeEqualsRoute(node, route) {
   if (!node) {
-    return false
+    return false;
   } else {
-    console.log('node equals route', node.outerHTML, route.outerHTML)
-    let routeNode = route instanceof Node ? route : createNodeFromRoute(route)
-    return shallowEqualNode(node, routeNode)
+    console.log("node equals route", node.outerHTML, route.outerHTML);
+    let routeNode = route instanceof Node ? route : createNodeFromRoute(route);
+    return shallowEqualNode(node, routeNode);
   }
 }
 
 /**
- * 
- * @param {import('../isomorphic/constructRoutes').RouteChild} route 
+ *
+ * @param {import('../isomorphic/constructRoutes').RouteChild} route
  * @returns boolean
  */
 function createNodeFromRoute(route) {
   switch (route.type) {
-    case '#text': 
-      return document.createTextNode(route.value)
-    case '#comment':
-      return document.createComment(route.value)
+    case "#text":
+      return document.createTextNode(route.value);
+    case "#comment":
+      return document.createComment(route.value);
     default:
-      const el = document.createElement(route.type)
-      route.attrs.forEach(attr => {
-        el.setAttribute(attr.name, attr.value)
-      })
-      return el
+      const el = document.createElement(route.type);
+      route.attrs.forEach((attr) => {
+        el.setAttribute(attr.name, attr.value);
+      });
+      return el;
   }
 }
 
 /**
- * 
- * @param {Node} first 
- * @param {Node} second 
+ *
+ * @param {Node} first
+ * @param {Node} second
  * @returns {boolean}
  */
 function shallowEqualNode(first, second) {
-  return first.nodeType === second.nodeType
+  return (
+    first.nodeType === second.nodeType &&
     // && !console.log("node type equal")
-    && first.nodeName === second.nodeName
+    first.nodeName === second.nodeName &&
     // && !console.log("node name equal")
-    && equalAttributes(first, second)
-    // && !console.log("equal attrs")
+    equalAttributes(first, second)
+  );
+  // && !console.log("equal attrs")
 }
 
 function equalAttributes(first, second) {
-  const firstAttrNames = first.getAttributeNames ? first.getAttributeNames().sort() : []
-  const secondAttrNames = first.getAttributeNames ? first.getAttributeNames().sort() : []
+  const firstAttrNames = first.getAttributeNames
+    ? first.getAttributeNames().sort()
+    : [];
+  const secondAttrNames = first.getAttributeNames
+    ? first.getAttributeNames().sort()
+    : [];
 
   // console.log(firstAttrNames, secondAttrNames)
 
-  return firstAttrNames.length === secondAttrNames.length
-    && !firstAttrNames.some(a => first.getAttribute(a) !== second.getAttribute(a))
+  return (
+    firstAttrNames.length === secondAttrNames.length &&
+    !firstAttrNames.some(
+      (a) => first.getAttribute(a) !== second.getAttribute(a)
+    )
+  );
 }
 
 /**
@@ -402,7 +418,11 @@ function recurseRoutes({
           const newNode =
             route instanceof Node ? route.cloneNode(false) : jsonToDom(route);
           route.connectedNode = newNode;
-          console.log('created new node', newNode.outerHTML || newNode.textContent, route.outerHTML || route.textContent)
+          console.log(
+            "created new node",
+            newNode.outerHTML || newNode.textContent,
+            route.outerHTML || route.textContent
+          );
         } else {
           // console.log(`didn't create new node`)
         }

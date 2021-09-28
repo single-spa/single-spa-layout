@@ -26,19 +26,19 @@ export function parseFixture(filename) {
   const document = parseHTML(str);
   const routerElement = findRouterElement(document);
 
-  let body
+  let body;
 
   for (let i = 0; i < document.childNodes.length; i++) {
-    if (document.childNodes[i].nodeName === 'BODY') {
-      body = document.childNodes[i]
+    if (document.childNodes[i].nodeName === "BODY") {
+      body = document.childNodes[i];
     }
   }
 
-  body.removeChild(routerElement)
+  body.removeChild(routerElement);
 
-  let serverRenderedBody = body.innerHTML
+  let serverRenderedBody = body.innerHTML;
 
-  body.appendChild(routerElement)
+  body.appendChild(routerElement);
 
   return { document, routerElement, body, serverRenderedBody };
 }

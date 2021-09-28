@@ -22,7 +22,7 @@ describe(`constructLayoutEngine browser`, () => {
 
   beforeEach(() => {
     document.body.innerHTML = "";
-  })
+  });
 
   afterEach(() => {
     history.pushState(history.state, document.title, "/");
@@ -1061,13 +1061,15 @@ describe(`constructLayoutEngine browser`, () => {
     it(`handles hydrate-basic fixture starting on / route`, async () => {
       await transition("/");
 
-      const { document: doc, routerElement, serverRenderedBody } = parseFixture("hydrate-basic.html");
+      const { document: doc, routerElement, serverRenderedBody } = parseFixture(
+        "hydrate-basic.html"
+      );
 
       // Simulate server rendering of the content
-      document.body.innerHTML = serverRenderedBody
-      window.singleSpaLayoutData = {}
+      document.body.innerHTML = serverRenderedBody;
+      window.singleSpaLayoutData = {};
 
-      expect(document.querySelectorAll('.main-content').length).toBe(1)
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
 
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
@@ -1086,31 +1088,37 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      start()
+      start();
 
-      expect(document.querySelectorAll('.main-content').length).toBe(1)
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
 
-      expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /")
+      expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /");
 
-      await transition('/app1')
+      await transition("/app1");
 
-      expect(document.body.outerHTML).toMatchSnapshot("02 client-side navigation to /app1")
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "02 client-side navigation to /app1"
+      );
 
-      await transition('/')
+      await transition("/");
 
-      expect(document.body.outerHTML).toMatchSnapshot("03 client-side navigation back to /")
-    })
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "03 client-side navigation back to /"
+      );
+    });
 
     it(`handles hydrate-app1 fixture starting on /app1 route`, async () => {
       await transition("/app1");
 
-      const { document: doc, routerElement, serverRenderedBody } = parseFixture("hydrate-app1.html");
+      const { document: doc, routerElement, serverRenderedBody } = parseFixture(
+        "hydrate-app1.html"
+      );
 
       // Simulate server rendering of the content
-      document.body.innerHTML = serverRenderedBody
-      window.singleSpaLayoutData = {}
+      document.body.innerHTML = serverRenderedBody;
+      window.singleSpaLayoutData = {};
 
-      expect(document.querySelectorAll('.main-content').length).toBe(1)
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
 
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
@@ -1129,22 +1137,28 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      start()
+      start();
 
-      expect(document.querySelectorAll('.main-content').length).toBe(1)
+      expect(document.querySelectorAll(".main-content").length).toBe(1);
 
-      expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /app1")
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "01 initial hydration /app1"
+      );
 
-      console.log('--------------------------------------------------------')
-      await transition('/')
+      console.log("--------------------------------------------------------");
+      await transition("/");
 
-      expect(document.body.outerHTML).toMatchSnapshot("02 client-side navigation to /")
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "02 client-side navigation to /"
+      );
 
-      await transition('/app1')
+      await transition("/app1");
 
-      expect(document.body.outerHTML).toMatchSnapshot("03 client-side navigation back to /app1")
-    })
-  })
+      expect(document.body.outerHTML).toMatchSnapshot(
+        "03 client-side navigation back to /app1"
+      );
+    });
+  });
 
   async function reset() {
     start();
