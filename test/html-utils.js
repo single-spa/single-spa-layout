@@ -2,6 +2,7 @@ import { inBrowser } from "../src/utils/environment-helpers";
 import Parser from "../src/server/CustomParser.js";
 import fs from "fs";
 import path from "path";
+import { doc } from "prettier";
 
 export function parseHTML(str) {
   if (inBrowser) {
@@ -24,5 +25,20 @@ export function parseFixture(filename) {
   );
   const document = parseHTML(str);
   const routerElement = findRouterElement(document);
-  return { document, routerElement };
+
+  let body
+
+  for (let i = 0; i < document.childNodes.length; i++) {
+    if (document.childNodes[i].nodeName === 'BODY') {
+      body = document.childNodes[i]
+    }
+  }
+
+  body.removeChild(routerElement)
+
+  let serverRenderedBody = body.innerHTML
+
+  body.appendChild(routerElement)
+
+  return { document, routerElement, body, serverRenderedBody };
 }

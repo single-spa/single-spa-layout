@@ -422,3 +422,31 @@ exports[`constructLayoutEngine browser error handling works with error handlers 
   />
 </body>
 `;
+
+exports[`constructLayoutEngine browser hydration attaches to server rendered dom nodes 1`] = `
+<body>
+  <div id="single-spa-application:header">
+    <header>
+      Hello
+    </header>
+  </div>
+  <div class="main-content">
+  </div>
+  <span>
+    <footer>
+      <a href="/about">
+        About
+      </a>
+    </footer>
+  </span>
+  <div class="main-content">
+  </div>
+  <span>
+    <footer>
+      <a href="/about">
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;

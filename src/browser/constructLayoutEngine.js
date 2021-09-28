@@ -3,9 +3,6 @@ import {
   addErrorHandler,
   mountRootParcel,
   removeErrorHandler,
-  getAppStatus,
-  SKIP_BECAUSE_BROKEN,
-  LOAD_ERROR,
   navigateToUrl,
   getAppNames,
   checkActivityFunctions,
@@ -65,6 +62,8 @@ export function constructLayoutEngine({
         window.addEventListener("single-spa:routing-event", handleRoutingEvent);
 
         addErrorHandler(errorHandler);
+
+        hydrate(getParentContainer(), resolvedRoutes.routes);
 
         arrangeDomElements();
       }
@@ -181,11 +180,6 @@ export function constructLayoutEngine({
       return;
     }
 
-    const parentContainer =
-      typeof resolvedRoutes.containerEl === "string"
-        ? document.querySelector(resolvedRoutes.containerEl)
-        : resolvedRoutes.containerEl;
-
     // We need to move, not destroy + recreate, application container elements
     const applicationContainers = getMountedApps().reduce(
       (applicationContainers, appName) => {
@@ -200,7 +194,7 @@ export function constructLayoutEngine({
     recurseRoutes({
       location: window.location,
       routes: resolvedRoutes.routes,
-      parentContainer,
+      parentContainer: getParentContainer(),
       shouldMount: true,
       applicationContainers,
     });
@@ -216,6 +210,111 @@ export function constructLayoutEngine({
       }
     });
   }
+
+  /**
+   * The purpose of the hydrate function is to set route.connectedNode to the
+   * correct value
+   * 
+   * @param {Node} domEl
+   * @param {import("../isomorphic/constructRoutes").ResolvedRoutesConfig.routes} routes
+   */
+  function hydrate(domEl, routes) {
+    if (!domEl || !domEl.childNodes || !routes) {
+      return
+    }
+
+    for (let i = 0; i < routes.length; i++) {
+      const node = domEl.childNodes[i]
+      const route = routes[i]
+
+      console.log(i, node.outerHTML || node, '\n', route.outerHTML || route)
+
+      if (!isDomRoute(route)) {
+        continue;
+      }
+
+      if (nodeEqualsRoute(node, route)) {
+        console.log("setting connected node")
+        route.connectedNode = node
+      }
+
+      if (route.routes) {
+        hydrate(node, route.routes)
+      }
+    }
+  }
+
+  function getParentContainer() {
+   return typeof resolvedRoutes.containerEl === "string"
+        ? document.querySelector(resolvedRoutes.containerEl)
+        : resolvedRoutes.containerEl;
+  }
+}
+
+function isDomRoute(route) {
+  return !includes(['application', 'route', 'fragment', 'assets', 'redirect'], route.type)
+}
+
+function includes(haystack, needle) {
+  return haystack.some(i => i === needle)
+}
+
+/**
+ * 
+ * @param {Node} node 
+ * @param {import('../isomorphic/constructRoutes').RouteChild} route 
+ * @returns {boolean}
+ */
+function nodeEqualsRoute(node, route) {
+  if (!node) {
+    return false
+  } else {
+    console.log('node equals route', node.outerHTML, route.outerHTML)
+    let routeNode = route instanceof Node ? route : createNodeFromRoute(route)
+    return isEqualNode(node, routeNode)
+  }
+}
+
+/**
+ * 
+ * @param {import('../isomorphic/constructRoutes').RouteChild} route 
+ * @returns boolean
+ */
+function createNodeFromRoute(route) {
+  switch (route.type) {
+    case '#text': 
+      return document.createTextNode(route.value)
+    case '#comment':
+      return document.createComment(route.value)
+    default:
+      const el = document.createElement(route.type)
+      console.log(route)
+      route.attrs.forEach(attr => {
+        el.setAttribute(attr.name, attr.value)
+      })
+      return el
+  }
+}
+
+/**
+ * 
+ * @param {Node} first 
+ * @param {Node} second 
+ * @returns {boolean}
+ */
+function isEqualNode(first, second) {
+  return first.nodeType === second.nodeType
+    && first.nodeName === second.nodeName
+    && first.textContent.trim() === second.textContent.trim()
+    && equalAttributes(first, second)
+}
+
+function equalAttributes(first, second) {
+  const firstAttrNames = first.getAttributeNames ? first.getAttributeNames().sort() : []
+  const secondAttrNames = first.getAttributeNames ? first.getAttributeNames().sort() : []
+
+  return firstAttrNames.length === secondAttrNames.length
+    && firstAttrNames.some(a => first.getAttribute(a) != second.getAttribute(b))
 }
 
 /**
@@ -278,6 +377,9 @@ function recurseRoutes({
           const newNode =
             route instanceof Node ? route.cloneNode(false) : jsonToDom(route);
           route.connectedNode = newNode;
+          // console.log('created new node')
+        } else {
+          // console.log(`didn't create new node`)
         }
 
         insertNode(route.connectedNode, parentContainer, previousSibling);
@@ -356,6 +458,9 @@ function findApplicationRoute({ applicationName, location, routes }) {
  * @param {Node=} previousSibling
  */
 function insertNode(node, container, previousSibling) {
+  // const shouldLog = !(node.getAttribute && node.getAttribute('id')?.startsWith('single-spa-application:'))
+  // const log = (...args) => shouldLog && console.log(...args)
+  // log("insertNode", container.nodeName, node.outerHTML)
   const nextSibling = previousSibling
     ? previousSibling.nextSibling
     : container.firstChild;
@@ -363,7 +468,9 @@ function insertNode(node, container, previousSibling) {
   // Only call insertBefore() if necessary
   // https://github.com/single-spa/single-spa-layout/issues/123
   if (nextSibling !== node) {
+    // log('before insert', container.contains(node), document.body.innerHTML)
     container.insertBefore(node, nextSibling);
+    // log('after insert', document.body.innerHTML)
   }
 }
 
@@ -385,7 +492,7 @@ export function applicationElementId(name) {
  * The json object here is expected to be a parse5 representation
  * of the dom element.
  *
- * Example: {type: 'div', attrs: [{"class": "blue"}]}
+ * Example: {type: 'div', attrs: [{"name": "class", "value": "blue"}]}
  */
 function jsonToDom(obj) {
   if (obj.type.toLowerCase() === "#text") {

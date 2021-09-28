@@ -20,9 +20,12 @@ describe(`constructLayoutEngine browser`, () => {
   /** @type {import('../../src/constructLayoutEngine').LayoutEngine} */
   let layoutEngine;
 
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  })
+
   afterEach(() => {
     history.pushState(history.state, document.title, "/");
-    document.body.innerHTML = "";
     if (layoutEngine) {
       layoutEngine.deactivate();
     }
@@ -1053,6 +1056,44 @@ describe(`constructLayoutEngine browser`, () => {
       }
     });
   });
+
+  describe(`hydration`, () => {
+    it(`attaches to server rendered dom nodes`, async () => {
+      await transition("/");
+
+      const { document: doc, routerElement, serverRenderedBody } = parseFixture("hydrate-basic.html");
+
+      // Simulate server rendering of the content
+      document.body.innerHTML = serverRenderedBody
+
+      expect(document.querySelectorAll('.main-content').length).toBe(1)
+
+      const routes = constructRoutes(routerElement);
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+      applications.forEach(registerApplication);
+
+      start()
+
+      await transition("/something")
+
+      expect(document.querySelectorAll('.main-content').length).toBe(1)
+
+      expect(document.body.outerHTML).toMatchSnapshot()
+    })
+  })
 
   async function reset() {
     start();
