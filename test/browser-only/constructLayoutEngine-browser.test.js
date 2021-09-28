@@ -1058,13 +1058,14 @@ describe(`constructLayoutEngine browser`, () => {
   });
 
   describe(`hydration`, () => {
-    it(`attaches to server rendered dom nodes`, async () => {
+    it(`handles hydrate-basic fixture starting on / route`, async () => {
       await transition("/");
 
       const { document: doc, routerElement, serverRenderedBody } = parseFixture("hydrate-basic.html");
 
       // Simulate server rendering of the content
       document.body.innerHTML = serverRenderedBody
+      window.singleSpaLayoutData = {}
 
       expect(document.querySelectorAll('.main-content').length).toBe(1)
 
@@ -1087,11 +1088,61 @@ describe(`constructLayoutEngine browser`, () => {
 
       start()
 
-      await transition("/something")
+      expect(document.querySelectorAll('.main-content').length).toBe(1)
+
+      expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /")
+
+      await transition('/app1')
+
+      expect(document.body.outerHTML).toMatchSnapshot("02 client-side navigation to /app1")
+
+      await transition('/')
+
+      expect(document.body.outerHTML).toMatchSnapshot("03 client-side navigation back to /")
+    })
+
+    it(`handles hydrate-app1 fixture starting on /app1 route`, async () => {
+      await transition("/app1");
+
+      const { document: doc, routerElement, serverRenderedBody } = parseFixture("hydrate-app1.html");
+
+      // Simulate server rendering of the content
+      document.body.innerHTML = serverRenderedBody
+      window.singleSpaLayoutData = {}
 
       expect(document.querySelectorAll('.main-content').length).toBe(1)
 
-      expect(document.body.outerHTML).toMatchSnapshot()
+      const routes = constructRoutes(routerElement);
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          return {
+            async bootstrap() {},
+            async mount() {},
+            async unmount() {},
+          };
+        },
+      });
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+      applications.forEach(registerApplication);
+
+      start()
+
+      expect(document.querySelectorAll('.main-content').length).toBe(1)
+
+      expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /app1")
+
+      console.log('--------------------------------------------------------')
+      await transition('/')
+
+      expect(document.body.outerHTML).toMatchSnapshot("02 client-side navigation to /")
+
+      await transition('/app1')
+
+      expect(document.body.outerHTML).toMatchSnapshot("03 client-side navigation back to /app1")
     })
   })
 

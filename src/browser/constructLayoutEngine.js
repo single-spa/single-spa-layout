@@ -33,6 +33,7 @@ export function constructLayoutEngine({
 }) {
   let isActive = false;
   let errorParcelByAppName = {};
+  const wasServerRendered = Boolean(window.singleSpaLayoutData)
   if (!resolvedRoutes)
     throw Error(
       `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`
@@ -63,7 +64,9 @@ export function constructLayoutEngine({
 
         addErrorHandler(errorHandler);
 
-        hydrate(getParentContainer(), resolvedRoutes.routes);
+        if (wasServerRendered) {
+          hydrate(getParentContainer(), resolvedRoutes.routes);
+        }
 
         arrangeDomElements();
       }
@@ -215,31 +218,50 @@ export function constructLayoutEngine({
    * The purpose of the hydrate function is to set route.connectedNode to the
    * correct value
    * 
-   * @param {Node} domEl
+   * @param {Node} domNode
    * @param {import("../isomorphic/constructRoutes").ResolvedRoutesConfig.routes} routes
    */
-  function hydrate(domEl, routes) {
-    if (!domEl || !domEl.childNodes || !routes) {
+  function hydrate(domNode, routes) {
+    if (!domNode || !domNode.childNodes || !routes) {
       return
     }
 
+    let prevNode = { nextSibling: domNode.childNodes[0] }
+
+    console.log('hydrating', '\n\n', domNode.outerHTML, '\n\n', routes)
+
     for (let i = 0; i < routes.length; i++) {
-      const node = domEl.childNodes[i]
       const route = routes[i]
 
-      console.log(i, node.outerHTML || node, '\n', route.outerHTML || route)
-
-      if (!isDomRoute(route)) {
+      if (route.type === "route") {
+        hydrate(domNode, route.routes)
         continue;
       }
 
-      if (nodeEqualsRoute(node, route)) {
-        console.log("setting connected node")
-        route.connectedNode = node
+      let node = prevNode?.nextSibling
+
+      while(node?.nodeType === Node.TEXT_NODE && node.textContent.trim() === "") {
+        console.log('skipping', node.textContent)
+        node = node.nextSibling
+      }
+
+      prevNode = node
+
+      if (isDomRoute(route)) {
+        if (nodeEqualsRoute(node, route)) {
+          console.log("setting connected node", node.outerHTML, route)
+          route.connectedNode = node
+        } else {
+          console.log('node doesnt equal route')
+        }
+      } else {
+        console.log('not dom route')
       }
 
       if (route.routes) {
         hydrate(node, route.routes)
+      } else {
+        console.log('not hydrating children', route)
       }
     }
   }
@@ -271,7 +293,7 @@ function nodeEqualsRoute(node, route) {
   } else {
     console.log('node equals route', node.outerHTML, route.outerHTML)
     let routeNode = route instanceof Node ? route : createNodeFromRoute(route)
-    return isEqualNode(node, routeNode)
+    return shallowEqualNode(node, routeNode)
   }
 }
 
@@ -288,7 +310,6 @@ function createNodeFromRoute(route) {
       return document.createComment(route.value)
     default:
       const el = document.createElement(route.type)
-      console.log(route)
       route.attrs.forEach(attr => {
         el.setAttribute(attr.name, attr.value)
       })
@@ -302,19 +323,23 @@ function createNodeFromRoute(route) {
  * @param {Node} second 
  * @returns {boolean}
  */
-function isEqualNode(first, second) {
+function shallowEqualNode(first, second) {
   return first.nodeType === second.nodeType
+    // && !console.log("node type equal")
     && first.nodeName === second.nodeName
-    && first.textContent.trim() === second.textContent.trim()
+    // && !console.log("node name equal")
     && equalAttributes(first, second)
+    // && !console.log("equal attrs")
 }
 
 function equalAttributes(first, second) {
   const firstAttrNames = first.getAttributeNames ? first.getAttributeNames().sort() : []
   const secondAttrNames = first.getAttributeNames ? first.getAttributeNames().sort() : []
 
+  // console.log(firstAttrNames, secondAttrNames)
+
   return firstAttrNames.length === secondAttrNames.length
-    && firstAttrNames.some(a => first.getAttribute(a) != second.getAttribute(b))
+    && !firstAttrNames.some(a => first.getAttribute(a) !== second.getAttribute(a))
 }
 
 /**
@@ -377,7 +402,7 @@ function recurseRoutes({
           const newNode =
             route instanceof Node ? route.cloneNode(false) : jsonToDom(route);
           route.connectedNode = newNode;
-          // console.log('created new node')
+          console.log('created new node', newNode.outerHTML || newNode.textContent, route.outerHTML || route.textContent)
         } else {
           // console.log(`didn't create new node`)
         }
@@ -397,7 +422,10 @@ function recurseRoutes({
 
         previousSibling = route.connectedNode;
       } else {
+        // console.log('removing', Boolean(route.connectedNode), document.body.contains(route.connectedNode), '\n\n', route.outerHTML || route.textContent, '\n\n', route.connectedNode?.outerHTML, '\n\n', document.body.innerHTML)
+        // console.log('buttons', document.querySelectorAll('button').length)
         removeNode(route.connectedNode);
+        // console.log('finished removing', document.body.contains(route.connectedNode), document.body.innerHTML)
         delete route.connectedNode;
       }
     }
@@ -458,9 +486,6 @@ function findApplicationRoute({ applicationName, location, routes }) {
  * @param {Node=} previousSibling
  */
 function insertNode(node, container, previousSibling) {
-  // const shouldLog = !(node.getAttribute && node.getAttribute('id')?.startsWith('single-spa-application:'))
-  // const log = (...args) => shouldLog && console.log(...args)
-  // log("insertNode", container.nodeName, node.outerHTML)
   const nextSibling = previousSibling
     ? previousSibling.nextSibling
     : container.firstChild;
@@ -468,9 +493,7 @@ function insertNode(node, container, previousSibling) {
   // Only call insertBefore() if necessary
   // https://github.com/single-spa/single-spa-layout/issues/123
   if (nextSibling !== node) {
-    // log('before insert', container.contains(node), document.body.innerHTML)
     container.insertBefore(node, nextSibling);
-    // log('after insert', document.body.innerHTML)
   }
 }
 

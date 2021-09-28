@@ -423,7 +423,35 @@ exports[`constructLayoutEngine browser error handling works with error handlers 
 </body>
 `;
 
-exports[`constructLayoutEngine browser hydration attaches to server rendered dom nodes 1`] = `
+exports[`constructLayoutEngine browser hydration handles hydrate-app1 fixture starting on /app1 route: 01 initial hydration /app1 1`] = `
+<body>
+  <div id="single-spa-application:header">
+    <header>
+      Hello
+    </header>
+  </div>
+  <div class="main-content">
+    <button>
+      Top level content
+    </button>
+    <div id="single-spa-application:app1">
+      <div>
+        App 1 content
+      </div>
+    </div>
+    Some raw text
+  </div>
+  <span>
+    <footer>
+      <a href="/about">
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;
+
+exports[`constructLayoutEngine browser hydration handles hydrate-app1 fixture starting on /app1 route: 02 client-side navigation to / 1`] = `
 <body>
   <div id="single-spa-application:header">
     <header>
@@ -439,6 +467,85 @@ exports[`constructLayoutEngine browser hydration attaches to server rendered dom
       </a>
     </footer>
   </span>
+</body>
+`;
+
+exports[`constructLayoutEngine browser hydration handles hydrate-app1 fixture starting on /app1 route: 03 client-side navigation back to /app1 1`] = `
+<body>
+  <div id="single-spa-application:header">
+    <header>
+      Hello
+    </header>
+  </div>
+  <div class="main-content">
+    <button>
+      Top level content
+    </button>
+    <div id="single-spa-application:app1">
+    </div>
+    Some raw text
+  </div>
+  <span>
+    <footer>
+      <a href="/about">
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;
+
+exports[`constructLayoutEngine browser hydration handles hydrate-basic fixture starting on / route 1`] = `
+<body>
+  <div id="single-spa-application:header">
+    <header>
+      Hello
+    </header>
+  </div>
+  <div class="main-content">
+  </div>
+  <span>
+    <footer>
+      <a href="/about">
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;
+
+exports[`constructLayoutEngine browser hydration handles hydrate-basic fixture starting on / route 2`] = `
+<body>
+  <div id="single-spa-application:header">
+    <header>
+      Hello
+    </header>
+  </div>
+  <div class="main-content">
+    <button>
+      Top level content
+    </button>
+    <div id="single-spa-application:app1">
+    </div>
+    Some raw text
+  </div>
+  <span>
+    <footer>
+      <a href="/about">
+        About
+      </a>
+    </footer>
+  </span>
+</body>
+`;
+
+exports[`constructLayoutEngine browser hydration handles hydrate-basic fixture starting on / route 3`] = `
+<body>
+  <div id="single-spa-application:header">
+    <header>
+      Hello
+    </header>
+  </div>
   <div class="main-content">
   </div>
   <span>
