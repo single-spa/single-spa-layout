@@ -33,7 +33,7 @@ export function constructLayoutEngine({
 }) {
   let isActive = false;
   let errorParcelByAppName = {};
-  const wasServerRendered = Boolean(window.singleSpaLayoutData);
+  const wasServerRendered = inBrowser && Boolean(window.singleSpaLayoutData);
   if (!resolvedRoutes)
     throw Error(
       `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`

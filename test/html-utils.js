@@ -34,11 +34,15 @@ export function parseFixture(filename) {
     }
   }
 
-  body.removeChild(routerElement);
+  let serverRenderedBody = null;
 
-  let serverRenderedBody = body.innerHTML;
+  if (body) {
+    body.removeChild(routerElement);
 
-  body.appendChild(routerElement);
+    serverRenderedBody = body.innerHTML;
+
+    body.appendChild(routerElement);
+  }
 
   return { document, routerElement, body, serverRenderedBody };
 }
