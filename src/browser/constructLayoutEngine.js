@@ -3,9 +3,6 @@ import {
   addErrorHandler,
   mountRootParcel,
   removeErrorHandler,
-  getAppStatus,
-  SKIP_BECAUSE_BROKEN,
-  LOAD_ERROR,
   navigateToUrl,
   getAppNames,
   checkActivityFunctions,
@@ -36,6 +33,7 @@ export function constructLayoutEngine({
 }) {
   let isActive = false;
   let errorParcelByAppName = {};
+  const wasServerRendered = inBrowser && Boolean(window.singleSpaLayoutData);
   if (!resolvedRoutes)
     throw Error(
       `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`
@@ -65,6 +63,10 @@ export function constructLayoutEngine({
         window.addEventListener("single-spa:routing-event", handleRoutingEvent);
 
         addErrorHandler(errorHandler);
+
+        if (wasServerRendered) {
+          hydrate(getParentContainer(), resolvedRoutes.routes);
+        }
 
         arrangeDomElements();
       }
@@ -181,11 +183,6 @@ export function constructLayoutEngine({
       return;
     }
 
-    const parentContainer =
-      typeof resolvedRoutes.containerEl === "string"
-        ? document.querySelector(resolvedRoutes.containerEl)
-        : resolvedRoutes.containerEl;
-
     // We need to move, not destroy + recreate, application container elements
     const applicationContainers = getMountedApps().reduce(
       (applicationContainers, appName) => {
@@ -200,7 +197,7 @@ export function constructLayoutEngine({
     recurseRoutes({
       location: window.location,
       routes: resolvedRoutes.routes,
-      parentContainer,
+      parentContainer: getParentContainer(),
       shouldMount: true,
       applicationContainers,
     });
@@ -216,6 +213,131 @@ export function constructLayoutEngine({
       }
     });
   }
+
+  /**
+   * The purpose of the hydrate function is to set route.connectedNode to the
+   * correct value
+   *
+   * @param {Node} domNode
+   * @param {import("../isomorphic/constructRoutes").ResolvedRoutesConfig.routes} routes
+   */
+  function hydrate(domNode, routes) {
+    if (!domNode || !domNode.childNodes || !routes) {
+      return;
+    }
+
+    let prevNode = { nextSibling: domNode.childNodes[0] };
+
+    for (let i = 0; i < routes.length; i++) {
+      const route = routes[i];
+
+      if (route.type === "route") {
+        hydrate(domNode, route.routes);
+        continue;
+      }
+
+      let node = prevNode?.nextSibling;
+
+      while (
+        node?.nodeType === Node.TEXT_NODE &&
+        node.textContent.trim() === ""
+      ) {
+        node = node.nextSibling;
+      }
+
+      prevNode = node;
+
+      if (isDomRoute(route) && nodeEqualsRoute(node, route)) {
+        route.connectedNode = node;
+      }
+
+      if (route.routes) {
+        hydrate(node, route.routes);
+      }
+    }
+  }
+
+  function getParentContainer() {
+    return typeof resolvedRoutes.containerEl === "string"
+      ? document.querySelector(resolvedRoutes.containerEl)
+      : resolvedRoutes.containerEl;
+  }
+}
+
+function isDomRoute(route) {
+  return !includes(
+    ["application", "route", "fragment", "assets", "redirect"],
+    route.type
+  );
+}
+
+function includes(haystack, needle) {
+  return haystack.some((i) => i === needle);
+}
+
+/**
+ *
+ * @param {Node} node
+ * @param {import('../isomorphic/constructRoutes').RouteChild} route
+ * @returns {boolean}
+ */
+function nodeEqualsRoute(node, route) {
+  if (!node) {
+    return false;
+  } else {
+    let routeNode = route instanceof Node ? route : createNodeFromRoute(route);
+    return shallowEqualNode(node, routeNode);
+  }
+}
+
+/**
+ *
+ * @param {import('../isomorphic/constructRoutes').RouteChild} route
+ * @returns boolean
+ */
+function createNodeFromRoute(route) {
+  switch (route.type) {
+    case "#text":
+      return document.createTextNode(route.value);
+    case "#comment":
+      return document.createComment(route.value);
+    default:
+      const el = document.createElement(route.type);
+      route.attrs.forEach((attr) => {
+        el.setAttribute(attr.name, attr.value);
+      });
+      return el;
+  }
+}
+
+/**
+ *
+ * @param {Node} first
+ * @param {Node} second
+ * @returns {boolean}
+ */
+function shallowEqualNode(first, second) {
+  return (
+    first.nodeType === second.nodeType &&
+    first.nodeName === second.nodeName &&
+    equalAttributes(first, second)
+  );
+}
+
+function equalAttributes(first, second) {
+  const firstAttrNames = first.getAttributeNames
+    ? first.getAttributeNames().sort()
+    : [];
+  const secondAttrNames = first.getAttributeNames
+    ? first.getAttributeNames().sort()
+    : [];
+
+  return (
+    firstAttrNames.length === secondAttrNames.length &&
+    !firstAttrNames.some(
+      (a) => first.getAttribute(a) !== second.getAttribute(a)
+    )
+  );
 }
 
 /**
@@ -385,7 +507,7 @@ export function applicationElementId(name) {
  * The json object here is expected to be a parse5 representation
  * of the dom element.
  *
- * Example: {type: 'div', attrs: [{"class": "blue"}]}
+ * Example: {type: 'div', attrs: [{"name": "class", "value": "blue"}]}
  */
 function jsonToDom(obj) {
   if (obj.type.toLowerCase() === "#text") {
