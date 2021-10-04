@@ -87,7 +87,7 @@
     "cypress": "^7.6.0",
     "eslint": "^7.30.0",
     "eslint-config-important-stuff": "^1.1.0",
-    "eslint-config-node-important-stuff": "^1.1.0",
+    "eslint-config-node-important-stuff": "^2.0.0",
     "eslint-plugin-es5": "^1.5.0",
     "husky": "^7.0.0",
     "jest": "^27.0.6",
