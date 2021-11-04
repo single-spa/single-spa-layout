@@ -275,8 +275,8 @@ function valueToAppStreams(name, value) {
   let contentStream, assetStream;
 
   if (value) {
-    contentStream = valueToStream(value.content || value, name);
-    assetStream = valueToStream(value.assets || "", name);
+    contentStream = valueToStream(value.content ?? value, name);
+    assetStream = valueToStream(value.assets ?? "", name);
   } else {
     contentStream = renderError(name, Error(`returned nothing`));
     assetStream = renderError(name, Error(`returned nothing`));
