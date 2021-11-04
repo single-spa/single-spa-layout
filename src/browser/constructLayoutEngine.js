@@ -382,6 +382,22 @@ function recurseRoutes({
           applicationElement = document.createElement("div");
           applicationElement.id = htmlId;
         }
+        if (typeof route.classNames === "string") {
+          const elementClassNames = [...applicationElement.classList];
+          const routeClassNames = route.classNames.split(" ");
+
+          elementClassNames.forEach((className) => {
+            if (routeClassNames.indexOf(className) === -1) {
+              applicationElement.classList.remove(className);
+            }
+          });
+          routeClassNames.forEach((className) => {
+            if (elementClassNames.indexOf(className) === -1) {
+              applicationElement.classList.add(className);
+            }
+          });
+        }
+
         insertNode(applicationElement, parentContainer, previousSibling);
         previousSibling = applicationElement;
       }

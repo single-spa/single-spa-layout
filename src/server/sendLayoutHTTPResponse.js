@@ -204,6 +204,7 @@ function serializeApplication({
   headerPromises,
 }) {
   const appName = node.name;
+  const appClassNames = typeof node.classNames === "string" && node.classNames;
 
   const propsConfig = node.props || {};
   const propsPromise = Promise.all(
@@ -266,7 +267,13 @@ function serializeApplication({
     assetStream = renderError(appName, err);
   }
   assetsStream.add(assetStream);
-  bodyStream.add(stringStream(`<div id="single-spa-application:${appName}">`));
+  bodyStream.add(
+    stringStream(
+      appClassNames
+        ? `<div id="single-spa-application:${appName}" class="${appClassNames}">`
+        : `<div id="single-spa-application:${appName}">`
+    )
+  );
   bodyStream.add(contentStream);
   bodyStream.add(stringStream(`</div>`));
 }
