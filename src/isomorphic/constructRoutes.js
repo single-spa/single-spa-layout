@@ -243,9 +243,9 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
       }
     }
 
-    const classNames = getAttribute(element, "class");
-    if (classNames) {
-      application.classNames = classNames;
+    const className = getAttribute(element, "class");
+    if (className) {
+      application.className = className;
     }
 
     setProps(element, application, htmlLayoutData);
@@ -426,7 +426,7 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "name", "props", "loader", "error", "classNames"],
+        ["type", "name", "props", "loader", "error", "className"],
         disableWarnings
       );
       if (route.props) {

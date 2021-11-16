@@ -382,20 +382,16 @@ function recurseRoutes({
           applicationElement = document.createElement("div");
           applicationElement.id = htmlId;
         }
-        if (typeof route.classNames === "string") {
-          const elementClassNames = [...applicationElement.classList];
-          const routeClassNames = route.classNames.split(" ");
 
-          elementClassNames.forEach((className) => {
-            if (routeClassNames.indexOf(className) === -1) {
-              applicationElement.classList.remove(className);
-            }
-          });
-          routeClassNames.forEach((className) => {
-            if (elementClassNames.indexOf(className) === -1) {
-              applicationElement.classList.add(className);
-            }
-          });
+        if (typeof route.className === "string") {
+          applicationElement.className = route.className;
+        } else if (
+          typeof route.className !== "string" &&
+          typeof applicationElement.className === "string"
+        ) {
+          // The application element did already exist with previously added classes,
+          // remove the entire attribute to avoid empty class attributes in the DOM.
+          applicationElement.removeAttribute("class");
         }
 
         insertNode(applicationElement, parentContainer, previousSibling);
