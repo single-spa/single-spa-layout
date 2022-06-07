@@ -123,6 +123,7 @@ export function constructLayoutEngine({
         parcelConfig,
         {
           domElement: applicationDomContainer,
+          error: err,
         }
       );
     }
