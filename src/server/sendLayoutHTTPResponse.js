@@ -39,6 +39,7 @@ const GT_REGEX = />/g;
  * renderFragment?(name: string) => RenderResult | Promise<RenderResult>;
  * retrieveProp(name: string) => Promise<any> | any;
  * assembleFinalHeaders(appHeaders: AppHeaders[]) => object;
+ * nonce?: string;
  * }} RenderOptions
  *
  * @typedef {{
@@ -59,6 +60,7 @@ const GT_REGEX = />/g;
  * serverLayout: import('./constructServerLayout').ServerLayout;
  * applicationProps: import('single-spa').AppProps;
  * inRouterElement: boolean;
+ * nonce?: string;
  * }} SerializeArgs
  *
  * @param {RenderOptions} renderOptions
@@ -101,6 +103,7 @@ export async function sendLayoutHTTPResponse(renderOptions) {
     applicationPropPromises,
     headerPromises,
     inRouterElement: false,
+    nonce: renderOptions.nonce,
   });
 
   const allAppHeaders = await Promise.all(
@@ -326,7 +329,7 @@ function isAssetsNode(node) {
  *
  * @param {SerializeArgs} args
  */
-function serializeLayoutData({ propPromises, bodyStream }) {
+function serializeLayoutData({ propPromises, bodyStream, nonce }) {
   const getLayoutData = async () => {
     const propEntries = await Promise.all(
       Object.entries(propPromises).map(([propName, propValuePromise]) => {
@@ -340,9 +343,13 @@ function serializeLayoutData({ propPromises, bodyStream }) {
       return acc;
     }, {});
 
-    return `<script>window.singleSpaLayoutData = ${JSON.stringify({
-      props,
-    })}</script>`;
+    const scriptAttributes = nonce ? ` nonce="${nonce}"` : "";
+
+    return `<script${scriptAttributes}>window.singleSpaLayoutData = ${JSON.stringify(
+      {
+        props,
+      }
+    )}</script>`;
   };
 
   try {
