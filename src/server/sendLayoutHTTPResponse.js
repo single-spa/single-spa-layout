@@ -103,7 +103,7 @@ export async function sendLayoutHTTPResponse(renderOptions) {
     applicationPropPromises,
     headerPromises,
     inRouterElement: false,
-    nonce: renderOptions.nonce
+    nonce: renderOptions.nonce,
   });
 
   const allAppHeaders = await Promise.all(
@@ -343,11 +343,13 @@ function serializeLayoutData({ propPromises, bodyStream, nonce }) {
       return acc;
     }, {});
 
-    const scriptAttributes = nonce ? ` nonce="${nonce}"` : '';
+    const scriptAttributes = nonce ? ` nonce="${nonce}"` : "";
 
-    return `<script${scriptAttributes}>window.singleSpaLayoutData = ${JSON.stringify({
-      props,
-    })}</script>`;
+    return `<script${scriptAttributes}>window.singleSpaLayoutData = ${JSON.stringify(
+      {
+        props,
+      }
+    )}</script>`;
   };
 
   try {
