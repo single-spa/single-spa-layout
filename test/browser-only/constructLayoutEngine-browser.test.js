@@ -963,7 +963,70 @@ describe(`constructLayoutEngine browser`, () => {
       expect(errorParcelUnmountTime).toBeDefined();
       expect(app2MountTime).toBeDefined();
 
-      expect(errorParcelUnmountTime).toBeLessThan(app2MountTime);
+      expect(errorParcelUnmountTime).toBeLessThanOrEqual(app2MountTime);
+    });
+
+    it(`passes an err prop to error parcels`, async () => {
+      let parcelWasMounted = false,
+        parcelWasUnmounted = false,
+        parcelProps;
+
+      /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+      const routes = constructRoutes({
+        containerEl: "body",
+        base: "/",
+        mode: "history",
+        routes: [
+          {
+            type: "route",
+            path: "/app1",
+            routes: [
+              {
+                type: "application",
+                name: "app1",
+                error: {
+                  async bootstrap() {},
+                  async mount(props) {
+                    parcelProps = props;
+                    const div = document.createElement("div");
+                    div.textContent = `App 1 is broken (parcel)`;
+                    props.domElement.appendChild(div);
+                    parcelWasMounted = true;
+                  },
+                  async unmount(props) {
+                    parcelWasUnmounted = true;
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      const applications = constructApplications({
+        routes,
+        loadApp: async (name) => {
+          throw Error("failed to load app");
+        },
+      });
+
+      layoutEngine = constructLayoutEngine({
+        routes,
+        applications,
+      });
+      applications.forEach(registerApplication);
+
+      await transition("/app1");
+
+      expect(parcelWasMounted).toBe(true);
+      expect(parcelProps.error).not.toBeFalsy();
+      expect(parcelProps.error.message).toMatch(/failed to load app/);
+      expect(parcelWasUnmounted).toBe(false);
+
+      await transition("/");
+      unloadApplication("app1");
+
+      expect(parcelWasUnmounted).toBe(true);
     });
   });
 
