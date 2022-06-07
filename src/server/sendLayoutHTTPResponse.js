@@ -56,7 +56,7 @@ const GT_REGEX = />/g;
  * assetsStream: import('merge2').Merge2Stream;
  * bodyStream: import('merge2').Merge2Stream;
  * renderOptions: RenderOptions;
- * serverLayout: import('./constructServerLayout').serverLayout;
+ * serverLayout: import('./constructServerLayout').ServerLayout;
  * applicationProps: import('single-spa').AppProps;
  * inRouterElement: boolean;
  * }} SerializeArgs
