@@ -67,6 +67,45 @@ describe(`sendLayoutHTTPResponse`, () => {
 
         expect(responseBody).toMatchSnapshot();
       });
+
+      it(`supports nonce attributes`, async () => {
+        const html = fs
+          .readFileSync(
+            path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
+            "utf-8"
+          )
+          .toString();
+
+        const serverLayout = constructServerLayout({
+          html,
+        });
+
+        await sendLayoutHTTPResponse({
+          res,
+          serverLayout,
+          urlPath: "/app1",
+          nonce: "sample-nonce",
+          retrieveApplicationHeaders(props) {
+            return {};
+          },
+          assembleFinalHeaders(allHeaders) {
+            return _.assign({}, Object.values(allHeaders));
+          },
+          renderApplication({ appName, propsPromise }) {
+            const appStream = new stream.Readable({
+              read() {
+                appStream.push(`<button>App ${appName}</button>`);
+                appStream.push(null);
+              },
+            });
+            return appStream;
+          },
+        });
+
+        const responseBody = await responseBodyPromise;
+
+        expect(responseBody).toMatchSnapshot();
+      });
     });
 
     describe(`fragments.html fixture`, () => {
