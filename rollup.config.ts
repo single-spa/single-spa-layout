@@ -46,6 +46,9 @@ const createConfig = ({
     plugins: [
       ts({
         hook: {
+          // There may be a bug in `rollup-plugin-ts` that make it unable to load `.d.mts` files.
+          // So let's make it generate `.d.ts` files instead for now.
+          // We could remove this after this is resolved by `rollup-plugin-ts`.
           outputPath: (path, kind) =>
             kind === 'declaration' || kind === 'declarationMap'
               ? path.replace(/\.d\.[mc]ts/, '.d.ts')
