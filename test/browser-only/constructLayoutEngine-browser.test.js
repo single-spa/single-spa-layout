@@ -2,8 +2,8 @@ import {
   constructLayoutEngine,
   constructRoutes,
   constructApplications,
-} from "../../src/single-spa-layout.js";
-import { parseFixture } from "../html-utils.js";
+} from '../../src/single-spa-layout.js';
+import { parseFixture } from '../html-utils.js';
 import {
   navigateToUrl,
   getAppNames,
@@ -12,7 +12,7 @@ import {
   triggerAppChange,
   start,
   unloadApplication,
-} from "single-spa";
+} from 'single-spa';
 
 start();
 
@@ -23,11 +23,11 @@ describe(`constructLayoutEngine browser`, () => {
   let layoutEngine;
 
   beforeEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
   afterEach(() => {
-    history.pushState(history.state, document.title, "/");
+    history.pushState(history.state, document.title, '/');
     if (layoutEngine) {
       layoutEngine.deactivate();
     }
@@ -36,10 +36,10 @@ describe(`constructLayoutEngine browser`, () => {
   it(`starts out activated by default`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
-      routes: [{ type: "application", name: "@org-name/header" }],
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
+      routes: [{ type: 'application', name: '@org-name/header' }],
     });
 
     layoutEngine = constructLayoutEngine({
@@ -52,10 +52,10 @@ describe(`constructLayoutEngine browser`, () => {
   it(`starts out activated if forced active`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
-      routes: [{ type: "application", name: "@org-name/header" }],
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
+      routes: [{ type: 'application', name: '@org-name/header' }],
     });
 
     layoutEngine = constructLayoutEngine({
@@ -69,10 +69,10 @@ describe(`constructLayoutEngine browser`, () => {
   it(`can start off deactivated if specified in options object`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
-      routes: [{ type: "application", name: "@org-name/header" }],
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
+      routes: [{ type: 'application', name: '@org-name/header' }],
     });
 
     layoutEngine = constructLayoutEngine({
@@ -86,10 +86,10 @@ describe(`constructLayoutEngine browser`, () => {
   it(`can handle any calls to activate() / deactivate()`, () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
-      routes: [{ type: "application", name: "@org-name/header" }],
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
+      routes: [{ type: 'application', name: '@org-name/header' }],
     });
 
     layoutEngine = constructLayoutEngine({
@@ -113,17 +113,17 @@ describe(`constructLayoutEngine browser`, () => {
   it(`can successfully construct a layout engine and respond to routing events`, async () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
       routes: [
-        { type: "application", name: "@org-name/header" },
+        { type: 'application', name: '@org-name/header' },
         {
-          type: "route",
-          path: "app1",
-          routes: [{ type: "application", name: "@org-name/app1" }],
+          type: 'route',
+          path: 'app1',
+          routes: [{ type: 'application', name: '@org-name/app1' }],
         },
-        { type: "application", name: "@org-name/footer" },
+        { type: 'application', name: '@org-name/footer' },
       ],
     });
 
@@ -143,13 +143,13 @@ describe(`constructLayoutEngine browser`, () => {
 
     // start at / route
     let headerEl = document.getElementById(
-      `single-spa-application:@org-name/header`
+      `single-spa-application:@org-name/header`,
     );
     let app1El = document.getElementById(
-      `single-spa-application:@org-name/app1`
+      `single-spa-application:@org-name/app1`,
     );
     let footerEl = document.getElementById(
-      `single-spa-application:@org-name/footer`
+      `single-spa-application:@org-name/footer`,
     );
 
     expect(headerEl).toBeInTheDocument();
@@ -157,19 +157,19 @@ describe(`constructLayoutEngine browser`, () => {
     expect(footerEl).toBeInTheDocument();
 
     expect(headerEl.compareDocumentPosition(footerEl)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(document.body).toMatchSnapshot();
 
     // transition to /app1 route
-    await transition("/app1");
+    await transition('/app1');
 
     headerEl = document.getElementById(
-      `single-spa-application:@org-name/header`
+      `single-spa-application:@org-name/header`,
     );
     app1El = document.getElementById(`single-spa-application:@org-name/app1`);
     footerEl = document.getElementById(
-      `single-spa-application:@org-name/footer`
+      `single-spa-application:@org-name/footer`,
     );
 
     expect(headerEl).toBeInTheDocument();
@@ -177,25 +177,25 @@ describe(`constructLayoutEngine browser`, () => {
     expect(footerEl).toBeInTheDocument();
 
     expect(headerEl.compareDocumentPosition(footerEl)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(headerEl.compareDocumentPosition(app1El)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(footerEl.compareDocumentPosition(app1El)).toBe(
-      Node.DOCUMENT_POSITION_PRECEDING
+      Node.DOCUMENT_POSITION_PRECEDING,
     );
     expect(document.body).toMatchSnapshot();
 
     // transition back to / route
-    await transition("/");
+    await transition('/');
 
     headerEl = document.getElementById(
-      `single-spa-application:@org-name/header`
+      `single-spa-application:@org-name/header`,
     );
     app1El = document.getElementById(`single-spa-application:@org-name/app1`);
     footerEl = document.getElementById(
-      `single-spa-application:@org-name/footer`
+      `single-spa-application:@org-name/footer`,
     );
 
     expect(headerEl).toBeInTheDocument();
@@ -203,7 +203,7 @@ describe(`constructLayoutEngine browser`, () => {
     expect(footerEl).toBeInTheDocument();
 
     expect(headerEl.compareDocumentPosition(footerEl)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(document.body).toMatchSnapshot();
   });
@@ -213,28 +213,28 @@ describe(`constructLayoutEngine browser`, () => {
 
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
       routes: [
-        { type: "application", name: "@org-name/header" },
+        { type: 'application', name: '@org-name/header' },
         {
-          type: "route",
-          path: "cart",
+          type: 'route',
+          path: 'cart',
           routes: [
-            { type: "application", name: "@org-name/app1" },
-            { type: "application", name: "@org-name/app2" },
+            { type: 'application', name: '@org-name/app1' },
+            { type: 'application', name: '@org-name/app2' },
           ],
         },
         {
-          type: "route",
-          path: "settings",
+          type: 'route',
+          path: 'settings',
           routes: [
-            { type: "application", name: "@org-name/app2" },
-            { type: "application", name: "@org-name/app1" },
+            { type: 'application', name: '@org-name/app2' },
+            { type: 'application', name: '@org-name/app1' },
           ],
         },
-        { type: "application", name: "@org-name/footer" },
+        { type: 'application', name: '@org-name/footer' },
       ],
     });
 
@@ -243,13 +243,13 @@ describe(`constructLayoutEngine browser`, () => {
     });
 
     // transition to /cart route
-    await transition("/cart");
+    await transition('/cart');
 
     headerEl = document.getElementById(
-      `single-spa-application:@org-name/header`
+      `single-spa-application:@org-name/header`,
     );
     footerEl = document.getElementById(
-      `single-spa-application:@org-name/footer`
+      `single-spa-application:@org-name/footer`,
     );
     app1El = document.getElementById(`single-spa-application:@org-name/app1`);
     app2El = document.getElementById(`single-spa-application:@org-name/app2`);
@@ -260,25 +260,25 @@ describe(`constructLayoutEngine browser`, () => {
     expect(app2El).toBeInTheDocument();
 
     expect(headerEl.compareDocumentPosition(app1El)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(app1El.compareDocumentPosition(app2El)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(app2El.compareDocumentPosition(footerEl)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
 
     expect(document.body).toMatchSnapshot();
 
     // transition to /settings route
-    await transition("/settings");
+    await transition('/settings');
 
     headerEl = document.getElementById(
-      `single-spa-application:@org-name/header`
+      `single-spa-application:@org-name/header`,
     );
     footerEl = document.getElementById(
-      `single-spa-application:@org-name/footer`
+      `single-spa-application:@org-name/footer`,
     );
     app1El = document.getElementById(`single-spa-application:@org-name/app1`);
     app2El = document.getElementById(`single-spa-application:@org-name/app2`);
@@ -289,25 +289,25 @@ describe(`constructLayoutEngine browser`, () => {
     expect(app2El).toBeInTheDocument();
 
     expect(headerEl.compareDocumentPosition(app1El)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(app1El.compareDocumentPosition(app2El)).toEqual(
-      Node.DOCUMENT_POSITION_PRECEDING
+      Node.DOCUMENT_POSITION_PRECEDING,
     );
     expect(app2El.compareDocumentPosition(footerEl)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
 
     expect(document.body).toMatchSnapshot();
 
     // transition back to /cart route
-    await transition("/cart");
+    await transition('/cart');
 
     headerEl = document.getElementById(
-      `single-spa-application:@org-name/header`
+      `single-spa-application:@org-name/header`,
     );
     footerEl = document.getElementById(
-      `single-spa-application:@org-name/footer`
+      `single-spa-application:@org-name/footer`,
     );
     app1El = document.getElementById(`single-spa-application:@org-name/app1`);
     app2El = document.getElementById(`single-spa-application:@org-name/app2`);
@@ -318,111 +318,111 @@ describe(`constructLayoutEngine browser`, () => {
     expect(app2El).toBeInTheDocument();
 
     expect(headerEl.compareDocumentPosition(app1El)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(app1El.compareDocumentPosition(app2El)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(app2El.compareDocumentPosition(footerEl)).toEqual(
-      Node.DOCUMENT_POSITION_FOLLOWING
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
 
     expect(document.body).toMatchSnapshot();
   });
 
   it(`can process the layout in the medium.html fixture`, async () => {
-    const { routerElement } = parseFixture("medium.html");
+    const { routerElement } = parseFixture('medium.html');
     const loadApp = jest.fn();
     const routes = constructRoutes(routerElement);
     const applications = constructApplications({ routes, loadApp });
     layoutEngine = constructLayoutEngine({ routes, applications });
     applications.forEach(registerApplication);
 
-    expect(document.querySelector("body")).toMatchSnapshot();
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to /settings route
-    await transition("/settings");
+    await transition('/settings');
     // At /settings route: navbar, settings, and footer are mounted
-    expect(document.querySelector("body")).toMatchSnapshot();
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to / route
-    await transition("/");
-    expect(document.querySelector("body")).toMatchSnapshot();
+    await transition('/');
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to /app1 route
-    await transition("/app1");
-    expect(document.querySelector("body")).toMatchSnapshot();
+    await transition('/app1');
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to / route
-    await transition("/");
-    expect(document.querySelector("body")).toMatchSnapshot();
+    await transition('/');
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to /app2 route
-    await transition("/app2");
-    expect(document.querySelector("body")).toMatchSnapshot();
+    await transition('/app2');
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to /app1 route
-    await transition("/app1");
-    expect(document.querySelector("body")).toMatchSnapshot();
+    await transition('/app1');
+    expect(document.querySelector('body')).toMatchSnapshot();
   });
 
   it(`can process the dom elements fixture`, async () => {
-    const { routerElement } = parseFixture("dom-elements.html");
+    const { routerElement } = parseFixture('dom-elements.html');
     const loadApp = jest.fn();
     const routes = constructRoutes(routerElement);
     const applications = constructApplications({ routes, loadApp });
     layoutEngine = constructLayoutEngine({ routes, applications });
     applications.forEach(registerApplication);
 
-    await transition("/");
+    await transition('/');
 
-    expect(document.querySelector("body")).toMatchSnapshot();
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to /app1 route
-    await transition("/app1");
-    expect(document.querySelector("body")).toMatchSnapshot();
+    await transition('/app1');
+    expect(document.querySelector('body')).toMatchSnapshot();
 
     // transition to / route
-    await transition("/");
-    expect(document.querySelector("body")).toMatchSnapshot();
+    await transition('/');
+    expect(document.querySelector('body')).toMatchSnapshot();
   });
 
   it(`can process the nested-default-route fixture`, async () => {
-    history.pushState(history.state, document.title, "/");
+    history.pushState(history.state, document.title, '/');
 
-    const { routerElement } = parseFixture("nested-default-route.html");
+    const { routerElement } = parseFixture('nested-default-route.html');
     const loadApp = jest.fn();
     const routes = constructRoutes(routerElement);
     const applications = constructApplications({ routes, loadApp });
     layoutEngine = constructLayoutEngine({ routes, applications });
     applications.forEach(registerApplication);
 
-    await transition("/");
+    await transition('/');
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings
-    await transition("/settings");
+    await transition('/settings');
     expect(document.body).toMatchSnapshot();
 
     // Transition to /settings/app1
-    await transition("/settings/app1");
+    await transition('/settings/app1');
     expect(document.body).toMatchSnapshot();
   });
 
   it(`can show a loader properly`, async () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
       routes: [
         {
-          type: "route",
-          path: "/app1",
+          type: 'route',
+          path: '/app1',
           routes: [
             {
-              type: "application",
-              name: "app1",
+              type: 'application',
+              name: 'app1',
               loader: `<img src="loading.gif">`,
             },
           ],
@@ -432,8 +432,8 @@ describe(`constructLayoutEngine browser`, () => {
 
     const applications = constructApplications({
       routes,
-      loadApp: (name) => {
-        return new Promise((resolve) => {
+      loadApp: name => {
+        return new Promise(resolve => {
           setTimeout(() => resolve(noopApp()), 5);
         });
       },
@@ -444,11 +444,11 @@ describe(`constructLayoutEngine browser`, () => {
     });
     applications.forEach(registerApplication);
 
-    await transition("/");
+    await transition('/');
 
     expect(document.body).toMatchSnapshot();
 
-    const transitionPromise = transition("/app1");
+    const transitionPromise = transition('/app1');
     const loadPromise = applications[0].app();
 
     await tick();
@@ -464,49 +464,49 @@ describe(`constructLayoutEngine browser`, () => {
   it(`can render dom elements from json`, async () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
       routes: [
         {
-          type: "route",
-          path: "/app1",
+          type: 'route',
+          path: '/app1',
           routes: [
             {
-              type: "div",
+              type: 'div',
               attrs: [
                 {
-                  name: "class",
-                  value: "before",
+                  name: 'class',
+                  value: 'before',
                 },
               ],
               routes: [
                 {
-                  type: "#text",
-                  value: "The text before",
+                  type: '#text',
+                  value: 'The text before',
                 },
                 {
-                  type: "#comment",
-                  value: "the comment before",
+                  type: '#comment',
+                  value: 'the comment before',
                 },
               ],
             },
             {
-              type: "application",
-              name: "app1",
+              type: 'application',
+              name: 'app1',
             },
             {
-              type: "div",
+              type: 'div',
               attrs: [
                 {
-                  name: "class",
-                  value: "after",
+                  name: 'class',
+                  value: 'after',
                 },
               ],
               routes: [
                 {
-                  type: "#comment",
-                  value: "the comment after",
+                  type: '#comment',
+                  value: 'the comment after',
                 },
               ],
             },
@@ -517,7 +517,7 @@ describe(`constructLayoutEngine browser`, () => {
 
     const applications = constructApplications({
       routes,
-      loadApp: async (name) => noopApp(),
+      loadApp: async name => noopApp(),
     });
 
     layoutEngine = constructLayoutEngine({
@@ -526,10 +526,10 @@ describe(`constructLayoutEngine browser`, () => {
     });
     applications.forEach(registerApplication);
 
-    await transition("/app1");
+    await transition('/app1');
 
     window.dispatchEvent(
-      new CustomEvent("single-spa:before-mount-routing-event")
+      new CustomEvent('single-spa:before-mount-routing-event'),
     );
 
     expect(document.body).toMatchSnapshot();
@@ -541,33 +541,33 @@ describe(`constructLayoutEngine browser`, () => {
     const routes = constructRoutes({
       routes: [
         {
-          type: "route",
+          type: 'route',
           default: true,
           routes: [
             {
-              type: "div",
+              type: 'div',
               attrs: [
                 {
-                  name: "id",
-                  value: "404",
+                  name: 'id',
+                  value: '404',
                 },
               ],
               routes: [
                 {
-                  type: "#text",
-                  value: "404 not found",
+                  type: '#text',
+                  value: '404 not found',
                 },
               ],
             },
           ],
         },
         {
-          type: "route",
-          path: "/app1",
+          type: 'route',
+          path: '/app1',
           routes: [
             {
-              type: "#text",
-              value: "App1",
+              type: '#text',
+              value: 'App1',
             },
           ],
         },
@@ -576,7 +576,7 @@ describe(`constructLayoutEngine browser`, () => {
 
     const applications = constructApplications({
       routes,
-      loadApp: async (name) => noopApp(),
+      loadApp: async name => noopApp(),
     });
 
     layoutEngine = constructLayoutEngine({
@@ -585,26 +585,26 @@ describe(`constructLayoutEngine browser`, () => {
     });
     applications.forEach(registerApplication);
 
-    await transition("/");
+    await transition('/');
 
-    expect(document.getElementById("404")).toBeTruthy();
+    expect(document.getElementById('404')).toBeTruthy();
 
     window.addEventListener(
-      "single-spa:before-mount-routing-event",
-      beforeMount
+      'single-spa:before-mount-routing-event',
+      beforeMount,
     );
 
-    await transition("/app1");
+    await transition('/app1');
 
-    expect(document.getElementById("404")).toBeFalsy();
+    expect(document.getElementById('404')).toBeFalsy();
 
     function beforeMount() {
       // This event listener will fire after the equivalent listener in constructLayoutEngine,
       // since we added it after calling `constructLayoutEngine`
-      expect(document.getElementById("404")).toBeFalsy();
+      expect(document.getElementById('404')).toBeFalsy();
       window.removeEventListener(
-        "single-spa:before-mount-routing-event",
-        beforeMount
+        'single-spa:before-mount-routing-event',
+        beforeMount,
       );
     }
   });
@@ -613,35 +613,35 @@ describe(`constructLayoutEngine browser`, () => {
   it(`reuses the same dom element container for applications when the container moves to a different part of the DOM`, async () => {
     /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
     const routes = constructRoutes({
-      containerEl: "body",
-      base: "/",
-      mode: "history",
+      containerEl: 'body',
+      base: '/',
+      mode: 'history',
       routes: [
         {
-          type: "route",
-          path: "/settings",
+          type: 'route',
+          path: '/settings',
           routes: [
             {
-              type: "div",
+              type: 'div',
               routes: [
                 {
-                  type: "application",
-                  name: "auth",
+                  type: 'application',
+                  name: 'auth',
                 },
               ],
             },
           ],
         },
         {
-          type: "route",
-          path: "/permissions",
+          type: 'route',
+          path: '/permissions',
           routes: [
             {
-              type: "div",
+              type: 'div',
               routes: [
                 {
-                  type: "application",
-                  name: "auth",
+                  type: 'application',
+                  name: 'auth',
                 },
               ],
             },
@@ -652,7 +652,7 @@ describe(`constructLayoutEngine browser`, () => {
 
     const applications = constructApplications({
       routes,
-      loadApp: async (name) => {
+      loadApp: async name => {
         return {
           async mount() {},
           async unmount() {},
@@ -666,22 +666,22 @@ describe(`constructLayoutEngine browser`, () => {
     });
     applications.forEach(registerApplication);
 
-    await transition("/settings");
+    await transition('/settings');
 
     const originalAppEl = document.getElementById(
-      `single-spa-application:auth`
+      `single-spa-application:auth`,
     );
 
     expect(originalAppEl).toBeInTheDocument();
 
-    await transition("/permissions");
+    await transition('/permissions');
 
     expect(
-      document.getElementById(`single-spa-application:auth`)
+      document.getElementById(`single-spa-application:auth`),
     ).toBeInTheDocument();
 
     expect(document.getElementById(`single-spa-application:auth`)).toBe(
-      originalAppEl
+      originalAppEl,
     );
   });
 
@@ -689,24 +689,24 @@ describe(`constructLayoutEngine browser`, () => {
     beforeEach(reset);
 
     it(`throws an error if constructLayoutEngine is called with incorrect arguments`, async () => {
-      expect(() => constructLayoutEngine({})).toThrowError("must be provided");
+      expect(() => constructLayoutEngine({})).toThrowError('must be provided');
     });
 
     it(`shows an error UI when an application goes into SKIP_BECAUSE_BROKEN status`, async () => {
       /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
       const routes = constructRoutes({
-        containerEl: "body",
-        base: "/",
-        mode: "history",
+        containerEl: 'body',
+        base: '/',
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/app1",
+            type: 'route',
+            path: '/app1',
             routes: [
               {
-                type: "application",
-                name: "app1",
-                error: "<div>Oops, app1 is broken</div>",
+                type: 'application',
+                name: 'app1',
+                error: '<div>Oops, app1 is broken</div>',
               },
             ],
           },
@@ -715,7 +715,7 @@ describe(`constructLayoutEngine browser`, () => {
 
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => {
+        loadApp: async name => {
           throw Error();
         },
       });
@@ -726,7 +726,7 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      await transition("/app1");
+      await transition('/app1');
 
       expect(document.body).toMatchSnapshot();
     });
@@ -734,21 +734,21 @@ describe(`constructLayoutEngine browser`, () => {
     it(`works with a parcel provided for the error UI`, async () => {
       /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
       const routes = constructRoutes({
-        containerEl: "body",
-        base: "/",
-        mode: "history",
+        containerEl: 'body',
+        base: '/',
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/app1",
+            type: 'route',
+            path: '/app1',
             routes: [
               {
-                type: "application",
-                name: "app1",
+                type: 'application',
+                name: 'app1',
                 error: {
                   async bootstrap() {},
                   async mount(props) {
-                    const div = document.createElement("div");
+                    const div = document.createElement('div');
                     div.textContent = `App 1 is broken (parcel)`;
                     props.domElement.appendChild(div);
                   },
@@ -762,7 +762,7 @@ describe(`constructLayoutEngine browser`, () => {
 
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => {
+        loadApp: async name => {
           throw Error();
         },
       });
@@ -773,13 +773,13 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      await transition("/app1");
+      await transition('/app1');
 
       expect(document.body).toMatchSnapshot();
     });
 
     it(`works with error handlers defined in HTML`, async () => {
-      const { routerElement } = parseFixture("error-handlers.html");
+      const { routerElement } = parseFixture('error-handlers.html');
 
       let numMainContentErrorMounts = 0,
         numMainContentUnmounts = 0;
@@ -790,11 +790,11 @@ describe(`constructLayoutEngine browser`, () => {
             async bootstrap() {},
             async mount(props) {
               numMainContentErrorMounts++;
-              props.domElement.textContent = "error parcel mounted";
+              props.domElement.textContent = 'error parcel mounted';
             },
             async unmount(props) {
               numMainContentUnmounts++;
-              props.domElement.textContent = "";
+              props.domElement.textContent = '';
             },
           },
           headerError: `<div>Oops! An error occurred!</div>`,
@@ -815,7 +815,7 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      await transition("/app1");
+      await transition('/app1');
 
       expect(numMainContentErrorMounts).toBe(1);
       expect(numMainContentUnmounts).toBe(0);
@@ -823,7 +823,7 @@ describe(`constructLayoutEngine browser`, () => {
 
       // https://github.com/single-spa/single-spa-layout/issues/105
       // Go back to / route and verify the parcel is unmounted
-      await transition("/");
+      await transition('/');
 
       expect(numMainContentErrorMounts).toBe(1);
       expect(numMainContentUnmounts).toBe(1);
@@ -836,21 +836,21 @@ describe(`constructLayoutEngine browser`, () => {
 
       /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
       const routes = constructRoutes({
-        containerEl: "body",
-        base: "/",
-        mode: "history",
+        containerEl: 'body',
+        base: '/',
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/app1",
+            type: 'route',
+            path: '/app1',
             routes: [
               {
-                type: "application",
-                name: "app1",
+                type: 'application',
+                name: 'app1',
                 error: {
                   async bootstrap() {},
                   async mount(props) {
-                    const div = document.createElement("div");
+                    const div = document.createElement('div');
                     div.textContent = `App 1 is broken (parcel)`;
                     props.domElement.appendChild(div);
                     parcelWasMounted = true;
@@ -867,7 +867,7 @@ describe(`constructLayoutEngine browser`, () => {
 
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => {
+        loadApp: async name => {
           throw Error();
         },
       });
@@ -878,13 +878,13 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      await transition("/app1");
+      await transition('/app1');
 
       expect(parcelWasMounted).toBe(true);
       expect(parcelWasUnmounted).toBe(false);
 
-      await transition("/");
-      unloadApplication("app1");
+      await transition('/');
+      unloadApplication('app1');
 
       expect(parcelWasUnmounted).toBe(true);
     });
@@ -895,17 +895,17 @@ describe(`constructLayoutEngine browser`, () => {
 
       /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
       const routes = constructRoutes({
-        containerEl: "body",
-        base: "/",
-        mode: "history",
+        containerEl: 'body',
+        base: '/',
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/app1",
+            type: 'route',
+            path: '/app1',
             routes: [
               {
-                type: "application",
-                name: "app1",
+                type: 'application',
+                name: 'app1',
                 error: {
                   async bootstrap() {},
                   async mount(props) {},
@@ -917,12 +917,12 @@ describe(`constructLayoutEngine browser`, () => {
             ],
           },
           {
-            type: "route",
-            path: "/app2",
+            type: 'route',
+            path: '/app2',
             routes: [
               {
-                type: "application",
-                name: "app2",
+                type: 'application',
+                name: 'app2',
               },
             ],
           },
@@ -931,8 +931,8 @@ describe(`constructLayoutEngine browser`, () => {
 
       const applications = constructApplications({
         routes,
-        loadApp: async (props) => {
-          if (props.name === "app1") {
+        loadApp: async props => {
+          if (props.name === 'app1') {
             throw Error();
           } else {
             return Promise.resolve({
@@ -945,7 +945,7 @@ describe(`constructLayoutEngine browser`, () => {
         },
       });
 
-      await transition("/app1");
+      await transition('/app1');
 
       layoutEngine = constructLayoutEngine({
         routes,
@@ -953,12 +953,12 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      await transition("/app1");
+      await transition('/app1');
 
       expect(errorParcelUnmountTime).toBeUndefined();
       expect(app2MountTime).toBeUndefined();
 
-      await transition("/app2");
+      await transition('/app2');
 
       expect(errorParcelUnmountTime).toBeDefined();
       expect(app2MountTime).toBeDefined();
@@ -971,14 +971,14 @@ describe(`constructLayoutEngine browser`, () => {
     beforeEach(reset);
 
     it(`successfully redirects`, async () => {
-      await transition("/something-random");
+      await transition('/something-random');
       await triggerAppChange();
 
-      const { document, routerElement } = parseFixture("redirects.html");
+      const { document, routerElement } = parseFixture('redirects.html');
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => noopApp(),
+        loadApp: async name => noopApp(),
       });
       layoutEngine = constructLayoutEngine({
         routes,
@@ -987,25 +987,25 @@ describe(`constructLayoutEngine browser`, () => {
       applications.forEach(registerApplication);
 
       // trigger redirect to login
-      await transition("/");
+      await transition('/');
       await triggerAppChange();
 
-      expect(location.pathname).toBe("/login");
+      expect(location.pathname).toBe('/login');
 
       // trigger redirect to new settings page
-      await transition("/old-settings");
+      await transition('/old-settings');
 
-      expect(location.pathname).toBe("/settings");
+      expect(location.pathname).toBe('/settings');
     });
 
     it(`doesn't call navigateToUrl() for non-redirects`, async () => {
-      await transition("/something-random");
+      await transition('/something-random');
 
-      const { document, routerElement } = parseFixture("redirects.html");
+      const { document, routerElement } = parseFixture('redirects.html');
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => {
+        loadApp: async name => {
           return {
             async bootstrap() {},
             async mount() {},
@@ -1020,32 +1020,32 @@ describe(`constructLayoutEngine browser`, () => {
       applications.forEach(registerApplication);
 
       // trigger redirect to login
-      await transition("/");
+      await transition('/');
 
-      expect(location.pathname).toBe("/login");
+      expect(location.pathname).toBe('/login');
     });
   });
 
   describe(`hydration`, () => {
     it(`handles hydrate-basic fixture starting on / route`, async () => {
-      await transition("/");
+      await transition('/');
 
       const {
         document: doc,
         routerElement,
         serverRenderedBody,
-      } = parseFixture("hydrate-basic.html");
+      } = parseFixture('hydrate-basic.html');
 
       // Simulate server rendering of the content
       document.body.innerHTML = serverRenderedBody;
       window.singleSpaLayoutData = {};
 
-      expect(document.querySelectorAll(".main-content").length).toBe(1);
+      expect(document.querySelectorAll('.main-content').length).toBe(1);
 
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => {
+        loadApp: async name => {
           return {
             async bootstrap() {},
             async mount() {},
@@ -1059,42 +1059,42 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      expect(document.querySelectorAll(".main-content").length).toBe(1);
+      expect(document.querySelectorAll('.main-content').length).toBe(1);
 
-      expect(document.body.outerHTML).toMatchSnapshot("01 initial hydration /");
+      expect(document.body.outerHTML).toMatchSnapshot('01 initial hydration /');
 
-      await transition("/app1");
+      await transition('/app1');
 
       expect(document.body.outerHTML).toMatchSnapshot(
-        "02 client-side navigation to /app1"
+        '02 client-side navigation to /app1',
       );
 
-      await transition("/");
+      await transition('/');
 
       expect(document.body.outerHTML).toMatchSnapshot(
-        "03 client-side navigation back to /"
+        '03 client-side navigation back to /',
       );
     });
 
     it(`handles hydrate-app1 fixture starting on /app1 route`, async () => {
-      await transition("/app1");
+      await transition('/app1');
 
       const {
         document: doc,
         routerElement,
         serverRenderedBody,
-      } = parseFixture("hydrate-app1.html");
+      } = parseFixture('hydrate-app1.html');
 
       // Simulate server rendering of the content
       document.body.innerHTML = serverRenderedBody;
       window.singleSpaLayoutData = {};
 
-      expect(document.querySelectorAll(".main-content").length).toBe(1);
+      expect(document.querySelectorAll('.main-content').length).toBe(1);
 
       const routes = constructRoutes(routerElement);
       const applications = constructApplications({
         routes,
-        loadApp: async (name) => {
+        loadApp: async name => {
           return {
             async bootstrap() {},
             async mount() {},
@@ -1108,22 +1108,22 @@ describe(`constructLayoutEngine browser`, () => {
       });
       applications.forEach(registerApplication);
 
-      expect(document.querySelectorAll(".main-content").length).toBe(1);
+      expect(document.querySelectorAll('.main-content').length).toBe(1);
 
       expect(document.body.outerHTML).toMatchSnapshot(
-        "01 initial hydration /app1"
+        '01 initial hydration /app1',
       );
 
-      await transition("/");
+      await transition('/');
 
       expect(document.body.outerHTML).toMatchSnapshot(
-        "02 client-side navigation to /"
+        '02 client-side navigation to /',
       );
 
-      await transition("/app1");
+      await transition('/app1');
 
       expect(document.body.outerHTML).toMatchSnapshot(
-        "03 client-side navigation back to /app1"
+        '03 client-side navigation back to /app1',
       );
     });
   });
@@ -1133,14 +1133,14 @@ describe(`constructLayoutEngine browser`, () => {
       layoutEngine.deactivate();
     }
     getAppNames().forEach(unregisterApplication);
-    navigateToUrl("/");
+    navigateToUrl('/');
     await triggerAppChange();
     await tick();
   }
 });
 
 function tick() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(resolve);
   });
 }

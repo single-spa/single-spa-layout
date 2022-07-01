@@ -1,11 +1,10 @@
-import { LifeCycles, mountRootParcel, ParcelConfig } from "single-spa";
-import { applicationElementId, htmlToParcelConfig } from "../../utils/index.js";
-import { SingeSpaEvent } from "../utils.js";
+import { LifeCycles, mountRootParcel, ParcelConfig } from 'single-spa';
+import { applicationElementId, htmlToParcelConfig } from '../../utils/index.js';
 
 const createApplicationElement = (htmlId: string) => {
-  const element = document.createElement("div");
+  const element = document.createElement('div');
   element.id = htmlId;
-  element.style.display = "none";
+  element.style.display = 'none';
   document.body.appendChild(element);
   return element;
 };
@@ -18,27 +17,30 @@ const getOrCreateApplicationElement = (appName: string) => {
 
   const makeElementVisible = () => {
     if (!existedAppElement) {
-      applicationElement.style.removeProperty("display");
-      applicationElement.getAttribute("style") === "" &&
-        applicationElement.removeAttribute("style");
+      applicationElement.style.removeProperty('display');
+      applicationElement.getAttribute('style') === '' &&
+        applicationElement.removeAttribute('style');
     }
     window.removeEventListener(
-      SingeSpaEvent.BeforeMountRouting,
-      makeElementVisible
+      'single-spa:before-mount-routing-event',
+      makeElementVisible,
     );
   };
 
-  window.addEventListener(SingeSpaEvent.BeforeMountRouting, makeElementVisible);
+  window.addEventListener(
+    'single-spa:before-mount-routing-event',
+    makeElementVisible,
+  );
   return { applicationElement, makeElementVisible };
 };
 
 const createParcel = (
   appName: string,
   applicationElement: HTMLElement,
-  loader: string | ParcelConfig
+  loader: string | ParcelConfig,
 ) => {
   const parcelConfig =
-    typeof loader === "string" ? htmlToParcelConfig(loader) : loader;
+    typeof loader === 'string' ? htmlToParcelConfig(loader) : loader;
   return mountRootParcel(parcelConfig, {
     domElement: applicationElement,
     name: `application-loader:${appName}`,
@@ -48,7 +50,7 @@ const createParcel = (
 export const placeLoader = async (
   appName: string,
   loader: string | ParcelConfig,
-  loadingPromise: Promise<LifeCycles>
+  loadingPromise: Promise<LifeCycles>,
 ) => {
   const { applicationElement, makeElementVisible } =
     getOrCreateApplicationElement(appName);

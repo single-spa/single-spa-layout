@@ -1,4 +1,4 @@
-import { ResolvedRoutesConfig, SslDocument } from "../isomorphic/index.js";
+import { ResolvedRoutesConfig, SslDocument } from '../isomorphic/index.js';
 
 export interface ServerLayout {
   parsedDocument: SslDocument;

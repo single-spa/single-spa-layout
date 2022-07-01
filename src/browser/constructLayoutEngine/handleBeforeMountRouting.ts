@@ -1,5 +1,5 @@
-import { SingleSpaEventListener } from "./types.js";
+import { SingleSpaEventListener } from './types.js';
 
 export const handleBeforeMountRouting = (
-  arrangeDomElements: VoidFunction
+  arrangeDomElements: VoidFunction,
 ): SingleSpaEventListener => arrangeDomElements;

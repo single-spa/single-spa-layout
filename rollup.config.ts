@@ -1,3 +1,4 @@
+import { stripCode } from '@codecb/rollup-plugin-strip-code';
 import babel, { RollupBabelInputPluginOptions } from '@rollup/plugin-babel';
 import replace from '@rollup/plugin-replace';
 import { resolve } from 'node:path';
@@ -7,7 +8,9 @@ import ts from 'rollup-plugin-ts';
 import pkg from './package.json';
 
 const rootDir = process.cwd();
-const isDev = process.env['ROLLUP_WATCH'] === 'true';
+const isDev =
+  process.env['ROLLUP_WATCH'] === 'true' ||
+  process.env['NODE_ENV'] === 'development';
 
 export type BundleTarget = 'browser' | 'server';
 
@@ -44,6 +47,8 @@ const createConfig = ({
     },
     external: ['merge2', /^node:*/, /^parse5.*/, 'single-spa'],
     plugins: [
+      !isDev &&
+        stripCode({ endComment: '#devOnlyEnd', startComment: '#devOnlyStart' }),
       ts({
         hook: {
           // There may be a bug in `rollup-plugin-ts` that make it unable to load `.d.mts` files.
@@ -59,7 +64,6 @@ const createConfig = ({
           isDev ? 'tsconfig.dev.json' : 'tsconfig.json',
         ),
       }),
-      babel(babelOpts),
       replace({
         preventAssignment: true,
         values: {
@@ -69,8 +73,14 @@ const createConfig = ({
           ),
         },
       }),
+      babel(babelOpts),
       !isDev && terser({ compress: { passes: 2 } }),
     ],
+    onwarn(warning, defaultHandler) {
+      // Circular dependency between recursive render functions is intended
+      if (!['CIRCULAR_DEPENDENCY'].includes(warning.code!))
+        defaultHandler(warning);
+    },
   });
 };
 

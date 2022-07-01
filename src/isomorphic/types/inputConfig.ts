@@ -1,7 +1,7 @@
-import { Token } from "parse5";
-import { ParcelConfig } from "single-spa";
-import { nodeNames } from "../utils/index.js";
-import { ResolvedRoutesConfig } from "./resolvedConfig.js";
+import { Token } from 'parse5';
+import { ParcelConfig } from 'single-spa';
+import { nodeNames } from '../utils/index.js';
+import { ResolvedRoutesConfig } from './resolvedConfig.js';
 
 export interface InputApplication {
   error?: string | ParcelConfig;
@@ -51,7 +51,7 @@ export type InputRouteChild =
   | InputText;
 
 export interface InputRoutesConfig
-  extends Partial<Omit<ResolvedRoutesConfig, "childNodes">> {
+  extends Partial<Omit<ResolvedRoutesConfig, 'childNodes'>> {
   childNodes: InputRouteChild[];
   disableWarnings?: boolean;
 }

@@ -1,14 +1,14 @@
-import { assertString, inBrowser } from "../../utils/index.js";
-import type { ResolvedChild, ResolvedRoutesConfig } from "../types/index.js";
-import { resolvePath, sslResolvedNode } from "../utils/index.js";
+import { assertString, inBrowser } from '../../utils/index.js';
+import type { ResolvedChild, ResolvedRoutesConfig } from '../types/index.js';
+import { resolvePath, sslResolvedNode } from '../utils/index.js';
 
 const recurseRoutes = (
   location: Location | URL,
-  childNodes: ResolvedChild[]
+  childNodes: ResolvedChild[],
 ) => {
   const result: ResolvedChild[] = [];
 
-  childNodes.forEach((child) => {
+  childNodes.forEach(child => {
     if (sslResolvedNode.isApplication(child)) return result.push(child);
     if (sslResolvedNode.isRoute(child))
       return (
@@ -18,7 +18,7 @@ const recurseRoutes = (
           childNodes: recurseRoutes(location, child.childNodes),
         })
       );
-    if ("childNodes" in child)
+    if ('childNodes' in child)
       return result.push({
         ...child,
         childNodes: recurseRoutes(location, child.childNodes),
@@ -31,14 +31,14 @@ const recurseRoutes = (
 
 export const matchRoute = (
   config: ResolvedRoutesConfig,
-  path: string
+  path: string,
 ): ResolvedRoutesConfig => {
-  assertString("path", path);
+  assertString('path', path);
   const result: ResolvedRoutesConfig = { ...config };
   const baseWithoutSlash = config.base.slice(0, config.base.length - 1);
 
   if (path.indexOf(baseWithoutSlash) === 0) {
-    const origin = inBrowser ? window.location.origin : "http://localhost";
+    const origin = inBrowser ? window.location.origin : 'http://localhost';
     const url = new URL(resolvePath(origin, path));
     result.childNodes = recurseRoutes(url, config.childNodes);
   } else result.childNodes = [];

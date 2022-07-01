@@ -10,16 +10,17 @@ export {
   type InputRoutesConfig,
   type InputText,
   type ResolvedRoutesConfig,
-} from "../isomorphic/index.js";
+} from '../isomorphic/index.js';
 export {
   constructServerLayout,
   type HTMLTemplateOptions,
   type ServerLayout,
-} from "./constructServerLayout/index.js";
+} from './constructServerLayout/index.js';
 export {
   type AppHeaders,
   type AppToRender,
+  type StreamValue,
   type RenderOptions,
   type RenderResult,
   sendLayoutHTTPResponse,
-} from "./sendLayoutHTTPResponse/index.js";
+} from './sendLayoutHTTPResponse/index.js';

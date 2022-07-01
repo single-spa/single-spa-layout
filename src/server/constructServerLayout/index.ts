@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { defaultTreeAdapter, html } from "parse5";
+import { readFileSync } from 'node:fs';
+import { defaultTreeAdapter, html } from 'parse5';
 import {
   constructRoutes,
   nodeNames,
@@ -9,25 +9,25 @@ import {
   SslNode,
   sslResolvedNode,
   SslTreeAdapterMap,
-} from "../../isomorphic/index.js";
-import { assertString } from "../../utils/index.js";
-import { SslParser } from "../SslParser/index.js";
-import type { HTMLTemplateOptions, ServerLayout } from "../types.js";
+} from '../../isomorphic/index.js';
+import { assertString } from '../../utils/index.js';
+import { SslParser } from '../SslParser/index.js';
+import type { HTMLTemplateOptions, ServerLayout } from '../types.js';
 
-export * from "../types.js";
+export * from '../types.js';
 
 const errPrefix = `single-spa-layout (server):`;
 
 const getHtmlString = (templateOptions: HTMLTemplateOptions) => {
   let htmlString: string;
-  if ("html" in templateOptions) htmlString = templateOptions.html;
-  else if ("filePath" in templateOptions)
-    htmlString = readFileSync(templateOptions.filePath, "utf8");
+  if ('html' in templateOptions) htmlString = templateOptions.html;
+  else if ('filePath' in templateOptions)
+    htmlString = readFileSync(templateOptions.filePath, 'utf8');
   else
     throw Error(
-      `${errPrefix} either templateOptions.html or templateOptions.filePath is required`
+      `${errPrefix} either templateOptions.html or templateOptions.filePath is required`,
     );
-  assertString("htmlString", htmlString);
+  assertString('htmlString', htmlString);
   return htmlString;
 };
 
@@ -42,13 +42,13 @@ const parseDocument = (htmlString: string) => {
 
 const findElementRecursive = (
   rootNode: SslNode,
-  nodeName: string
+  nodeName: string,
 ): SslElement | null => {
   if (sslResolvedNode.isElement(rootNode) && rootNode.tagName === nodeName)
     return rootNode;
 
   const childNodes = sslResolvedNode.getChildNodes(
-    sslResolvedNode.isTemplate(rootNode) ? rootNode.content : rootNode
+    sslResolvedNode.isTemplate(rootNode) ? rootNode.content : rootNode,
   );
   for (const childNode of childNodes) {
     const result =
@@ -68,16 +68,16 @@ const findElement = (rootNode: SslNode, nodeName: string) => {
 
 const insertRouterContent = (
   parsedDocument: SslDocument,
-  { containerEl }: ResolvedRoutesConfig
+  { containerEl }: ResolvedRoutesConfig,
 ) => {
   const container =
-    typeof containerEl === "string"
+    typeof containerEl === 'string'
       ? findElement(parsedDocument, containerEl)
       : (containerEl as SslElement);
   const routerFragment = defaultTreeAdapter.createElement(
     nodeNames.ROUTER_CONTENT,
     html.NS.HTML,
-    []
+    [],
   );
   const firstChild = defaultTreeAdapter.getFirstChild(container);
   firstChild
@@ -86,7 +86,7 @@ const insertRouterContent = (
 };
 
 export const constructServerLayout = (
-  templateOptions: HTMLTemplateOptions
+  templateOptions: HTMLTemplateOptions,
 ): ServerLayout => {
   if (!templateOptions) throw Error(`${errPrefix} templateOptions is required`);
   const htmlString = getHtmlString(templateOptions);

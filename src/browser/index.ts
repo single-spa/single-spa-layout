@@ -10,13 +10,14 @@ export {
   type InputRoutesConfig,
   type InputText,
   type ResolvedRoutesConfig,
-} from "../isomorphic/index.js";
+} from '../isomorphic/index.js';
+export { getAppProps, getLayoutConfig } from '../utils/index.js';
 export {
   constructApplications,
   type ApplicationOptions,
-} from "./constructApplications/index.js";
+} from './constructApplications/index.js';
 export {
   constructLayoutEngine,
   type LayoutEngine,
   type LayoutEngineOptions,
-} from "./constructLayoutEngine/index.js";
+} from './constructLayoutEngine/index.js';

@@ -1,5 +1,5 @@
-import { ResolvedChild, sslResolvedNode } from "../../isomorphic/index.js";
-import { createNodeFromRouteChild } from "./utils.js";
+import { ResolvedChild, sslResolvedNode } from '../../isomorphic/index.js';
+import { createNodeFromRouteChild } from './utils.js';
 
 const equalAttributes = (first: Node, second: Node) => {
   if (!(first instanceof Element) || !(second instanceof Element)) return true;
@@ -8,8 +8,8 @@ const equalAttributes = (first: Node, second: Node) => {
   return (
     firstAttrNames.length === secondAttrNames.length &&
     firstAttrNames.every(
-      (attrName) =>
-        second.getAttribute(attrName) === first.getAttribute(attrName)
+      attrName =>
+        second.getAttribute(attrName) === first.getAttribute(attrName),
     )
   );
 };
@@ -26,24 +26,24 @@ const isEqual = (node: Nullable<Node>, child: ResolvedChild) =>
         node,
         sslResolvedNode.isNode(child)
           ? child.node
-          : createNodeFromRouteChild(child)
+          : createNodeFromRouteChild(child),
       );
 
 type PreviousNode = Nullable<{ nextSibling: Nullable<ChildNode> }>;
 
 export const hydrate = (
   domNode: Nullable<Node>,
-  childNodes: Optional<ResolvedChild[]>
+  childNodes: Optional<ResolvedChild[]>,
 ) => {
   if (!domNode?.childNodes || !childNodes) return;
   let prevNode: PreviousNode = { nextSibling: domNode.childNodes[0] };
-  childNodes.forEach((child) => {
+  childNodes.forEach(child => {
     if (sslResolvedNode.isRoute(child))
       return hydrate(domNode, child.childNodes);
     let node: Nullable<Node> = prevNode?.nextSibling;
     while (
       node?.nodeType === Node.TEXT_NODE &&
-      domNode.textContent?.trim() === ""
+      domNode.textContent?.trim() === ''
     )
       node = node.nextSibling;
     prevNode = node;

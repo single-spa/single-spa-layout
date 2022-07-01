@@ -1,32 +1,32 @@
-import { inBrowser } from "../src/utils/environment-helpers.js";
-import { constructRoutes } from "../src/single-spa-layout.js";
-import { parseFixture } from "./html-utils";
-import fs from "fs/promises";
+import { inBrowser } from '../src/utils/environment-helpers.js';
+import { constructRoutes } from '../src/single-spa-layout.js';
+import { parseFixture } from './html-utils';
+import fs from 'fs/promises';
 
-jest.spyOn(console, "warn");
+jest.spyOn(console, 'warn');
 
-describe("constructRoutes", () => {
+describe('constructRoutes', () => {
   beforeEach(() => {
     console.warn.mockReset();
   });
 
   describe(`HTML parsing`, () => {
     it(`can parse a medium complexity HTML routes definition`, () => {
-      const { document, routerElement } = parseFixture("medium.html");
+      const { document, routerElement } = parseFixture('medium.html');
       // In browser we can use querySelector, otherwise the more manual lookup
       const routes = constructRoutes(routerElement);
     });
 
     it(`can parse a layout with arbitrary dom element children`, () => {
-      const { document, routerElement } = parseFixture("dom-elements.html");
+      const { document, routerElement } = parseFixture('dom-elements.html');
       const routes = constructRoutes(routerElement);
     });
 
     if (inBrowser) {
       it(`can parse an html layout from string`, async () => {
         const htmlString = await fs.readFile(
-          "./test/fixtures/medium.html",
-          "utf-8"
+          './test/fixtures/medium.html',
+          'utf-8',
         );
         const routes = constructRoutes(htmlString);
       });
@@ -34,35 +34,35 @@ describe("constructRoutes", () => {
   });
 
   describe(`validates top level properties`, () => {
-    it("accepts a valid routesConfig", () => {
+    it('accepts a valid routesConfig', () => {
       constructRoutes({
-        mode: "history",
-        base: "/",
-        containerEl: "#selector",
+        mode: 'history',
+        base: '/',
+        containerEl: '#selector',
         routes: [
-          { type: "application", name: "@org/navbar" },
+          { type: 'application', name: '@org/navbar' },
           {
-            type: "route",
-            path: "app1",
+            type: 'route',
+            path: 'app1',
             routes: [
-              { type: "application", name: "@org/main-sidenav" },
-              { type: "application", name: "@org/app1" },
+              { type: 'application', name: '@org/main-sidenav' },
+              { type: 'application', name: '@org/app1' },
             ],
           },
           {
-            type: "route",
-            path: "app2",
+            type: 'route',
+            path: 'app2',
             routes: [
-              { type: "application", name: "@org/main-sidenav" },
-              { type: "application", name: "@org/app2" },
+              { type: 'application', name: '@org/main-sidenav' },
+              { type: 'application', name: '@org/app2' },
             ],
           },
           {
-            type: "route",
-            path: "settings",
-            routes: [{ type: "application", name: "@org/settings" }],
+            type: 'route',
+            path: 'settings',
+            routes: [{ type: 'application', name: '@org/settings' }],
           },
-          { type: "application", name: "@org/footer" },
+          { type: 'application', name: '@org/footer' },
         ],
       });
     });
@@ -78,19 +78,19 @@ describe("constructRoutes", () => {
 
       if (inBrowser) {
         expect(() => {
-          constructRoutes("");
+          constructRoutes('');
         }).toThrowError(/single-spa-router/);
 
         expect(() => {
-          constructRoutes("<div></div>");
+          constructRoutes('<div></div>');
         }).toThrowError(/single-spa-router/);
       } else {
         expect(() => {
-          constructRoutes("");
+          constructRoutes('');
         }).toThrowError(/string on the server/);
 
         expect(() => {
-          constructRoutes("<div></div>");
+          constructRoutes('<div></div>');
         }).toThrowError(/string on the server/);
       }
 
@@ -106,63 +106,63 @@ describe("constructRoutes", () => {
     it(`console.warns if extra properties are provided`, () => {
       constructRoutes({
         routes: [],
-        irrelevantProperty: "thing",
+        irrelevantProperty: 'thing',
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig: received invalid properties 'irrelevantProperty', but valid properties are mode, base, containerEl, routes, disableWarnings, redirects`
+        `Invalid routesConfig: received invalid properties 'irrelevantProperty', but valid properties are mode, base, containerEl, routes, disableWarnings, redirects`,
       );
     });
 
     it(`validates the mode correctly`, () => {
       expect(() => {
         constructRoutes({
-          mode: "wrong",
+          mode: 'wrong',
           routes: [],
         });
-      }).toThrowError("mode");
+      }).toThrowError('mode');
 
       constructRoutes({
-        mode: "hash",
+        mode: 'hash',
         routes: [],
       });
 
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [],
       });
     });
 
     it(`validates the base correctly`, () => {
       constructRoutes({
-        base: "/",
-        mode: "history",
+        base: '/',
+        mode: 'history',
         routes: [],
       });
 
       expect(() => {
         constructRoutes({
-          base: "",
-          mode: "history",
+          base: '',
+          mode: 'history',
           routes: [],
         });
-      }).toThrowError("non-blank string");
+      }).toThrowError('non-blank string');
 
       expect(() => {
         constructRoutes({
-          base: "  ",
-          mode: "history",
+          base: '  ',
+          mode: 'history',
           routes: [],
         });
-      }).toThrowError("non-blank string");
+      }).toThrowError('non-blank string');
 
       expect(() => {
         constructRoutes({
           base: null,
-          mode: "history",
+          mode: 'history',
           routes: [],
         });
-      }).toThrowError("non-blank string");
+      }).toThrowError('non-blank string');
     });
 
     it(`throws an error with invalid redirects`, () => {
@@ -171,70 +171,70 @@ describe("constructRoutes", () => {
           routes: [],
           redirects: 123,
         });
-      }).toThrowError("plain object");
+      }).toThrowError('plain object');
 
       expect(() => {
         constructRoutes({
           routes: [],
           redirects: {
-            1: "/login",
+            1: '/login',
           },
         });
-      }).toThrowError("absolute path");
+      }).toThrowError('absolute path');
 
       expect(() => {
         constructRoutes({
           routes: [],
           redirects: {
-            "/": 1,
+            '/': 1,
           },
         });
-      }).toThrowError("non-blank string");
+      }).toThrowError('non-blank string');
 
       expect(() => {
         constructRoutes({
           routes: [],
           redirects: {
-            home: "/login",
+            home: '/login',
           },
         });
-      }).toThrowError("absolute path");
+      }).toThrowError('absolute path');
 
       expect(() => {
         constructRoutes({
           routes: [],
           redirects: {
-            "/home": "login",
+            '/home': 'login',
           },
         });
-      }).toThrowError("absolute path");
+      }).toThrowError('absolute path');
     });
   });
 
-  describe("validates routes", () => {
+  describe('validates routes', () => {
     it(`checks that routes are an array`, () => {
       expect(() => {
         constructRoutes({
-          mode: "history",
+          mode: 'history',
           routes: {},
         });
-      }).toThrowError("array");
+      }).toThrowError('array');
 
       expect(() => {
         constructRoutes({
-          mode: "history",
-          routes: "str",
+          mode: 'history',
+          routes: 'str',
         });
-      }).toThrowError("array");
+      }).toThrowError('array');
     });
 
     it(`checks for valid route objects`, () => {
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/",
+            type: 'route',
+            path: '/',
             routes: [],
           },
         ],
@@ -242,77 +242,77 @@ describe("constructRoutes", () => {
 
       console.warn.mockReset();
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/",
+            type: 'route',
+            path: '/',
             routes: [],
-            somethingElse: "value",
+            somethingElse: 'value',
           },
         ],
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes, props, default, exact`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, path, routes, props, default, exact`,
       );
     });
 
     it(`checks for valid application objects`, () => {
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "application",
-            name: "@org/project",
+            type: 'application',
+            name: '@org/project',
           },
         ],
       });
 
       console.warn.mockReset();
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "application",
-            name: "@org/project",
-            somethingElse: "value",
+            type: 'application',
+            name: '@org/project',
+            somethingElse: 'value',
           },
         ],
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`,
       );
 
       console.warn.mockReset();
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "application",
-            name: "@org/project",
+            type: 'application',
+            name: '@org/project',
             routes: [],
           },
         ],
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props, loader, error`
+        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props, loader, error`,
       );
     });
 
     it(`checks subroutes`, () => {
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "thing",
+            type: 'route',
+            path: 'thing',
             routes: [
               {
-                type: "application",
-                name: "navbar",
+                type: 'application',
+                name: 'navbar',
               },
             ],
           },
@@ -321,16 +321,16 @@ describe("constructRoutes", () => {
 
       expect(console.warn).not.toHaveBeenCalled();
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "thing",
+            type: 'route',
+            path: 'thing',
             routes: [
               {
-                type: "application",
-                name: "navbar",
-                somethingElse: "thing",
+                type: 'application',
+                name: 'navbar',
+                somethingElse: 'thing',
               },
             ],
           },
@@ -338,22 +338,22 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`
+        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`,
       );
     });
 
     it(`checks all routes when there are multiple`, () => {
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/",
+            type: 'route',
+            path: '/',
             routes: [],
           },
           {
-            type: "route",
-            path: "/app1",
+            type: 'route',
+            path: '/app1',
             routes: [],
           },
         ],
@@ -361,38 +361,38 @@ describe("constructRoutes", () => {
 
       expect(console.warn).not.toHaveBeenCalled();
       constructRoutes({
-        mode: "history",
+        mode: 'history',
         routes: [
           {
-            type: "route",
-            path: "/",
+            type: 'route',
+            path: '/',
             routes: [],
           },
           {
-            type: "route",
-            path: "/app1",
+            type: 'route',
+            path: '/app1',
             routes: [],
-            irrelevantProperty: "thing",
+            irrelevantProperty: 'thing',
           },
         ],
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes, props, default, exact"
+        "Invalid routesConfig.routes[1]: received invalid properties 'irrelevantProperty', but valid properties are type, path, routes, props, default, exact",
       );
     });
 
     it(`correctly validates the route.exact property`, () => {
       expect(() => {
         constructRoutes({
-          routes: [{ type: "route", path: "/", exact: "strings are invalid" }],
+          routes: [{ type: 'route', path: '/', exact: 'strings are invalid' }],
         });
       }).toThrowError(
-        `Invalid routesConfig.routes[0].exact: received string, but expected a boolean`
+        `Invalid routesConfig.routes[0].exact: received string, but expected a boolean`,
       );
 
       constructRoutes({
-        routes: [{ type: "route", path: "/", exact: true }],
+        routes: [{ type: 'route', path: '/', exact: true }],
       });
     });
 
@@ -403,7 +403,7 @@ describe("constructRoutes", () => {
           routes: [],
         });
       }).toThrowError(
-        "Invalid routesConfig.containerEl: received null but expected either non-blank string or HTMLElement"
+        'Invalid routesConfig.containerEl: received null but expected either non-blank string or HTMLElement',
       );
 
       expect(() => {
@@ -412,7 +412,7 @@ describe("constructRoutes", () => {
           routes: [],
         });
       }).toThrowError(
-        "Invalid routesConfig.containerEl: received  but expected either non-blank string or HTMLElement"
+        'Invalid routesConfig.containerEl: received  but expected either non-blank string or HTMLElement',
       );
 
       expect(() => {
@@ -421,21 +421,21 @@ describe("constructRoutes", () => {
           routes: [],
         });
       }).toThrowError(
-        "Invalid routesConfig.containerEl: received 2342 but expected either non-blank string or HTMLElement"
+        'Invalid routesConfig.containerEl: received 2342 but expected either non-blank string or HTMLElement',
       );
     });
 
     it(`allows a string containerEl`, () => {
       constructRoutes({
-        containerEl: "asdf",
+        containerEl: 'asdf',
         routes: [],
       });
     });
 
     if (inBrowser) {
-      it("allows an HTMLElement containerEl", () => {
+      it('allows an HTMLElement containerEl', () => {
         constructRoutes({
-          containerEl: document.createElement("div"),
+          containerEl: document.createElement('div'),
           routes: [],
         });
       });
@@ -444,15 +444,15 @@ describe("constructRoutes", () => {
     it(`allows for "default" routes`, () => {
       constructRoutes({
         routes: [
-          { type: "route", path: "app1" },
-          { type: "route", default: true },
+          { type: 'route', path: 'app1' },
+          { type: 'route', default: true },
         ],
       });
 
       constructRoutes({
         routes: [
-          { type: "route", path: "app1", default: false },
-          { type: "route", default: true },
+          { type: 'route', path: 'app1', default: false },
+          { type: 'route', default: true },
         ],
       });
     });
@@ -460,20 +460,20 @@ describe("constructRoutes", () => {
     it(`throws on a default route that has a path`, () => {
       expect(() => {
         constructRoutes({
-          routes: [{ type: "route", path: "app1", default: true }],
+          routes: [{ type: 'route', path: 'app1', default: true }],
         });
       }).toThrowError(
-        "Invalid routesConfig.routes[0]: cannot have both path and set default to true."
+        'Invalid routesConfig.routes[0]: cannot have both path and set default to true.',
       );
     });
 
     it(`throws on a route that has no path and is not default`, () => {
       expect(() => {
         constructRoutes({
-          routes: [{ type: "route" }],
+          routes: [{ type: 'route' }],
         });
       }).toThrowError(
-        "Invalid routesConfig.routes[0]: routes must have either a path or default property"
+        'Invalid routesConfig.routes[0]: routes must have either a path or default property',
       );
     });
   });
@@ -482,45 +482,45 @@ describe("constructRoutes", () => {
     it(`adds a default base if one is not provided`, () => {
       expect(
         constructRoutes({
-          containerEl: "body",
-          mode: "history",
-          routes: [{ type: "application", name: "nav" }],
-        })
+          containerEl: 'body',
+          mode: 'history',
+          routes: [{ type: 'application', name: 'nav' }],
+        }),
       ).toEqual({
-        base: "/",
-        containerEl: "body",
-        mode: "history",
-        routes: [{ type: "application", name: "nav" }],
+        base: '/',
+        containerEl: 'body',
+        mode: 'history',
+        routes: [{ type: 'application', name: 'nav' }],
       });
     });
 
     it(`adds a default mode if one is not provided`, () => {
       expect(
         constructRoutes({
-          containerEl: "body",
-          base: "/",
-          routes: [{ type: "application", name: "nav" }],
-        })
+          containerEl: 'body',
+          base: '/',
+          routes: [{ type: 'application', name: 'nav' }],
+        }),
       ).toEqual({
-        base: "/",
-        containerEl: "body",
-        mode: "history",
-        routes: [{ type: "application", name: "nav" }],
+        base: '/',
+        containerEl: 'body',
+        mode: 'history',
+        routes: [{ type: 'application', name: 'nav' }],
       });
     });
 
     it(`adds a default containerEl if one is not provided`, () => {
       expect(
         constructRoutes({
-          base: "/",
-          mode: "history",
-          routes: [{ type: "application", name: "nav" }],
-        })
+          base: '/',
+          mode: 'history',
+          routes: [{ type: 'application', name: 'nav' }],
+        }),
       ).toEqual({
-        base: "/",
-        containerEl: "body",
-        mode: "history",
-        routes: [{ type: "application", name: "nav" }],
+        base: '/',
+        containerEl: 'body',
+        mode: 'history',
+        routes: [{ type: 'application', name: 'nav' }],
       });
     });
 
@@ -528,11 +528,11 @@ describe("constructRoutes", () => {
       const resolvedRoutes = constructRoutes({
         routes: [
           {
-            type: "route",
-            path: "/settings",
-            routes: [{ type: "route", path: "users", routes: [] }],
+            type: 'route',
+            path: '/settings',
+            routes: [{ type: 'route', path: 'users', routes: [] }],
           },
-          { type: "route", path: "/clients", routes: [] },
+          { type: 'route', path: '/clients', routes: [] },
         ],
       });
 
@@ -544,68 +544,68 @@ describe("constructRoutes", () => {
       expect(usersActiveWhen).toBeDefined();
       expect(clientsActiveWhen).toBeDefined();
 
-      expect(settingsActiveWhen(new URL("http://localhost/"))).toBe(false);
-      expect(settingsActiveWhen(new URL("http://localhost/clients"))).toBe(
-        false
+      expect(settingsActiveWhen(new URL('http://localhost/'))).toBe(false);
+      expect(settingsActiveWhen(new URL('http://localhost/clients'))).toBe(
+        false,
       );
-      expect(settingsActiveWhen(new URL("http://localhost/other"))).toBe(false);
-      expect(settingsActiveWhen(new URL("http://localhost/settings"))).toBe(
-        true
+      expect(settingsActiveWhen(new URL('http://localhost/other'))).toBe(false);
+      expect(settingsActiveWhen(new URL('http://localhost/settings'))).toBe(
+        true,
       );
-      expect(settingsActiveWhen(new URL("http://localhost/settings/"))).toBe(
-        true
+      expect(settingsActiveWhen(new URL('http://localhost/settings/'))).toBe(
+        true,
       );
       expect(
-        settingsActiveWhen(new URL("http://localhost/settings/users"))
+        settingsActiveWhen(new URL('http://localhost/settings/users')),
       ).toBe(true);
       expect(
-        settingsActiveWhen(new URL("http://localhost/settings/other"))
+        settingsActiveWhen(new URL('http://localhost/settings/other')),
       ).toBe(true);
 
-      expect(usersActiveWhen(new URL("http://localhost/"))).toBe(false);
-      expect(usersActiveWhen(new URL("http://localhost/clients"))).toBe(false);
-      expect(usersActiveWhen(new URL("http://localhost/other"))).toBe(false);
-      expect(usersActiveWhen(new URL("http://localhost/settings"))).toBe(false);
-      expect(usersActiveWhen(new URL("http://localhost/settings/"))).toBe(
-        false
+      expect(usersActiveWhen(new URL('http://localhost/'))).toBe(false);
+      expect(usersActiveWhen(new URL('http://localhost/clients'))).toBe(false);
+      expect(usersActiveWhen(new URL('http://localhost/other'))).toBe(false);
+      expect(usersActiveWhen(new URL('http://localhost/settings'))).toBe(false);
+      expect(usersActiveWhen(new URL('http://localhost/settings/'))).toBe(
+        false,
       );
-      expect(usersActiveWhen(new URL("http://localhost/settings/users"))).toBe(
-        true
+      expect(usersActiveWhen(new URL('http://localhost/settings/users'))).toBe(
+        true,
       );
       expect(
-        usersActiveWhen(new URL("http://localhost/settings/users/1"))
+        usersActiveWhen(new URL('http://localhost/settings/users/1')),
       ).toBe(true);
-      expect(usersActiveWhen(new URL("http://localhost/settings/other"))).toBe(
-        false
+      expect(usersActiveWhen(new URL('http://localhost/settings/other'))).toBe(
+        false,
       );
 
-      expect(clientsActiveWhen(new URL("http://localhost/"))).toBe(false);
-      expect(clientsActiveWhen(new URL("http://localhost/clients"))).toBe(true);
-      expect(clientsActiveWhen(new URL("http://localhost/other"))).toBe(false);
-      expect(clientsActiveWhen(new URL("http://localhost/settings"))).toBe(
-        false
+      expect(clientsActiveWhen(new URL('http://localhost/'))).toBe(false);
+      expect(clientsActiveWhen(new URL('http://localhost/clients'))).toBe(true);
+      expect(clientsActiveWhen(new URL('http://localhost/other'))).toBe(false);
+      expect(clientsActiveWhen(new URL('http://localhost/settings'))).toBe(
+        false,
       );
-      expect(clientsActiveWhen(new URL("http://localhost/settings/"))).toBe(
-        false
+      expect(clientsActiveWhen(new URL('http://localhost/settings/'))).toBe(
+        false,
       );
       expect(
-        clientsActiveWhen(new URL("http://localhost/settings/users"))
+        clientsActiveWhen(new URL('http://localhost/settings/users')),
       ).toBe(false);
       expect(
-        clientsActiveWhen(new URL("http://localhost/settings/other"))
+        clientsActiveWhen(new URL('http://localhost/settings/other')),
       ).toBe(false);
     });
 
     it(`constructs an activeWhen that works with hash routing`, () => {
       const resolvedRoutes = constructRoutes({
-        mode: "hash",
+        mode: 'hash',
         routes: [
           {
-            type: "route",
-            path: "settings",
-            routes: [{ type: "route", path: "users", routes: [] }],
+            type: 'route',
+            path: 'settings',
+            routes: [{ type: 'route', path: 'users', routes: [] }],
           },
-          { type: "route", path: "clients", routes: [] },
+          { type: 'route', path: 'clients', routes: [] },
         ],
       });
 
@@ -617,78 +617,78 @@ describe("constructRoutes", () => {
       expect(usersActiveWhen).toBeDefined();
       expect(clientsActiveWhen).toBeDefined();
 
-      expect(settingsActiveWhen(new URL("http://localhost#/"))).toBe(false);
-      expect(settingsActiveWhen(new URL("http://localhost#/clients"))).toBe(
-        false
+      expect(settingsActiveWhen(new URL('http://localhost#/'))).toBe(false);
+      expect(settingsActiveWhen(new URL('http://localhost#/clients'))).toBe(
+        false,
       );
-      expect(settingsActiveWhen(new URL("http://localhost#/other"))).toBe(
-        false
+      expect(settingsActiveWhen(new URL('http://localhost#/other'))).toBe(
+        false,
       );
-      expect(settingsActiveWhen(new URL("http://localhost#/settings"))).toBe(
-        true
+      expect(settingsActiveWhen(new URL('http://localhost#/settings'))).toBe(
+        true,
       );
-      expect(settingsActiveWhen(new URL("http://localhost#/settings/"))).toBe(
-        true
+      expect(settingsActiveWhen(new URL('http://localhost#/settings/'))).toBe(
+        true,
       );
       expect(
-        settingsActiveWhen(new URL("http://localhost#/settings/users"))
+        settingsActiveWhen(new URL('http://localhost#/settings/users')),
       ).toBe(true);
       expect(
-        settingsActiveWhen(new URL("http://localhost#/settings/other"))
+        settingsActiveWhen(new URL('http://localhost#/settings/other')),
       ).toBe(true);
 
-      expect(usersActiveWhen(new URL("http://localhost#/"))).toBe(false);
-      expect(usersActiveWhen(new URL("http://localhost#/clients"))).toBe(false);
-      expect(usersActiveWhen(new URL("http://localhost#/other"))).toBe(false);
-      expect(usersActiveWhen(new URL("http://localhost#/settings"))).toBe(
-        false
+      expect(usersActiveWhen(new URL('http://localhost#/'))).toBe(false);
+      expect(usersActiveWhen(new URL('http://localhost#/clients'))).toBe(false);
+      expect(usersActiveWhen(new URL('http://localhost#/other'))).toBe(false);
+      expect(usersActiveWhen(new URL('http://localhost#/settings'))).toBe(
+        false,
       );
-      expect(usersActiveWhen(new URL("http://localhost#/settings/"))).toBe(
-        false
+      expect(usersActiveWhen(new URL('http://localhost#/settings/'))).toBe(
+        false,
       );
-      expect(usersActiveWhen(new URL("http://localhost#/settings/users"))).toBe(
-        true
+      expect(usersActiveWhen(new URL('http://localhost#/settings/users'))).toBe(
+        true,
       );
       expect(
-        usersActiveWhen(new URL("http://localhost#/settings/users/1"))
+        usersActiveWhen(new URL('http://localhost#/settings/users/1')),
       ).toBe(true);
-      expect(usersActiveWhen(new URL("http://localhost#/settings/other"))).toBe(
-        false
+      expect(usersActiveWhen(new URL('http://localhost#/settings/other'))).toBe(
+        false,
       );
 
-      expect(clientsActiveWhen(new URL("http://localhost#/"))).toBe(false);
-      expect(clientsActiveWhen(new URL("http://localhost#/clients"))).toBe(
-        true
+      expect(clientsActiveWhen(new URL('http://localhost#/'))).toBe(false);
+      expect(clientsActiveWhen(new URL('http://localhost#/clients'))).toBe(
+        true,
       );
-      expect(clientsActiveWhen(new URL("http://localhost#/other"))).toBe(false);
-      expect(clientsActiveWhen(new URL("http://localhost#/settings"))).toBe(
-        false
+      expect(clientsActiveWhen(new URL('http://localhost#/other'))).toBe(false);
+      expect(clientsActiveWhen(new URL('http://localhost#/settings'))).toBe(
+        false,
       );
-      expect(clientsActiveWhen(new URL("http://localhost#/settings/"))).toBe(
-        false
+      expect(clientsActiveWhen(new URL('http://localhost#/settings/'))).toBe(
+        false,
       );
       expect(
-        clientsActiveWhen(new URL("http://localhost#/settings/users"))
+        clientsActiveWhen(new URL('http://localhost#/settings/users')),
       ).toBe(false);
       expect(
-        clientsActiveWhen(new URL("http://localhost#/settings/other"))
+        clientsActiveWhen(new URL('http://localhost#/settings/other')),
       ).toBe(false);
     });
 
     it(`constructs routes that allow for dynamic paths in the URLs`, () => {
       const resolvedRoutes = constructRoutes({
-        routes: [{ type: "route", path: "/users/:id/permissions", routes: [] }],
+        routes: [{ type: 'route', path: '/users/:id/permissions', routes: [] }],
       });
 
       const activeWhen = resolvedRoutes.routes[0].activeWhen;
-      expect(activeWhen(new URL("http://localhost/"))).toBe(false);
-      expect(activeWhen(new URL("http://localhost/users/1/permissions"))).toBe(
-        true
+      expect(activeWhen(new URL('http://localhost/'))).toBe(false);
+      expect(activeWhen(new URL('http://localhost/users/1/permissions'))).toBe(
+        true,
       );
       expect(
-        activeWhen(new URL("http://localhost/users/asdf/permissions"))
+        activeWhen(new URL('http://localhost/users/asdf/permissions')),
       ).toBe(true);
-      expect(activeWhen(new URL("http://localhost/users/new"))).toBe(false);
+      expect(activeWhen(new URL('http://localhost/users/new'))).toBe(false);
     });
 
     it(`handles 'loader' property on applications`, () => {
@@ -696,17 +696,17 @@ describe("constructRoutes", () => {
         constructRoutes({
           routes: [
             {
-              type: "application",
-              name: "app1",
+              type: 'application',
+              name: 'app1',
               loader: `<img src="loading.gif">`,
             },
           ],
-        })
+        }),
       ).toMatchObject({
         routes: [
           {
-            type: "application",
-            name: "app1",
+            type: 'application',
+            name: 'app1',
             loader: `<img src="loading.gif">`,
           },
         ],
@@ -718,17 +718,17 @@ describe("constructRoutes", () => {
         constructRoutes({
           routes: [
             {
-              type: "application",
-              name: "app1",
+              type: 'application',
+              name: 'app1',
               error: `<div>Oops, looks like app1 is broken</div>`,
             },
           ],
-        })
+        }),
       ).toMatchObject({
         routes: [
           {
-            type: "application",
-            name: "app1",
+            type: 'application',
+            name: 'app1',
             error: `<div>Oops, looks like app1 is broken</div>`,
           },
         ],
@@ -736,9 +736,9 @@ describe("constructRoutes", () => {
     });
   });
 
-  describe("Loaders defined in HTML", () => {
+  describe('Loaders defined in HTML', () => {
     it(`can parse and apply loaders from HTML files`, () => {
-      const { document, routerElement } = parseFixture("loaders.html");
+      const { document, routerElement } = parseFixture('loaders.html');
       const data = {
         loaders: {
           headerLoader: {
@@ -751,12 +751,12 @@ describe("constructRoutes", () => {
       };
       const routes = constructRoutes(routerElement, data);
 
-      const headerApp = findApplication(routes.routes, "header");
+      const headerApp = findApplication(routes.routes, 'header');
       expect(headerApp).toBeDefined();
       expect(headerApp.loader).toBe(data.loaders.headerLoader);
       expect(headerApp.props).not.toBeDefined();
 
-      const app1App = findApplication(routes.routes, "app1");
+      const app1App = findApplication(routes.routes, 'app1');
 
       expect(app1App.loader).toBe(data.loaders.mainContentLoader);
       expect(app1App.props).not.toBeDefined();
@@ -764,36 +764,36 @@ describe("constructRoutes", () => {
   });
 
   if (inBrowser)
-    describe("props defined in HTML", () => {
+    describe('props defined in HTML', () => {
       it(`can assign valid props`, () => {
-        const { document, routerElement } = parseFixture("props.html");
+        const { document, routerElement } = parseFixture('props.html');
         const data = {
           props: {
-            mode: "client",
-            portalMode: "client",
-            prop1: "value1",
-            prop2: "value2",
-            prop3: "value3",
-            caseSensitiveProp: "value4",
+            mode: 'client',
+            portalMode: 'client',
+            prop1: 'value1',
+            prop2: 'value2',
+            prop3: 'value3',
+            caseSensitiveProp: 'value4',
           },
         };
         const routes = constructRoutes(routerElement, data);
         expect(routes.routes[0].props).toEqual({
           portalMode: data.props.portalMode,
           prop1: data.props.prop1,
-          caseSensitiveProp: "value4",
+          caseSensitiveProp: 'value4',
         });
         expect(routes.routes[1].routes[0].routes[0].props).toEqual({
           mode: data.props.portalMode,
           prop2: data.props.prop2,
         });
         expect(routes.routes[1].routes[0].props).toEqual({
-          prop3: "value3",
+          prop3: 'value3',
         });
       });
 
       it(`throws with invalid props`, () => {
-        const { document, routerElement } = parseFixture("props.html");
+        const { document, routerElement } = parseFixture('props.html');
         expect(() => {
           constructRoutes(routerElement);
         }).toThrowError(/Prop '.+' was not defined/);
@@ -802,22 +802,22 @@ describe("constructRoutes", () => {
       it(`throws when defining props for non-HTML routes`, () => {
         const data = {
           props: {
-            portalMode: "client",
-            prop1: "value1",
-            prop2: "value2",
+            portalMode: 'client',
+            prop1: 'value1',
+            prop2: 'value2',
           },
         };
         expect(() => {
           constructRoutes({ routes: [] }, data);
         }).toThrowError(
-          /constructRoutes should be called either with an HTMLElement and layoutData, or a single json object./
+          /constructRoutes should be called either with an HTMLElement and layoutData, or a single json object./,
         );
       });
     });
 
   describe(`error handlers defined in HTML`, () => {
     it(`can parse and apply error handlers from HTML files`, () => {
-      const { document, routerElement } = parseFixture("error-handlers.html");
+      const { document, routerElement } = parseFixture('error-handlers.html');
       const data = {
         errors: {
           headerError: {
@@ -830,37 +830,37 @@ describe("constructRoutes", () => {
       };
       const routes = constructRoutes(routerElement, data);
 
-      const headerApp = findApplication(routes.routes, "header");
+      const headerApp = findApplication(routes.routes, 'header');
       expect(headerApp).toBeDefined();
       expect(headerApp.error).toBe(data.errors.headerError);
       expect(headerApp.props).not.toBeDefined();
     });
   });
 
-  describe("router config defined in HTML", () => {
-    const { document, routerElement } = parseFixture("router-config.html");
+  describe('router config defined in HTML', () => {
+    const { document, routerElement } = parseFixture('router-config.html');
     const routes = constructRoutes(routerElement);
 
     it(`assigns 'mode' when a valid value is passed as attribute`, () => {
-      expect(routes.mode).toBe("hash");
+      expect(routes.mode).toBe('hash');
     });
 
     it(`assigns 'base' when a valid value is passed as attribute`, () => {
-      expect(routes.base).toBe("/custom/");
+      expect(routes.base).toBe('/custom/');
     });
 
     it(`assigns 'containerEl' when a valid value is passed as attribute`, () => {
-      expect(routes.containerEl).toBe("#spa-container");
+      expect(routes.containerEl).toBe('#spa-container');
     });
   });
 
   describe(`redirects`, () => {
     it(`can parse redirects`, () => {
-      const { document, routerElement } = parseFixture("redirects.html");
+      const { document, routerElement } = parseFixture('redirects.html');
       const routes = constructRoutes(routerElement);
       expect(routes.redirects).toEqual({
-        "/": "/login",
-        "/old-settings": "/settings",
+        '/': '/login',
+        '/old-settings': '/settings',
       });
     });
   });
@@ -870,7 +870,7 @@ function findApplication(routes, name) {
   for (let i = 0; i < routes.length; i++) {
     const route = routes[i];
 
-    if (route.type === "application" && route.name === name) {
+    if (route.type === 'application' && route.name === name) {
       return route;
     } else if (route.routes) {
       return findApplication(route.routes, name);

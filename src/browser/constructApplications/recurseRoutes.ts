@@ -2,16 +2,16 @@ import {
   ActiveWhen,
   ResolvedChild,
   sslResolvedNode,
-} from "../../isomorphic/index.js";
-import type { ApplicationMap } from "./types.js";
+} from '../../isomorphic/index.js';
+import type { ApplicationMap } from './types.js';
 
 export const recurseRoutes = (
   applicationMap: ApplicationMap,
   activeWhen: ActiveWhen,
   props: Record<string, unknown>,
-  childNodes: ResolvedChild[]
+  childNodes: ResolvedChild[],
 ): void =>
-  childNodes.forEach((child) => {
+  childNodes.forEach(child => {
     if (sslResolvedNode.isApplication(child))
       return (applicationMap[child.name] ||= []).push({
         activeWhen,
@@ -23,12 +23,12 @@ export const recurseRoutes = (
         applicationMap,
         child.activeWhen,
         { ...props, ...child.props },
-        child.childNodes
+        child.childNodes,
       );
     return recurseRoutes(
       applicationMap,
       activeWhen,
       props,
-      sslResolvedNode.getChildNodes(child)
+      sslResolvedNode.getChildNodes(child),
     );
   });

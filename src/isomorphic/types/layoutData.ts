@@ -1,13 +1,7 @@
-import { ParcelConfig } from "single-spa";
+import { ParcelConfig } from 'single-spa';
 
 export interface HTMLLayoutData {
   errors?: Record<string, string | ParcelConfig>;
   loaders?: Record<string, any>;
   props?: Record<string, any>;
-}
-
-declare global {
-  interface Window {
-    singleSpaLayoutData?: HTMLLayoutData;
-  }
 }

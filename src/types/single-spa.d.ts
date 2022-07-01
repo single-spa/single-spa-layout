@@ -1,9 +1,9 @@
-import { ActiveWhen } from "../isomorphic/index.js";
+import { ActiveWhen } from '../isomorphic/index.js';
 
-declare module "single-spa" {
+declare module 'single-spa' {
   export function checkActivityFunctions(location: Location | URL): string[];
   export function pathToActiveWhen(
     path: string,
-    exactMatch?: boolean
+    exactMatch?: boolean,
   ): ActiveWhen {}
 }

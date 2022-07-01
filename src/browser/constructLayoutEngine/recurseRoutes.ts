@@ -4,9 +4,9 @@ import {
   ResolvedDomChild,
   ResolvedRoute,
   sslResolvedNode,
-} from "../../isomorphic/index.js";
-import { applicationElementId } from "../../utils/index.js";
-import { createNodeFromRouteChild, insertNode } from "./utils.js";
+} from '../../isomorphic/index.js';
+import { applicationElementId } from '../../utils/index.js';
+import { createNodeFromRouteChild, insertNode } from './utils.js';
 
 export interface DomChangeInput {
   applicationContainers: Record<string, HTMLElement>;
@@ -18,7 +18,7 @@ export interface DomChangeInput {
 }
 
 const createApplicationElement = (htmlId: string) => {
-  const applicationElement = document.createElement("div");
+  const applicationElement = document.createElement('div');
   applicationElement.id = htmlId;
   return applicationElement;
 };
@@ -26,7 +26,7 @@ const createApplicationElement = (htmlId: string) => {
 const processApplication = (
   { name }: ResolvedApplication,
   { applicationContainers, parentContainer, shouldMount }: DomChangeInput,
-  previousSibling: Optional<Node>
+  previousSibling: Optional<Node>,
 ) => {
   if (!shouldMount) return previousSibling;
   const htmlId = applicationElementId(name);
@@ -46,7 +46,7 @@ const processRoute = (
     parentContainer,
     shouldMount,
   }: DomChangeInput,
-  previousSibling: Optional<Node>
+  previousSibling: Optional<Node>,
 ) =>
   recurseRoutes({
     applicationContainers,
@@ -65,7 +65,7 @@ const processDomChild = (
     parentContainer,
     shouldMount,
   }: DomChangeInput,
-  previousSibling: Optional<Node>
+  previousSibling: Optional<Node>,
 ) => {
   if (!shouldMount) {
     domChild._connectedNode?.parentNode?.removeChild(domChild._connectedNode);
@@ -78,7 +78,7 @@ const processDomChild = (
     ? domChild.node.cloneNode(false)
     : createNodeFromRouteChild(domChild, true);
   insertNode(domChild._connectedNode, parentContainer, previousSibling);
-  if ("childNodes" in domChild)
+  if ('childNodes' in domChild)
     recurseRoutes({
       applicationContainers,
       location,
@@ -93,14 +93,14 @@ const processDomChild = (
 export const recurseRoutes = (input: DomChangeInput) => {
   let previousSibling = input.previousSibling;
 
-  input.childNodes.forEach((child) => {
+  input.childNodes.forEach(child => {
     if (sslResolvedNode.isApplication(child))
       previousSibling = processApplication(child, input, previousSibling);
     else if (sslResolvedNode.isRoute(child))
       previousSibling = processRoute(child, input, previousSibling);
     else if (
       sslResolvedNode.isNode(child) ||
-      typeof child.nodeName === "string"
+      typeof child.nodeName === 'string'
     )
       previousSibling = processDomChild(child, input, previousSibling);
   });

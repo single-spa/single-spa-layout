@@ -1,5 +1,5 @@
-import { ParcelConfig } from "single-spa";
-import { inBrowser } from "../../utils/index.js";
+import { ParcelConfig } from 'single-spa';
+import { inBrowser } from '../../utils/index.js';
 import type {
   HTMLLayoutData,
   InputApplication,
@@ -12,7 +12,7 @@ import type {
   SslChildNode,
   SslElement,
   SslRoute,
-} from "../types/index.js";
+} from '../types/index.js';
 import {
   getAttribute,
   nodeNames,
@@ -21,23 +21,23 @@ import {
   routeChildNode,
   setFromAttribute,
   setIfHasAttribute,
-} from "../utils/index.js";
+} from '../utils/index.js';
 
-export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
+export const MISSING_PROP = typeof Symbol !== 'undefined' ? Symbol() : '@';
 
 const getProps = (
   element: HTMLElement | SslElement,
-  layoutData: HTMLLayoutData
+  layoutData: HTMLLayoutData,
 ) => {
   const props: Record<string, unknown> = {};
-  (getAttribute(element, "props") || "").split(",").forEach((value) => {
+  (getAttribute(element, 'props') || '').split(',').forEach(value => {
     const propName = value.trim();
-    if (propName === "") return;
+    if (propName === '') return;
     if (layoutData.props?.hasOwnProperty(propName)) {
       props[propName] = layoutData.props[propName];
     } else if (inBrowser) {
       throw Error(
-        `Prop '${propName}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`
+        `Prop '${propName}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`,
       );
     } else {
       props[propName] = MISSING_PROP;
@@ -50,31 +50,31 @@ const getProps = (
 const getApplicationHandler = (
   element: HTMLElement | SslApplication,
   handlers: Optional<Record<string, string | ParcelConfig>>,
-  handlerName: keyof InputApplication
+  handlerName: keyof InputApplication,
 ) => {
   const handlerKey = getAttribute(element, handlerName);
   if (!handlerKey) return undefined;
   if (handlers?.hasOwnProperty(handlerKey)) return handlers[handlerKey];
   if (inBrowser)
     throw Error(
-      `Application ${handlerName} handler '${handlerKey}' was not defined in the htmlLayoutData`
+      `Application ${handlerName} handler '${handlerKey}' was not defined in the htmlLayoutData`,
     );
   return undefined;
 };
 
 const parseApplicationElement = (
   element: HTMLElement | SslApplication,
-  layoutData: HTMLLayoutData
+  layoutData: HTMLLayoutData,
 ): InputApplication[] => {
   if (element.childNodes.length > 0)
     throw Error(
-      `<application> elements must not have childNodes. You must put in a closing </application> - self closing is not allowed`
+      `<application> elements must not have childNodes. You must put in a closing </application> - self closing is not allowed`,
     );
   return [
     {
-      error: getApplicationHandler(element, layoutData.errors, "error"),
-      loader: getApplicationHandler(element, layoutData.loaders, "loader"),
-      name: getAttribute(element, "name")!,
+      error: getApplicationHandler(element, layoutData.errors, 'error'),
+      loader: getApplicationHandler(element, layoutData.loaders, 'loader'),
+      name: getAttribute(element, 'name')!,
       nodeName: nodeNames.APPLICATION,
       props: getProps(element, layoutData),
     },
@@ -84,11 +84,11 @@ const parseApplicationElement = (
 const parseChildNodes = (
   childNodes: NodeListOf<ChildNode> | SslChildNode[],
   layoutData: HTMLLayoutData,
-  config: InputRoutesConfig
+  config: InputRoutesConfig,
 ) => {
   const result: InputRouteChild[] = [];
-  childNodes.forEach((childNode) =>
-    result.push(...parseRoutes(childNode, layoutData, config))
+  childNodes.forEach(childNode =>
+    result.push(...parseRoutes(childNode, layoutData, config)),
   );
   return result;
 };
@@ -96,12 +96,12 @@ const parseChildNodes = (
 const parseRouteElement = (
   element: HTMLElement | SslRoute,
   layoutData: HTMLLayoutData,
-  config: InputRoutesConfig
+  config: InputRoutesConfig,
 ): InputRoute[] => [
   {
-    ...setIfHasAttribute("default", element),
-    ...setIfHasAttribute("exact", element),
-    ...setFromAttribute("path")(element),
+    ...setIfHasAttribute('default', element),
+    ...setIfHasAttribute('exact', element),
+    ...setFromAttribute('path')(element),
     childNodes: parseChildNodes(element.childNodes, layoutData, config),
     nodeName: nodeNames.ROUTE,
     props: getProps(element, layoutData),
@@ -111,17 +111,17 @@ const parseRouteElement = (
 const parseHtmlChildNode = (
   node: ChildNode,
   layoutData: HTMLLayoutData,
-  config: InputRoutesConfig
+  config: InputRoutesConfig,
 ): InputNode[] => {
-  if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim() === "")
+  if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim() === '')
     return [];
   const inputNode: InputNode = {
     node,
     nodeName: nodeNames.NODE,
   };
   const childNodes: InputRouteChild[] = [];
-  node.childNodes.forEach((childNode) =>
-    childNodes.push(...parseRoutes(childNode, layoutData, config))
+  node.childNodes.forEach(childNode =>
+    childNodes.push(...parseRoutes(childNode, layoutData, config)),
   );
   if (childNodes.length > 0) inputNode.childNodes = childNodes;
   return [inputNode];
@@ -130,7 +130,7 @@ const parseHtmlChildNode = (
 const parseGenericElement = (
   element: SslElement,
   layoutData: HTMLLayoutData,
-  config: InputRoutesConfig
+  config: InputRoutesConfig,
 ): InputElement[] => [
   {
     attrs: element.attrs,
@@ -142,15 +142,15 @@ const parseGenericElement = (
 export const parseRoutes = (
   node: RouteChildNode,
   layoutData: HTMLLayoutData,
-  config: InputRoutesConfig
+  config: InputRoutesConfig,
 ): InputRouteChild[] => {
   if (routeChildNode.isApplication(node))
     return parseApplicationElement(node, layoutData);
   if (routeChildNode.isRoute(node))
     return parseRouteElement(node, layoutData, config);
   if (routeChildNode.isRedirect(node)) {
-    config.redirects![resolvePath("/", getAttribute(node, "from")!)] =
-      resolvePath("/", getAttribute(node, "to")!);
+    config.redirects![resolvePath('/', getAttribute(node, 'from')!)] =
+      resolvePath('/', getAttribute(node, 'to')!);
     return [];
   }
   if (routeChildNode.isHtmlChildNode(node))

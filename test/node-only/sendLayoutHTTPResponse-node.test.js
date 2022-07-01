@@ -1,19 +1,19 @@
-import { constructServerLayout } from "../../src/single-spa-layout-server.js";
-import { sendLayoutHTTPResponse } from "../../src/single-spa-layout-server.js";
-import { stringStream } from "../../src/server/sendLayoutHTTPResponse.js";
-import fs from "fs";
-import path, { resolve } from "path";
-import stream, { Readable, Writable } from "stream";
-import _ from "lodash";
+import { constructServerLayout } from '../../src/single-spa-layout-server.js';
+import { sendLayoutHTTPResponse } from '../../src/single-spa-layout-server.js';
+import { stringStream } from '../../src/server/sendLayoutHTTPResponse.js';
+import fs from 'fs';
+import path, { resolve } from 'path';
+import stream, { Readable, Writable } from 'stream';
+import _ from 'lodash';
 
 describe(`sendLayoutHTTPResponse`, () => {
   let res, responseBodyPromise;
 
   beforeEach(() => {
-    let responseBodyStr = "",
+    let responseBodyStr = '',
       bodyResolve;
 
-    responseBodyPromise = new Promise((resolve) => (bodyResolve = resolve));
+    responseBodyPromise = new Promise(resolve => (bodyResolve = resolve));
 
     res = new Writable({
       write(chunk, encoding, cb) {
@@ -21,20 +21,20 @@ describe(`sendLayoutHTTPResponse`, () => {
         cb();
       },
     });
-    res.on("finish", () => {
+    res.on('finish', () => {
       bodyResolve(responseBodyStr);
     });
     res.setHeader = jest.fn();
     res.redirect = jest.fn();
   });
 
-  describe("response body", () => {
+  describe('response body', () => {
     describe(`dom-elements.html fixture`, () => {
       it(`renders the app1 route correctly`, async () => {
         const html = fs
           .readFileSync(
-            path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-            "utf-8"
+            path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+            'utf-8',
           )
           .toString();
 
@@ -45,7 +45,7 @@ describe(`sendLayoutHTTPResponse`, () => {
         await sendLayoutHTTPResponse({
           res,
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           retrieveApplicationHeaders(props) {
             return {};
           },
@@ -73,8 +73,8 @@ describe(`sendLayoutHTTPResponse`, () => {
       it(`renders fragments correctly`, async () => {
         const html = fs
           .readFileSync(
-            path.resolve(process.cwd(), "./test/fixtures/fragments.html"),
-            "utf-8"
+            path.resolve(process.cwd(), './test/fixtures/fragments.html'),
+            'utf-8',
           )
           .toString();
 
@@ -85,7 +85,7 @@ describe(`sendLayoutHTTPResponse`, () => {
         await sendLayoutHTTPResponse({
           res,
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           renderFragment(name) {
             const fragStream = new stream.Readable({
               read() {
@@ -96,7 +96,7 @@ describe(`sendLayoutHTTPResponse`, () => {
                     "imports": {}
                   }
                 </script>
-              `.trim()
+              `.trim(),
                 );
                 this.push(null);
               },
@@ -118,9 +118,9 @@ describe(`sendLayoutHTTPResponse`, () => {
           .readFileSync(
             path.resolve(
               process.cwd(),
-              "./test/fixtures/multiple-fragments.html"
+              './test/fixtures/multiple-fragments.html',
             ),
-            "utf-8"
+            'utf-8',
           )
           .toString();
 
@@ -131,9 +131,9 @@ describe(`sendLayoutHTTPResponse`, () => {
         await sendLayoutHTTPResponse({
           res,
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           renderFragment(name) {
-            if (name === "importmap") {
+            if (name === 'importmap') {
               return stringStream(
                 `
               <script type="systemjs-importmap">
@@ -141,9 +141,9 @@ describe(`sendLayoutHTTPResponse`, () => {
                   "imports": {}
                 }
               </script>
-            `.trim()
+            `.trim(),
               );
-            } else if (name === "head-metadata") {
+            } else if (name === 'head-metadata') {
               return stringStream(`<meta charset="utf-8">`);
             } else {
               throw Error(`Unknown fragment ${name}`);
@@ -162,9 +162,9 @@ describe(`sendLayoutHTTPResponse`, () => {
           .readFileSync(
             path.resolve(
               process.cwd(),
-              "./test/fixtures/multiple-fragments.html"
+              './test/fixtures/multiple-fragments.html',
             ),
-            "utf-8"
+            'utf-8',
           )
           .toString();
 
@@ -175,9 +175,9 @@ describe(`sendLayoutHTTPResponse`, () => {
         await sendLayoutHTTPResponse({
           res,
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           renderFragment(name) {
-            if (name === "importmap") {
+            if (name === 'importmap') {
               const readable = new Readable({ read() {} });
               setTimeout(() => {
                 readable.push(
@@ -187,12 +187,12 @@ describe(`sendLayoutHTTPResponse`, () => {
                     "imports": {}
                   }
                 </script>
-              `.trim()
+              `.trim(),
                 );
                 readable.push(null);
               }, 40);
               return readable;
-            } else if (name === "head-metadata") {
+            } else if (name === 'head-metadata') {
               return stringStream(`<meta charset="utf-8">`);
             } else {
               throw Error(`Unknown fragment ${name}`);
@@ -211,9 +211,9 @@ describe(`sendLayoutHTTPResponse`, () => {
           .readFileSync(
             path.resolve(
               process.cwd(),
-              "./test/fixtures/multiple-fragments.html"
+              './test/fixtures/multiple-fragments.html',
             ),
-            "utf-8"
+            'utf-8',
           )
           .toString();
 
@@ -224,12 +224,12 @@ describe(`sendLayoutHTTPResponse`, () => {
         await sendLayoutHTTPResponse({
           res,
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           assembleFinalHeaders() {
             return {};
           },
           renderFragment(name) {
-            if (name === "importmap") {
+            if (name === 'importmap') {
               return stringStream(
                 `
               <script type="systemjs-importmap">
@@ -237,9 +237,9 @@ describe(`sendLayoutHTTPResponse`, () => {
                   "imports": {}
                 }
               </script>
-            `.trim()
+            `.trim(),
               );
-            } else if (name === "head-metadata") {
+            } else if (name === 'head-metadata') {
               const readable = new Readable({ read() {} });
               setTimeout(() => {
                 readable.push(`<meta charset="utf-8">`);
@@ -260,9 +260,9 @@ describe(`sendLayoutHTTPResponse`, () => {
           .readFileSync(
             path.resolve(
               process.cwd(),
-              "./test/fixtures/multiple-fragments.html"
+              './test/fixtures/multiple-fragments.html',
             ),
-            "utf-8"
+            'utf-8',
           )
           .toString();
 
@@ -273,12 +273,12 @@ describe(`sendLayoutHTTPResponse`, () => {
         await sendLayoutHTTPResponse({
           res,
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           assembleFinalHeaders() {
             return {};
           },
           renderFragment(name) {
-            if (name === "importmap") {
+            if (name === 'importmap') {
               const readable = new Readable({ read() {} });
               setTimeout(() => {
                 readable.push(
@@ -288,12 +288,12 @@ describe(`sendLayoutHTTPResponse`, () => {
                     "imports": {}
                   }
                 </script>
-              `.trim()
+              `.trim(),
                 );
                 readable.push(null);
               }, 70);
               return readable;
-            } else if (name === "head-metadata") {
+            } else if (name === 'head-metadata') {
               const readable = new Readable({ read() {} });
               setTimeout(() => {
                 readable.push(`<meta charset="utf-8">`);
@@ -314,9 +314,9 @@ describe(`sendLayoutHTTPResponse`, () => {
           .readFileSync(
             path.resolve(
               process.cwd(),
-              "./test/fixtures/multiple-fragments.html"
+              './test/fixtures/multiple-fragments.html',
             ),
-            "utf-8"
+            'utf-8',
           )
           .toString();
 
@@ -329,11 +329,11 @@ describe(`sendLayoutHTTPResponse`, () => {
         await sendLayoutHTTPResponse({
           res,
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           assembleFinalHeaders() {},
           renderFragment(name) {
             renderedFragments.push(name);
-            if (name === "importmap") {
+            if (name === 'importmap') {
               const readable = new Readable({ read() {} });
               readable.push(
                 `
@@ -342,18 +342,18 @@ describe(`sendLayoutHTTPResponse`, () => {
                   "imports": {}
                 }
               </script>
-            `.trim()
+            `.trim(),
               );
               readable.push(null);
               return readable;
-            } else if (name === "head-metadata") {
+            } else if (name === 'head-metadata') {
               const readable = new Readable({ read() {} });
               setTimeout(() => {
                 // renderFragment should have been called for the import map even though
                 // we haven't finished the head-metadata's stream yet.
                 expect(renderedFragments).toEqual([
-                  "head-metadata",
-                  "importmap",
+                  'head-metadata',
+                  'importmap',
                 ]);
 
                 readable.push(`<meta charset="utf-8">`);
@@ -372,8 +372,8 @@ describe(`sendLayoutHTTPResponse`, () => {
       it(`allows renderFragment to return a string`, async () => {
         const html = fs
           .readFileSync(
-            path.resolve(process.cwd(), "./test/fixtures/fragments.html"),
-            "utf-8"
+            path.resolve(process.cwd(), './test/fixtures/fragments.html'),
+            'utf-8',
           )
           .toString();
 
@@ -387,7 +387,7 @@ describe(`sendLayoutHTTPResponse`, () => {
             return {};
           },
           serverLayout,
-          urlPath: "/app1",
+          urlPath: '/app1',
           renderFragment(name) {
             return `
             <script type="systemjs-importmap">
@@ -406,8 +406,8 @@ describe(`sendLayoutHTTPResponse`, () => {
     it(`allows for strings to be returned from renderApplication`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -418,7 +418,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
@@ -438,9 +438,9 @@ describe(`sendLayoutHTTPResponse`, () => {
         .readFileSync(
           path.resolve(
             process.cwd(),
-            "./test/fixtures/dom-elements-with-assets.html"
+            './test/fixtures/dom-elements-with-assets.html',
           ),
-          "utf-8"
+          'utf-8',
         )
         .toString();
 
@@ -451,7 +451,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
@@ -470,7 +470,7 @@ describe(`sendLayoutHTTPResponse`, () => {
           `;
           return {
             assets: `${
-              appName === "app1"
+              appName === 'app1'
                 ? `<style id="jss-server-side">${css}</style>`
                 : ``
             }`,
@@ -490,9 +490,9 @@ describe(`sendLayoutHTTPResponse`, () => {
         .readFileSync(
           path.resolve(
             process.cwd(),
-            "./test/fixtures/dom-elements-with-assets.html"
+            './test/fixtures/dom-elements-with-assets.html',
           ),
-          "utf-8"
+          'utf-8',
         )
         .toString();
 
@@ -503,7 +503,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
@@ -522,7 +522,7 @@ describe(`sendLayoutHTTPResponse`, () => {
           `;
           return {
             assets: `${
-              appName === "app1"
+              appName === 'app1'
                 ? `<style id="jss-server-side">${css}</style>`
                 : ``
             }`,
@@ -542,9 +542,9 @@ describe(`sendLayoutHTTPResponse`, () => {
         .readFileSync(
           path.resolve(
             process.cwd(),
-            "./test/fixtures/dom-elements-with-assets.html"
+            './test/fixtures/dom-elements-with-assets.html',
           ),
-          "utf-8"
+          'utf-8',
         )
         .toString();
 
@@ -555,7 +555,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
@@ -573,17 +573,17 @@ describe(`sendLayoutHTTPResponse`, () => {
           }
           `;
           return {
-            assets: new Promise((resolve) => {
+            assets: new Promise(resolve => {
               setTimeout(
                 () =>
                   resolve(
                     `${
-                      appName === "app1"
+                      appName === 'app1'
                         ? `<style id="jss-server-side">${css}</style>`
                         : ``
-                    }`
+                    }`,
                   ),
-                200
+                200,
               );
             }),
             content: `<button>App ${appName}</button>`,
@@ -600,8 +600,8 @@ describe(`sendLayoutHTTPResponse`, () => {
     it(`allows for promises to be returned from renderApplication`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -612,13 +612,13 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
         renderApplication({ appName, propsPromise }) {
           return Promise.resolve(
-            `<button>App ${appName} from promise</button>`
+            `<button>App ${appName} from promise</button>`,
           );
         },
         retrieveApplicationHeaders({ appName }) {
@@ -632,8 +632,8 @@ describe(`sendLayoutHTTPResponse`, () => {
     it(`allows for promises that resolve with streams to be returned from renderApplication`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -644,7 +644,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
@@ -664,8 +664,8 @@ describe(`sendLayoutHTTPResponse`, () => {
     it(`renders an empty string when returned promise from renderApplication rejects`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -676,7 +676,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
@@ -694,8 +694,8 @@ describe(`sendLayoutHTTPResponse`, () => {
     it(`renders an empty string when renderApplication throws an error`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -706,7 +706,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         assembleFinalHeaders() {
           return {};
         },
@@ -722,12 +722,12 @@ describe(`sendLayoutHTTPResponse`, () => {
     });
   });
 
-  describe("response headers", () => {
+  describe('response headers', () => {
     it(`uses the headers from assembleFinalHeaders`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -738,12 +738,12 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         retrieveApplicationHeaders(props) {
-          return { should: "ignore" };
+          return { should: 'ignore' };
         },
         assembleFinalHeaders(allHeaders) {
-          return { final: "headers", "content-type": "text/html" };
+          return { final: 'headers', 'content-type': 'text/html' };
         },
         renderApplication({ appName, propsPromise }) {
           return appName;
@@ -751,18 +751,18 @@ describe(`sendLayoutHTTPResponse`, () => {
       });
 
       expect(res.setHeader).toHaveBeenCalledTimes(2);
-      expect(res.setHeader.mock.calls[0]).toEqual(["final", "headers"]);
+      expect(res.setHeader.mock.calls[0]).toEqual(['final', 'headers']);
       expect(res.setHeader.mock.calls[1]).toEqual([
-        "content-type",
-        "text/html",
+        'content-type',
+        'text/html',
       ]);
     });
 
     it(`should call retrieveApplicationHeaders with correct arguments`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -773,14 +773,14 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         retrieveApplicationHeaders({ appName, propsPromise }) {
-          expect(typeof appName).toBe("string");
+          expect(typeof appName).toBe('string');
           expect(propsPromise instanceof Promise).toBe(true);
-          return { should: "ignore" };
+          return { should: 'ignore' };
         },
         assembleFinalHeaders(allHeaders) {
-          return { final: "headers", "content-type": "text/html" };
+          return { final: 'headers', 'content-type': 'text/html' };
         },
         renderApplication({ appName, propsPromise }) {
           return appName;
@@ -788,18 +788,18 @@ describe(`sendLayoutHTTPResponse`, () => {
       });
 
       expect(res.setHeader).toHaveBeenCalledTimes(2);
-      expect(res.setHeader.mock.calls[0]).toEqual(["final", "headers"]);
+      expect(res.setHeader.mock.calls[0]).toEqual(['final', 'headers']);
       expect(res.setHeader.mock.calls[1]).toEqual([
-        "content-type",
-        "text/html",
+        'content-type',
+        'text/html',
       ]);
     });
 
     it(`should call assembleFinalHeaders with correct arguments`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/dom-elements.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/dom-elements.html'),
+          'utf-8',
         )
         .toString();
 
@@ -810,14 +810,14 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/app1",
+        urlPath: '/app1',
         retrieveApplicationHeaders({ appName, propsPromise }) {
           return { [appName]: true };
         },
         assembleFinalHeaders(allHeaders) {
           expect(allHeaders).toEqual([
-            { appHeaders: { header: true }, appProps: { name: "header" } },
-            { appHeaders: { app1: true }, appProps: { name: "app1" } },
+            { appHeaders: { header: true }, appProps: { name: 'header' } },
+            { appHeaders: { app1: true }, appProps: { name: 'app1' } },
           ]);
           return {};
         },
@@ -828,12 +828,12 @@ describe(`sendLayoutHTTPResponse`, () => {
     });
   });
 
-  describe("redirects", () => {
+  describe('redirects', () => {
     it(`redirects from / to /login`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/redirects.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/redirects.html'),
+          'utf-8',
         )
         .toString();
 
@@ -844,7 +844,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/",
+        urlPath: '/',
         retrieveApplicationHeaders({ appName, propsPromise }) {
           return { [appName]: true };
         },
@@ -856,14 +856,14 @@ describe(`sendLayoutHTTPResponse`, () => {
         },
       });
 
-      expect(res.redirect).toHaveBeenCalledWith("/login");
+      expect(res.redirect).toHaveBeenCalledWith('/login');
 
       res.redirect.mockReset();
 
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/old-settings",
+        urlPath: '/old-settings',
         retrieveApplicationHeaders({ appName, propsPromise }) {
           return { [appName]: true };
         },
@@ -875,14 +875,14 @@ describe(`sendLayoutHTTPResponse`, () => {
         },
       });
 
-      expect(res.redirect).toHaveBeenCalledWith("/settings");
+      expect(res.redirect).toHaveBeenCalledWith('/settings');
     });
 
     it(`correctly serializes a layout definition that includes redirects`, async () => {
       const html = fs
         .readFileSync(
-          path.resolve(process.cwd(), "./test/fixtures/redirects.html"),
-          "utf-8"
+          path.resolve(process.cwd(), './test/fixtures/redirects.html'),
+          'utf-8',
         )
         .toString();
 
@@ -893,7 +893,7 @@ describe(`sendLayoutHTTPResponse`, () => {
       await sendLayoutHTTPResponse({
         res,
         serverLayout,
-        urlPath: "/settings",
+        urlPath: '/settings',
         retrieveApplicationHeaders({ appName, propsPromise }) {
           return { [appName]: true };
         },

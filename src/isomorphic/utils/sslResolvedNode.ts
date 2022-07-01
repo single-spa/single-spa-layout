@@ -1,4 +1,4 @@
-import { html } from "parse5";
+import { html } from 'parse5';
 import {
   ResolvedApplication,
   ResolvedChild,
@@ -13,6 +13,7 @@ import {
   SslAssets,
   SslChildNode,
   SslCommentNode,
+  SslData,
   SslDocumentType,
   SslElement,
   SslFragment,
@@ -22,15 +23,15 @@ import {
   SslRouterContent,
   SslTemplate,
   SslTextNode,
-} from "../types/index.js";
-import { nodeNames } from "./nodeNames.js";
+} from '../types/index.js';
+import { nodeNames } from './nodeNames.js';
 
 export type SslResolvedNode = SslNode | ResolvedChild;
 
 function getChildNodes(node: ResolvedChild): ResolvedChild[];
 function getChildNodes(node: SslNode): SslChildNode[];
 function getChildNodes(node: SslResolvedNode) {
-  return "childNodes" in node && Array.isArray(node.childNodes)
+  return 'childNodes' in node && Array.isArray(node.childNodes)
     ? node.childNodes
     : [];
 }
@@ -49,6 +50,10 @@ function isComment(node: ResolvedChild): node is ResolvedComment;
 function isComment(node: SslNode): node is SslCommentNode;
 function isComment(node: SslResolvedNode) {
   return node.nodeName === nodeNames.COMMENT;
+}
+
+function isData(node: SslNode): node is SslData {
+  return node.nodeName === nodeNames.DATA;
 }
 
 function isDocType(node: SslNode): node is SslDocumentType {
@@ -72,7 +77,7 @@ function isElement(node: ResolvedChild): node is ResolvedElement;
 function isElement(node: SslNode): node is SslElement;
 function isElement(node: SslResolvedNode) {
   return (
-    ("_kind" in node && node._kind === nodeNames.ELEMENT) || "tagName" in node
+    ('_kind' in node && node._kind === nodeNames.ELEMENT) || 'tagName' in node
   );
 }
 
@@ -83,8 +88,8 @@ function isFragment(node: SslNode): node is SslFragment {
 function isNode(node: SslResolvedNode): node is ResolvedNode {
   return (
     node.nodeName === nodeNames.NODE &&
-    "node" in node &&
-    typeof Node !== "undefined" &&
+    'node' in node &&
+    typeof Node !== 'undefined' &&
     node.node instanceof Node
   );
 }
@@ -92,17 +97,17 @@ function isNode(node: SslResolvedNode): node is ResolvedNode {
 function isParent(node: ResolvedChild): node is ResolvedParent;
 function isParent(node: SslNode): node is SslParentNode;
 function isParent(node: SslResolvedNode) {
-  return "childNodes" in node && Array.isArray(node.childNodes);
+  return 'childNodes' in node && Array.isArray(node.childNodes);
 }
 
 function isResolvedApplication(
-  node: SslResolvedNode
+  node: SslResolvedNode,
 ): node is ResolvedApplication {
-  return "_kind" in node && node._kind === nodeNames.APPLICATION;
+  return '_kind' in node && node._kind === nodeNames.APPLICATION;
 }
 
 function isResolvedRoute(node: SslResolvedNode): node is ResolvedRoute {
-  return "_kind" in node && node._kind === nodeNames.ROUTE;
+  return '_kind' in node && node._kind === nodeNames.ROUTE;
 }
 
 function isRoute(node: ResolvedChild): node is ResolvedRoute;
@@ -130,6 +135,7 @@ export const sslResolvedNode = {
   isApplication,
   isAssets,
   isComment,
+  isData,
   isDocType,
   isDom,
   isElement,

@@ -1,4 +1,4 @@
-import { ParcelConfig, ParcelProps } from "single-spa";
+import { ParcelConfig, ParcelProps } from 'single-spa';
 
 interface ExtraProps extends ParcelProps {
   name?: string;
@@ -6,12 +6,12 @@ interface ExtraProps extends ParcelProps {
 
 export const htmlToParcelConfig = (html: string): ParcelConfig<ExtraProps> => ({
   bootstrap: () => Promise.resolve(),
-  mount: (props) =>
+  mount: props =>
     Promise.resolve().then(() => {
       props.domElement.innerHTML = html;
     }),
-  unmount: (props) =>
+  unmount: props =>
     Promise.resolve().then(() => {
-      props.domElement.innerHTML = "";
+      props.domElement.innerHTML = '';
     }),
 });

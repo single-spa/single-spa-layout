@@ -1,5 +1,5 @@
-import { html } from "parse5";
-import { pathToActiveWhen } from "single-spa";
+import { html } from 'parse5';
+import { pathToActiveWhen } from 'single-spa';
 import {
   assertArrayLike,
   assertBoolean,
@@ -10,7 +10,7 @@ import {
   assertString,
   inBrowser,
   validateKeys,
-} from "../../utils/index.js";
+} from '../../utils/index.js';
 import type {
   ActiveWhen,
   InputApplication,
@@ -28,22 +28,22 @@ import type {
   ResolvedRoute,
   ResolvedRoutesConfig,
   ResolvedText,
-} from "../types/index.js";
-import { nodeNames, resolvePath } from "../utils/index.js";
+} from '../types/index.js';
+import { nodeNames, resolvePath } from '../utils/index.js';
 
 const defaultRoute =
   (
     siblingActiveWhens: ActiveWhen[],
-    parentActiveWhen: ActiveWhen
+    parentActiveWhen: ActiveWhen,
   ): ActiveWhen =>
   (location: Location | URL) =>
     parentActiveWhen(location) &&
-    !siblingActiveWhens.some((activeWhen) => activeWhen(location));
+    !siblingActiveWhens.some(activeWhen => activeWhen(location));
 
 const sanitizeBase = (base: string) => {
   let result = base;
-  if (result[0] !== "/") result = "/" + result;
-  if (result[result.length - 1] !== "/") result = result + "/";
+  if (result[0] !== '/') result = '/' + result;
+  if (result[result.length - 1] !== '/') result = result + '/';
   return result;
 };
 
@@ -59,7 +59,7 @@ function assertChildNodes(
     parentActiveWhen: ActiveWhen;
     parentPath: string;
     siblingActiveWhens: ActiveWhen[];
-  }
+  },
 ): asserts childNodes is ResolvedChild[] {
   assertArrayLike(name, childNodes);
   for (let i = 0; i < childNodes.length; ++i) {
@@ -74,13 +74,13 @@ function assertChildNodes(
 function assertApplication(
   name: string,
   node: InputElement | InputApplication,
-  disableWarnings: boolean
+  disableWarnings: boolean,
 ): asserts node is ResolvedApplication {
   validateKeys(
     name,
     node,
-    ["_kind", "error", "loader", "name", "nodeName", "props"],
-    disableWarnings
+    ['_kind', 'error', 'loader', 'name', 'nodeName', 'props'],
+    disableWarnings,
   );
   if (node.props) assertObject(`${name}.props`, node.props);
   assertString(`${name}.name`, node.name);
@@ -95,7 +95,7 @@ function assertApplication(
 
 function assertComment(
   _name: string,
-  node: InputElement | InputComment
+  node: InputElement | InputComment,
 ): asserts node is ResolvedComment {
   const resolvedComment = node as ResolvedComment;
   resolvedComment._kind = nodeNames.COMMENT;
@@ -114,19 +114,19 @@ function assertRoute(
     parentActiveWhen: ActiveWhen;
     parentPath: string;
     siblingActiveWhens: ActiveWhen[];
-  }
+  },
 ): asserts node is ResolvedRoute {
   validateKeys(
     name,
     node,
-    ["_kind", "childNodes", "default", "exact", "nodeName", "path", "props"],
-    disableWarnings
+    ['_kind', 'childNodes', 'default', 'exact', 'nodeName', 'path', 'props'],
+    disableWarnings,
   );
 
-  if (node.hasOwnProperty("exact")) assertBoolean(`${name}.exact`, node.exact);
+  if (node.hasOwnProperty('exact')) assertBoolean(`${name}.exact`, node.exact);
 
-  const hasPath = node.hasOwnProperty("path");
-  const hasDefault = node.hasOwnProperty("default");
+  const hasPath = node.hasOwnProperty('path');
+  const hasDefault = node.hasOwnProperty('default');
   let fullPath;
   let activeWhen: ActiveWhen;
 
@@ -141,15 +141,15 @@ function assertRoute(
     activeWhen = defaultRoute(siblingActiveWhens, parentActiveWhen);
   } else
     throw Error(
-      `Invalid ${name}: routes must have either a path or default property.`
+      `Invalid ${name}: routes must have either a path or default property.`,
     );
 
   if (hasDefault && hasPath && node.default)
     throw Error(
-      `Invalid ${name}: cannot have both path and set default to true.`
+      `Invalid ${name}: cannot have both path and set default to true.`,
     );
 
-  if ("childNodes" in node)
+  if ('childNodes' in node)
     assertChildNodes(`${name}.childNodes`, node.childNodes, disableWarnings, {
       parentActiveWhen: activeWhen,
       parentPath: fullPath,
@@ -166,7 +166,7 @@ function assertRoute(
 
 function assertText(
   _name: string,
-  node: InputElement | InputText
+  node: InputElement | InputText,
 ): asserts node is ResolvedText {
   const resolvedText = node as ResolvedText;
   resolvedText._kind = nodeNames.TEXT;
@@ -185,7 +185,7 @@ function assertChildNode(
     parentActiveWhen: ActiveWhen;
     parentPath: string;
     siblingActiveWhens: ActiveWhen[];
-  }
+  },
 ): asserts node is ResolvedChild {
   assertObject(name, node);
 
@@ -204,8 +204,8 @@ function assertChildNode(
   if (node.nodeName === nodeNames.TEXT) return assertText(name, node);
 
   if (
-    typeof Node !== "undefined" &&
-    "node" in node &&
+    typeof Node !== 'undefined' &&
+    'node' in node &&
     node.node instanceof Node
   ) {
     const resolvedNode = node as ResolvedNode;
@@ -223,7 +223,7 @@ function assertChildNode(
     resolvedElement.tagName = node.nodeName;
   }
 
-  if ("childNodes" in node) {
+  if ('childNodes' in node) {
     assertChildNodes(`${name}.childNodes`, node.childNodes, disableWarnings, {
       parentActiveWhen,
       parentPath,
@@ -234,62 +234,62 @@ function assertChildNode(
 
 // TODO: We should return a new object rather than mutating the input
 export function validateRoutesConfig(
-  routesConfig: InputRoutesConfig
+  routesConfig: InputRoutesConfig,
 ): asserts routesConfig is ResolvedRoutesConfig {
-  assertObject("routesConfig", routesConfig);
+  assertObject('routesConfig', routesConfig);
 
   const disableWarnings = !!routesConfig.disableWarnings;
 
   validateKeys(
-    "routesConfig",
+    'routesConfig',
     routesConfig,
     [
-      "base",
-      "childNodes",
-      "containerEl",
-      "disableWarnings",
-      "mode",
-      "redirects",
+      'base',
+      'childNodes',
+      'containerEl',
+      'disableWarnings',
+      'mode',
+      'redirects',
     ],
-    disableWarnings
+    disableWarnings,
   );
 
-  if (routesConfig.hasOwnProperty("containerEl"))
-    assertContainerEl("routesConfig.containerEl", routesConfig.containerEl);
-  else routesConfig.containerEl = "body";
+  if (routesConfig.hasOwnProperty('containerEl'))
+    assertContainerEl('routesConfig.containerEl', routesConfig.containerEl);
+  else routesConfig.containerEl = 'body';
 
-  if (!routesConfig.hasOwnProperty("mode")) routesConfig.mode = "history";
+  if (!routesConfig.hasOwnProperty('mode')) routesConfig.mode = 'history';
 
-  assertEnum("routesConfig.mode", routesConfig.mode, [
-    "history",
-    "hash",
+  assertEnum('routesConfig.mode', routesConfig.mode, [
+    'history',
+    'hash',
   ] as const);
 
-  if (routesConfig.hasOwnProperty("base")) {
-    assertString("routesConfig.base", routesConfig.base);
+  if (routesConfig.hasOwnProperty('base')) {
+    assertString('routesConfig.base', routesConfig.base);
     routesConfig.base = sanitizeBase(routesConfig.base);
-  } else routesConfig.base = "/";
+  } else routesConfig.base = '/';
 
-  if (routesConfig.hasOwnProperty("redirects")) {
-    assertObject("routesConfig.redirects", routesConfig.redirects);
+  if (routesConfig.hasOwnProperty('redirects')) {
+    assertObject('routesConfig.redirects', routesConfig.redirects);
     Object.entries(routesConfig.redirects).forEach(([from, to]) => {
       assertFullPath(`routesConfig.redirects key`, from);
       assertFullPath(`routesConfig.redirects['${from}']`, to);
     });
   }
 
-  const pathname = inBrowser ? window.location.pathname : "/";
-  const hashPrefix = routesConfig.mode === "hash" ? pathname + "#" : "";
+  const pathname = inBrowser ? window.location.pathname : '/';
+  const hashPrefix = routesConfig.mode === 'hash' ? pathname + '#' : '';
 
   assertChildNodes(
-    "routesConfig.childNodes",
+    'routesConfig.childNodes',
     routesConfig.childNodes,
     disableWarnings,
     {
       parentActiveWhen: () => true,
       parentPath: hashPrefix + routesConfig.base,
       siblingActiveWhens: [],
-    }
+    },
   );
 
   delete routesConfig.disableWarnings;

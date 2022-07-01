@@ -1,8 +1,9 @@
-import { MergeStream } from "./MergeStream.js";
-import { renderChildNodes } from "./renderChildNodes.js";
-import type { AppHeaders, RenderArgs, RenderOptions } from "./types.js";
+import { MergeStream } from './MergeStream.js';
+import { renderChildNodes } from './renderChildNodes.js';
+import type { AppHeaders, RenderArgs, RenderOptions } from './types.js';
 
-export * from "./types.js";
+export * from './MergeStream.js';
+export * from './types.js';
 
 const isRedirected = ({
   res,
@@ -34,8 +35,8 @@ const getHeaders = async ({
           applicationPropPromises[appName]!,
         ]);
         return { appHeaders, appProps };
-      }
-    )
+      },
+    ),
   );
   return assembleFinalHeaders(appHeaders);
 };
@@ -47,8 +48,9 @@ export const sendLayoutHTTPResponse = async (renderOptions: RenderOptions) => {
   } = renderOptions;
   const args: RenderArgs = {
     applicationPropPromises: {},
-    assetsStream: new MergeStream("assetsStream"),
-    bodyStream: new MergeStream("bodyStream"),
+    assetsStream: new MergeStream('assetsStream'),
+    bodyStream: new MergeStream('bodyStream'),
+    dataStream: new MergeStream('dataStream'),
     headerPromises: {},
     propPromises: {},
     renderOptions,

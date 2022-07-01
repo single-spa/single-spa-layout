@@ -6,8 +6,8 @@ import {
   SslRedirect,
   SslRoute,
   SslTextNode,
-} from "../types/index.js";
-import { nodeNames } from "./nodeNames.js";
+} from '../types/index.js';
+import { nodeNames } from './nodeNames.js';
 
 export type RouteChildNode = ChildNode | SslChildNode;
 
@@ -20,9 +20,9 @@ export const routeChildNode = {
   isComment: (node: RouteChildNode): node is Comment | SslCommentNode =>
     hasNodeName(node, nodeNames.COMMENT),
   isElement: (node: RouteChildNode): node is HTMLElement | SslElement =>
-    "childNodes" in node,
+    'childNodes' in node,
   isHtmlChildNode: (node: RouteChildNode): node is ChildNode =>
-    typeof Node !== "undefined" && node instanceof Node,
+    typeof Node !== 'undefined' && node instanceof Node,
   isRedirect: (node: RouteChildNode): node is HTMLElement | SslRedirect =>
     hasNodeName(node, nodeNames.REDIRECT),
   isRoute: (node: RouteChildNode): node is HTMLElement | SslRoute =>

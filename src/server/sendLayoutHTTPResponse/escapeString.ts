@@ -5,9 +5,9 @@ const LT_REGEX = /</g;
 const GT_REGEX = />/g;
 
 export const escapeString = (str: string, attrMode = false) => {
-  let result = str.replace(AMP_REGEX, "&amp;").replace(NBSP_REGEX, "&nbsp;");
+  let result = str.replace(AMP_REGEX, '&amp;').replace(NBSP_REGEX, '&nbsp;');
   result = attrMode
-    ? result.replace(DOUBLE_QUOTE_REGEX, "&quot;")
-    : result.replace(LT_REGEX, "&lt;").replace(GT_REGEX, "&gt;");
+    ? result.replace(DOUBLE_QUOTE_REGEX, '&quot;')
+    : result.replace(LT_REGEX, '&lt;').replace(GT_REGEX, '&gt;');
   return result;
 };

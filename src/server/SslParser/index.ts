@@ -1,5 +1,5 @@
-import { html, Parser, Token } from "parse5";
-import { nodeNames, SslTreeAdapterMap } from "../../isomorphic/index.js";
+import { html, Parser, Token } from 'parse5';
+import { nodeNames, SslTreeAdapterMap } from '../../isomorphic/index.js';
 
 export class SslParser extends Parser<SslTreeAdapterMap> {
   override _startTagOutsideForeignContent(token: Token.TagToken): void {

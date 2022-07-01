@@ -1,4 +1,4 @@
-import * as singleSpa from "single-spa";
+import * as singleSpa from 'single-spa';
 import {
   registerApplication,
   start,
@@ -6,24 +6,24 @@ import {
   LifeCycles,
   AppProps,
   RegisterApplicationConfig,
-} from "single-spa";
-import { expectError, expectType } from "tsd";
+} from 'single-spa';
+import { expectError, expectType } from 'tsd';
 import {
   constructRoutes,
   constructApplications,
   constructLayoutEngine,
   WithLoadFunction,
-} from "../src/single-spa-layout-interface";
+} from '../src/single-spa-layout-interface';
 import {
   constructServerLayout,
   sendLayoutHTTPResponse,
-} from "../src/server/index";
-import { parse, Document } from "parse5";
-import { ResolvedUrlRoute } from "../src/isomorphic/constructRoutes";
-import { JSDOM } from "jsdom";
-import stream from "stream";
-import { IncomingMessage, ServerResponse } from "http";
-import { Socket } from "net";
+} from '../src/server/index';
+import { parse, Document } from 'parse5';
+import { ResolvedUrlRoute } from '../src/isomorphic/constructRoutes';
+import { JSDOM } from 'jsdom';
+import stream from 'stream';
+import { IncomingMessage, ServerResponse } from 'http';
+import { Socket } from 'net';
 
 const { window } = new JSDOM(`
 <!DOCTYPE html>
@@ -51,30 +51,30 @@ const loaderParcelConfig = {
 };
 
 constructRoutes(
-  window.document.querySelector("#single-spa-layout") as HTMLTemplateElement,
+  window.document.querySelector('#single-spa-layout') as HTMLTemplateElement,
   {
     loaders: {
-      loader1: "<div>loader</div>",
+      loader1: '<div>loader</div>',
       loader2: {
         async mount() {},
         async unmount() {},
       },
     },
     props: {
-      prop1: "val",
+      prop1: 'val',
     },
     errors: {
-      error1: "<div>Error</div>",
+      error1: '<div>Error</div>',
       error2: {
         async bootstrap() {},
         async mount() {},
         async unmount() {},
       },
     },
-  }
+  },
 );
 
-constructRoutes("<single-spa-router></single-spa-router>");
+constructRoutes('<single-spa-router></single-spa-router>');
 
 constructRoutes(
   {
@@ -86,27 +86,27 @@ constructRoutes(
       mainContentLoader: loaderParcelConfig,
     },
     props: {
-      prop1: "val1",
+      prop1: 'val1',
     },
-  }
+  },
 );
 
 const routes = constructRoutes({
   routes: [
     {
-      type: "route",
-      path: "/app1",
+      type: 'route',
+      path: '/app1',
       routes: [
-        { type: "application", name: "app1" },
-        { type: "application", name: "app2", loader: `<img src="loader">` },
-        { type: "application", name: "app3", loader: loaderParcelConfig },
-        { type: "route", default: true },
-        { type: "route", path: "/home", exact: true },
+        { type: 'application', name: 'app1' },
+        { type: 'application', name: 'app2', loader: `<img src="loader">` },
+        { type: 'application', name: 'app3', loader: loaderParcelConfig },
+        { type: 'route', default: true },
+        { type: 'route', path: '/home', exact: true },
       ],
     },
   ],
   redirects: {
-    "/": "/login",
+    '/': '/login',
   },
 });
 
@@ -116,11 +116,11 @@ expectType<boolean | undefined>((routes.routes[1] as ResolvedUrlRoute).default);
 expectType<boolean | undefined>((routes.routes[4] as ResolvedUrlRoute).exact);
 
 expectType<string | singleSpa.ParcelConfig | undefined>(
-  (routes.routes[0] as import("../src/isomorphic/constructRoutes").Application)
-    .loader
+  (routes.routes[0] as import('../src/isomorphic/constructRoutes').Application)
+    .loader,
 );
 
-expectType<string>(routes.redirects["/"]);
+expectType<string>(routes.redirects['/']);
 
 const parse5Doc = parse(`<single-spa-router></single-spa-router>`) as Document;
 
@@ -130,7 +130,7 @@ const routes2 = constructRoutes(parse5Doc);
 const applications: Array<RegisterApplicationConfig & WithLoadFunction> =
   constructApplications({
     routes,
-    loadApp: (props) => {
+    loadApp: props => {
       expectType<AppProps>(props);
       return System.import<Application<{}>>(props.name);
     },
@@ -138,13 +138,13 @@ const applications: Array<RegisterApplicationConfig & WithLoadFunction> =
 applications.forEach(registerApplication);
 const application = applications[0];
 application
-  .app({ name: "nav", singleSpa, mountParcel: singleSpa.mountRootParcel })
-  .then((app) => {
+  .app({ name: 'nav', singleSpa, mountParcel: singleSpa.mountRootParcel })
+  .then(app => {
     expectType<LifeCycles>(app);
   });
 
 // test constructLayoutEngine
-expectError(constructLayoutEngine({ routes, applications, active: "NOPE" }));
+expectError(constructLayoutEngine({ routes, applications, active: 'NOPE' }));
 expectError(constructLayoutEngine({ routes: undefined, applications }));
 
 const layoutEngine = constructLayoutEngine({ routes, applications });
@@ -159,10 +159,10 @@ expectType<void>(layoutEngine.deactivate());
 
 // server types
 const serverLayout = constructServerLayout({
-  filePath: "./some-file.html",
+  filePath: './some-file.html',
 });
 constructServerLayout({
-  html: "<html></html>",
+  html: '<html></html>',
 });
 expectError(constructServerLayout());
 
@@ -172,7 +172,7 @@ expectType<Promise<any>>(
   sendLayoutHTTPResponse({
     res,
     serverLayout,
-    urlPath: "/app1",
+    urlPath: '/app1',
     assembleFinalHeaders() {
       return {};
     },
@@ -181,22 +181,22 @@ expectType<Promise<any>>(
       return new stream.Readable();
     },
     retrieveApplicationHeaders(arg) {
-      return { hi: "there" };
+      return { hi: 'there' };
     },
     retrieveProp(name) {
-      return "hi";
+      return 'hi';
     },
     renderFragment(name) {
-      return "hi";
+      return 'hi';
     },
-  })
+  }),
 );
 
 expectType<Promise<any>>(
   sendLayoutHTTPResponse({
     res,
     serverLayout,
-    urlPath: "/app1",
+    urlPath: '/app1',
     assembleFinalHeaders() {
       return {};
     },
@@ -216,7 +216,7 @@ expectType<Promise<any>>(
       `;
       return {
         assets: `${
-          arg.appName === "app1"
+          arg.appName === 'app1'
             ? `<style id="jss-server-side">${css}</style>`
             : ``
         }`,
@@ -224,13 +224,13 @@ expectType<Promise<any>>(
       };
     },
     retrieveApplicationHeaders(arg) {
-      return { hi: "there" };
+      return { hi: 'there' };
     },
     retrieveProp(name) {
-      return "hi";
+      return 'hi';
     },
     renderFragment(name) {
-      return "hi";
+      return 'hi';
     },
-  })
+  }),
 );

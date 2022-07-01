@@ -1,6 +1,5 @@
-import { SingleSpaCustomEventDetail } from "single-spa";
-import { ResolvedRoutesConfig } from "../../isomorphic/index.js";
-import { SingeSpaEvent } from "../utils.js";
+import { SingleSpaCustomEventDetail } from 'single-spa';
+import { ResolvedRoutesConfig } from '../../isomorphic/index.js';
 
 export interface LayoutEngine {
   activate: () => void;
@@ -14,18 +13,29 @@ export interface LayoutEngineOptions {
 }
 
 export type SingleSpaEventListener = (
-  ev: CustomEvent<SingleSpaCustomEventDetail>
+  ev: CustomEvent<SingleSpaCustomEventDetail>,
 ) => void;
+
+export type SingleSpaEvent =
+  | 'single-spa:app-change'
+  | 'single-spa:before-app-change'
+  | 'single-spa:before-first-mount'
+  | 'single-spa:before-mount-routing-event'
+  | 'single-spa:before-no-app-change'
+  | 'single-spa:before-routing-event'
+  | 'single-spa:first-mount'
+  | 'single-spa:no-app-change'
+  | 'single-spa:routing-event';
 
 declare global {
   interface Window {
     addEventListener(
-      type: SingeSpaEvent,
-      listener: SingleSpaEventListener
+      type: SingleSpaEvent,
+      listener: SingleSpaEventListener,
     ): void;
     removeEventListener(
-      type: SingeSpaEvent,
-      listener: SingleSpaEventListener
+      type: SingleSpaEvent,
+      listener: SingleSpaEventListener,
     ): void;
   }
 }

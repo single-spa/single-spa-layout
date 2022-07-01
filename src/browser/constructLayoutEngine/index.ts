@@ -1,16 +1,19 @@
-import { addErrorHandler, Parcel, removeErrorHandler } from "single-spa";
-import { inBrowser } from "../../utils/index.js";
-import { SingeSpaEvent } from "../utils.js";
-import { createArrangeDomElements } from "./createArrangeDomElements.js";
-import { handleBeforeMountRouting } from "./handleBeforeMountRouting.js";
-import { handleBeforeRouting } from "./handleBeforeRouting.js";
-import { handleError } from "./handleError.js";
-import { handleRouting } from "./handleRouting.js";
-import { hydrate } from "./hydrate.js";
-import type { LayoutEngine, LayoutEngineOptions } from "./types.js";
-import { getParentContainer } from "./utils.js";
+import { addErrorHandler, Parcel, removeErrorHandler } from 'single-spa';
+import {
+  getDataScript,
+  inBrowser,
+  layoutDataScriptId,
+} from '../../utils/index.js';
+import { createArrangeDomElements } from './createArrangeDomElements.js';
+import { handleBeforeMountRouting } from './handleBeforeMountRouting.js';
+import { handleBeforeRouting } from './handleBeforeRouting.js';
+import { handleError } from './handleError.js';
+import { handleRouting } from './handleRouting.js';
+import { hydrate } from './hydrate.js';
+import type { LayoutEngine, LayoutEngineOptions } from './types.js';
+import { getParentContainer } from './utils.js';
 
-export * from "./types.js";
+export * from './types.js';
 
 export const constructLayoutEngine = ({
   config,
@@ -22,11 +25,11 @@ export const constructLayoutEngine = ({
     handleBeforeMountRouting(arrangeDomElements);
   const beforeRoutingHandler = handleBeforeRouting(
     config,
-    errorParcelByAppName
+    errorParcelByAppName,
   );
   const errorHandler = handleError(config, errorParcelByAppName);
   const routingHandler = handleRouting();
-  const wasServerRendered = inBrowser && !!window.singleSpaLayoutData;
+  const wasServerRendered = inBrowser && !!getDataScript(layoutDataScriptId);
   let isActive = false;
   const layoutEngine: LayoutEngine = {
     activate: () => {
@@ -34,14 +37,14 @@ export const constructLayoutEngine = ({
       isActive = true;
       if (!inBrowser) return;
       window.addEventListener(
-        SingeSpaEvent.BeforeMountRouting,
-        beforeMountRoutingHandler
+        'single-spa:before-mount-routing-event',
+        beforeMountRoutingHandler,
       );
       window.addEventListener(
-        SingeSpaEvent.BeforeRouting,
-        beforeRoutingHandler
+        'single-spa:before-routing-event',
+        beforeRoutingHandler,
       );
-      window.addEventListener(SingeSpaEvent.Routing, routingHandler);
+      window.addEventListener('single-spa:routing-event', routingHandler);
       addErrorHandler(errorHandler);
       wasServerRendered &&
         hydrate(getParentContainer(config.containerEl), config.childNodes);
@@ -52,14 +55,14 @@ export const constructLayoutEngine = ({
       isActive = false;
       if (!inBrowser) return;
       window.removeEventListener(
-        SingeSpaEvent.BeforeMountRouting,
-        beforeMountRoutingHandler
+        'single-spa:before-mount-routing-event',
+        beforeMountRoutingHandler,
       );
       window.removeEventListener(
-        SingeSpaEvent.BeforeRouting,
-        beforeRoutingHandler
+        'single-spa:before-routing-event',
+        beforeRoutingHandler,
       );
-      window.removeEventListener(SingeSpaEvent.Routing, routingHandler);
+      window.removeEventListener('single-spa:routing-event', routingHandler);
       removeErrorHandler(errorHandler);
     },
     isActive: () => isActive,

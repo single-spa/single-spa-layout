@@ -1,6 +1,6 @@
-import { ServerResponse } from "node:http";
-import type { ServerLayout } from "../types.js";
-import { MergeStream, StreamValue } from "./MergeStream.js";
+import { ServerResponse } from 'node:http';
+import type { ServerLayout } from '../types.js';
+import { MergeStream, StreamInput, StreamValue } from './MergeStream.js';
 
 export interface AppToRender {
   appName: string;
@@ -12,19 +12,19 @@ export interface AppHeaders {
   appProps: Record<string, unknown>;
 }
 
-export type RenderResult =
-  | StreamValue
-  | { assets: StreamValue; content: StreamValue };
+export interface RenderResult {
+  assets?: StreamInput;
+  content: StreamInput;
+  props?: {} | Promise<{}>;
+}
 
 export interface RenderOptions {
   assembleFinalHeaders: (appHeaders: AppHeaders[]) => Record<string, string>;
-  renderApplication: (
-    appToRender: AppToRender
-  ) => RenderResult | Promise<RenderResult>;
+  renderApplication: (appToRender: AppToRender) => RenderResult;
   renderFragment: (name: string) => StreamValue | Promise<StreamValue>;
   res: ServerResponse;
   retrieveApplicationHeaders: (
-    appToRender: AppToRender
+    appToRender: AppToRender,
   ) => Promise<Record<string, string>>;
   retrieveProp: (name: string) => unknown | Promise<unknown>;
   serverLayout: ServerLayout;
@@ -34,6 +34,7 @@ export interface RenderOptions {
 export interface RenderArgs {
   applicationPropPromises: Record<string, Promise<Record<string, unknown>>>;
   assetsStream: MergeStream;
+  dataStream: MergeStream;
   bodyStream: MergeStream;
   headerPromises: Record<string, Promise<Record<string, string>>>;
   propPromises: Record<string, Promise<unknown>>;

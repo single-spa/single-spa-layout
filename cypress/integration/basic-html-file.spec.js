@@ -1,19 +1,19 @@
-describe("basic html example", () => {
-  it("can load the basic html and kick off single-spa", async () => {
-    const contentWindow = await new Promise((resolve) => {
-      cy.visit("/cypress/fixtures/basic.html", {
-        onLoad: (contentWindow) => {
+describe('basic html example', () => {
+  it('can load the basic html and kick off single-spa', async () => {
+    const contentWindow = await new Promise(resolve => {
+      cy.visit('/cypress/fixtures/basic.html', {
+        onLoad: contentWindow => {
           resolve(contentWindow);
         },
       });
     });
-    const singleSpa = await contentWindow.System.import("single-spa");
+    const singleSpa = await contentWindow.System.import('single-spa');
     const singleSpaLayout = await contentWindow.System.import(
-      "single-spa-layout"
+      'single-spa-layout',
     );
 
     const routes = singleSpaLayout.constructRoutes(
-      contentWindow.document.querySelector("single-spa-router")
+      contentWindow.document.querySelector('single-spa-router'),
     );
     const applications = singleSpaLayout.constructApplications({
       routes,
@@ -24,51 +24,51 @@ describe("basic html example", () => {
       applications,
     });
 
-    singleSpa.addErrorHandler((err) => {
+    singleSpa.addErrorHandler(err => {
       throw err;
     });
     applications.forEach(singleSpa.registerApplication);
     singleSpa.start();
 
-    expect(contentWindow.document.querySelector("single-spa-router")).to.be
+    expect(contentWindow.document.querySelector('single-spa-router')).to.be
       .null;
 
     await singleSpa.triggerAppChange();
     expect(
-      contentWindow.document.getElementById(applicationElementId("header"))
+      contentWindow.document.getElementById(applicationElementId('header')),
     ).to.not.be.null;
-    expect(contentWindow.document.getElementById(applicationElementId("app1")))
+    expect(contentWindow.document.getElementById(applicationElementId('app1')))
       .to.be.null;
-    expect(contentWindow.document.getElementById(applicationElementId("app2")))
+    expect(contentWindow.document.getElementById(applicationElementId('app2')))
       .to.be.null;
     expect(
-      contentWindow.document.getElementById(applicationElementId("footer"))
+      contentWindow.document.getElementById(applicationElementId('footer')),
     ).to.not.be.null;
 
-    singleSpa.navigateToUrl("/app1");
+    singleSpa.navigateToUrl('/app1');
     await singleSpa.triggerAppChange();
     expect(
-      contentWindow.document.getElementById(applicationElementId("header"))
+      contentWindow.document.getElementById(applicationElementId('header')),
     ).to.not.be.null;
-    expect(contentWindow.document.getElementById(applicationElementId("app1")))
+    expect(contentWindow.document.getElementById(applicationElementId('app1')))
       .to.not.be.null;
-    expect(contentWindow.document.getElementById(applicationElementId("app2")))
+    expect(contentWindow.document.getElementById(applicationElementId('app2')))
       .to.be.null;
     expect(
-      contentWindow.document.getElementById(applicationElementId("footer"))
+      contentWindow.document.getElementById(applicationElementId('footer')),
     ).to.not.be.null;
 
-    singleSpa.navigateToUrl("/app2");
+    singleSpa.navigateToUrl('/app2');
     await singleSpa.triggerAppChange();
     expect(
-      contentWindow.document.getElementById(applicationElementId("header"))
+      contentWindow.document.getElementById(applicationElementId('header')),
     ).to.not.be.null;
-    expect(contentWindow.document.getElementById(applicationElementId("app1")))
+    expect(contentWindow.document.getElementById(applicationElementId('app1')))
       .to.be.null;
-    expect(contentWindow.document.getElementById(applicationElementId("app2")))
+    expect(contentWindow.document.getElementById(applicationElementId('app2')))
       .to.not.be.null;
     expect(
-      contentWindow.document.getElementById(applicationElementId("footer"))
+      contentWindow.document.getElementById(applicationElementId('footer')),
     ).to.not.be.null;
   });
 });
@@ -78,15 +78,15 @@ async function loadApp(contentWindow, { name }) {
     async bootstrap() {},
     async mount() {
       const el = contentWindow.document.getElementById(
-        applicationElementId(name)
+        applicationElementId(name),
       );
       el.innerHTML = `${name} is mounted`;
     },
     async unmount() {
       const el = contentWindow.document.getElementById(
-        applicationElementId(name)
+        applicationElementId(name),
       );
-      el.innerHTML = "";
+      el.innerHTML = '';
     },
   };
 }

@@ -1,6 +1,6 @@
 {
   "name": "@codecb/single-spa-layout",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Layout engine for single-spa applications",
   "type": "module",
   "exports": {
@@ -23,8 +23,9 @@
   "scripts": {
     "prepublishOnly": "yarn build",
     "build": "rm -rf dist && rollup -c rollup.config.ts --configPlugin rollup-plugin-ts",
+    "build:dev": "NODE_ENV=development yarn build",
+    "build:watch": "yarn build -w",
     "check-format": "prettier --check .",
-    "dev:build": "yarn build -w",
     "lint": "eslint src",
     "format": "prettier --write .",
     "test": "concurrently -n w: 'yarn:test:*'",
@@ -58,6 +59,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.18.2",
     "@babel/preset-env": "^7.18.2",
     "@codecb/tsconfigs": "^0.0.7",
+    "@codecb/rollup-plugin-strip-code": "^0.0.2",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-replace": "^4.0.0",
     "@testing-library/dom": "^8.14.0",

@@ -1,11 +1,11 @@
-import { AppError, mountRootParcel, Parcel } from "single-spa";
+import { AppError, mountRootParcel, Parcel } from 'single-spa';
 import {
   ResolvedApplication,
   ResolvedChild,
   ResolvedRoutesConfig,
   sslResolvedNode,
-} from "../../isomorphic/index.js";
-import { applicationElementId, htmlToParcelConfig } from "../../utils/index.js";
+} from '../../isomorphic/index.js';
+import { applicationElementId, htmlToParcelConfig } from '../../utils/index.js';
 
 const findIfApplication = (applicationName: string, child: ResolvedChild) =>
   sslResolvedNode.isApplication(child) && child.name === applicationName
@@ -15,7 +15,7 @@ const findIfApplication = (applicationName: string, child: ResolvedChild) =>
 const findIfRoute = (
   applicationName: string,
   location: Location | URL,
-  child: ResolvedChild
+  child: ResolvedChild,
 ) =>
   sslResolvedNode.isRoute(child) && child.activeWhen(location)
     ? findApplication(applicationName, child.childNodes, location)
@@ -24,7 +24,7 @@ const findIfRoute = (
 const findApplication = (
   applicationName: string,
   childNodes: ResolvedChild[],
-  location: Location | URL
+  location: Location | URL,
 ): Optional<ResolvedApplication> => {
   for (const child of childNodes) {
     const result =
@@ -33,7 +33,7 @@ const findApplication = (
       findApplication(
         applicationName,
         sslResolvedNode.getChildNodes(child),
-        location
+        location,
       );
     if (result) return result;
   }
@@ -43,31 +43,31 @@ const findApplication = (
 export const handleError =
   (
     { childNodes }: ResolvedRoutesConfig,
-    errorParcelByAppName: Record<string, Parcel>
+    errorParcelByAppName: Record<string, Parcel>,
   ) =>
   (err: AppError) => {
     const { appOrParcelName } = err;
     const applicationRoute = findApplication(
       appOrParcelName,
       childNodes,
-      window.location
+      window.location,
     );
     const errorHandler = applicationRoute?.error;
     if (errorHandler) {
       const applicationContainer = document.getElementById(
-        applicationElementId(applicationRoute.name)
+        applicationElementId(applicationRoute.name),
       )!;
       const parcelConfig =
-        typeof errorHandler === "string"
+        typeof errorHandler === 'string'
           ? htmlToParcelConfig(errorHandler)
           : errorHandler;
       const parcelProps = { domElement: applicationContainer, error: err };
       errorParcelByAppName[applicationRoute.name] = mountRootParcel(
         parcelConfig,
-        parcelProps
+        parcelProps,
       );
     }
-    if (process.env.BABEL_ENV !== "test")
+    if (process.env.BABEL_ENV !== 'test')
       setTimeout(() => {
         throw err;
       });

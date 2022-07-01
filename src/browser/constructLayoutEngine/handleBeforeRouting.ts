@@ -1,10 +1,10 @@
-import { navigateToUrl, Parcel, SingleSpaCustomEventDetail } from "single-spa";
-import { ResolvedRoutesConfig } from "../../isomorphic/index.js";
-import { SingleSpaEventListener } from "./types.js";
-import { getAppsToUnmount, getPath } from "./utils.js";
+import { navigateToUrl, Parcel, SingleSpaCustomEventDetail } from 'single-spa';
+import { ResolvedRoutesConfig } from '../../isomorphic/index.js';
+import { SingleSpaEventListener } from './types.js';
+import { getAppsToUnmount, getPath } from './utils.js';
 
 export const executeCancelNavigation = (
-  cancelNavigation: Optional<VoidFunction>
+  cancelNavigation: Optional<VoidFunction>,
 ) => {
   if (!cancelNavigation)
     throw Error(`single-spa-layout: <redirect> requires single-spa@>=5.7.0`);
@@ -13,7 +13,7 @@ export const executeCancelNavigation = (
 
 const isRedirected = (
   { mode, redirects }: ResolvedRoutesConfig,
-  { newUrl, cancelNavigation }: SingleSpaCustomEventDetail
+  { newUrl, cancelNavigation }: SingleSpaCustomEventDetail,
 ) => {
   // TODO: debugging shows that `newUrl` is undefined in some cases, is it OK to early return?
   if (!newUrl) return false;
@@ -37,18 +37,16 @@ const isRedirected = (
 
 const hasErrors = (
   errorParcelByAppName: Record<string, Parcel>,
-  { cancelNavigation, newUrl }: SingleSpaCustomEventDetail
+  { cancelNavigation, newUrl }: SingleSpaCustomEventDetail,
 ) => {
-  const errorParcelUnmountPromises = getAppsToUnmount(newUrl).flatMap(
-    (name) => {
-      const errorParcel = errorParcelByAppName[name];
-      if (errorParcel) {
-        delete errorParcelByAppName[name];
-        return errorParcel.unmount();
-      }
-      return [];
+  const errorParcelUnmountPromises = getAppsToUnmount(newUrl).flatMap(name => {
+    const errorParcel = errorParcelByAppName[name];
+    if (errorParcel) {
+      delete errorParcelByAppName[name];
+      return errorParcel.unmount();
     }
-  );
+    return [];
+  });
   if (errorParcelUnmountPromises.length) {
     executeCancelNavigation(cancelNavigation);
     Promise.all(errorParcelUnmountPromises).then(() => navigateToUrl(newUrl));
@@ -60,7 +58,7 @@ const hasErrors = (
 export const handleBeforeRouting =
   (
     config: ResolvedRoutesConfig,
-    errorParcelByAppName: Record<string, Parcel>
+    errorParcelByAppName: Record<string, Parcel>,
   ): SingleSpaEventListener =>
   ({ detail }) => {
     if (isRedirected(config, detail)) return;

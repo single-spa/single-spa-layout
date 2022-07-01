@@ -1,8 +1,8 @@
-import { getMountedApps } from "single-spa";
-import { ResolvedRoutesConfig } from "../../isomorphic/index.js";
-import { applicationElementId } from "../../utils/index.js";
-import { recurseRoutes } from "./recurseRoutes.js";
-import { getParentContainer, getPath } from "./utils.js";
+import { getMountedApps } from 'single-spa';
+import { ResolvedRoutesConfig } from '../../isomorphic/index.js';
+import { applicationElementId } from '../../utils/index.js';
+import { recurseRoutes } from './recurseRoutes.js';
+import { getParentContainer, getPath } from './utils.js';
 
 export const createArrangeDomElements =
   ({ base, childNodes, containerEl, mode }: ResolvedRoutesConfig) =>
@@ -14,10 +14,10 @@ export const createArrangeDomElements =
 
     // We need to move, not destroy + recreate, application container elements
     const applicationContainers = Object.fromEntries(
-      getMountedApps().map((name) => [
+      getMountedApps().map(name => [
         name,
         document.getElementById(applicationElementId(name))!,
-      ])
+      ]),
     );
     recurseRoutes({
       applicationContainers,

@@ -1,25 +1,25 @@
-import { DefaultTreeAdapterMap, TreeAdapterTypeMap } from "parse5";
-import { nodeNames } from "../utils/index.js";
+import { DefaultTreeAdapterMap, TreeAdapterTypeMap } from 'parse5';
+import { nodeNames } from '../utils/index.js';
 
-export type SslChildNode = DefaultTreeAdapterMap["childNode"];
+export type SslChildNode = DefaultTreeAdapterMap['childNode'];
 
-export type SslCommentNode = DefaultTreeAdapterMap["commentNode"];
+export type SslCommentNode = DefaultTreeAdapterMap['commentNode'];
 
-export type SslDocument = DefaultTreeAdapterMap["document"];
+export type SslDocument = DefaultTreeAdapterMap['document'];
 
-export type SslDocumentFragment = DefaultTreeAdapterMap["documentFragment"];
+export type SslDocumentFragment = DefaultTreeAdapterMap['documentFragment'];
 
-export type SslDocumentType = DefaultTreeAdapterMap["documentType"];
+export type SslDocumentType = DefaultTreeAdapterMap['documentType'];
 
-export type SslElement = DefaultTreeAdapterMap["element"];
+export type SslElement = DefaultTreeAdapterMap['element'];
 
-export type SslNode = DefaultTreeAdapterMap["node"];
+export type SslNode = DefaultTreeAdapterMap['node'];
 
-export type SslParentNode = DefaultTreeAdapterMap["parentNode"];
+export type SslParentNode = DefaultTreeAdapterMap['parentNode'];
 
-export type SslTemplate = DefaultTreeAdapterMap["template"];
+export type SslTemplate = DefaultTreeAdapterMap['template'];
 
-export type SslTextNode = DefaultTreeAdapterMap["textNode"];
+export type SslTextNode = DefaultTreeAdapterMap['textNode'];
 
 export type SslTreeAdapterMap = TreeAdapterTypeMap<
   SslNode,
@@ -42,6 +42,11 @@ export interface SslApplication extends SslElement {
 export interface SslAssets extends SslElement {
   nodeName: typeof nodeNames.ASSETS;
   tagName: typeof nodeNames.ASSETS;
+}
+
+export interface SslData extends SslElement {
+  nodeName: typeof nodeNames.DATA;
+  tagName: typeof nodeNames.DATA;
 }
 
 export interface SslFragment extends SslElement {
