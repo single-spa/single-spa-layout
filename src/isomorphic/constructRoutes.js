@@ -16,7 +16,7 @@ import { find } from "../utils/find";
 export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
 
 /**
- * @typedef {InputRoutesConfigObject | Element | import('parse5').DefaultTreeDocument | string} RoutesConfig
+ * @typedef {InputRoutesConfigObject | Element | import('parse5').Document | string} RoutesConfig
  *
  * @typedef {{
  * mode?: string;
