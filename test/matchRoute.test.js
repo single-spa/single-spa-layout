@@ -44,12 +44,12 @@ describe(`matchRoute`, () => {
           {
             type: "route",
             path: "app3",
-            matchAll: false,
             routes: [
               { type: "application", name: "app3" },
               {
                 type: "route",
                 path: "search",
+                break: true,
                 routes: [{ type: "application", name: "search" }],
               },
               {
@@ -103,12 +103,12 @@ describe(`matchRoute`, () => {
           {
             type: "route",
             path: "app3",
-            matchAll: false,
             routes: [
               { type: "application", name: "app3" },
               {
                 type: "route",
                 path: "search",
+                break: true,
                 routes: [{ type: "application", name: "search" }],
               },
             ],

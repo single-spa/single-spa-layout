@@ -20,7 +20,7 @@ export function matchRoute(resolvedRoutesConfig, pathMatch) {
     const origin = inBrowser ? window.location.origin : "http://localhost";
     const location = new URL(resolvePath(origin, pathMatch));
 
-    result.routes = recurseRoutes(location, resolvedRoutesConfig.routes, true);
+    result.routes = recurseRoutes(location, resolvedRoutesConfig.routes);
   } else {
     result.routes = [];
   }
@@ -33,28 +33,30 @@ export function matchRoute(resolvedRoutesConfig, pathMatch) {
  * @param {URL} location
  * @param {Array<import('./constructRoutes').ResolvedRouteChild>} routes
  */
-function recurseRoutes(location, routes, matchAll) {
+function recurseRoutes(location, routes) {
   const result = [];
 
+  let lastRoute = null;
   let matched = false;
   routes.forEach((route) => {
     if (route.type === "application") {
       result.push(route);
     } else if (route.type === "route") {
-      if (matched && matchAll === false) {
+      if (matched && lastRoute && lastRoute.break) {
         return;
       }
       if (route.activeWhen(location)) {
         matched = true;
         result.push({
           ...route,
-          routes: recurseRoutes(location, route.routes, route.matchAll),
+          routes: recurseRoutes(location, route.routes),
         });
       }
+      lastRoute = route;
     } else if (Array.isArray(route.routes)) {
       result.push({
         ...route,
-        routes: recurseRoutes(location, route.routes, route.matchAll),
+        routes: recurseRoutes(location, route.routes),
       });
     } else {
       result.push(route);

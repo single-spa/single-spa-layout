@@ -51,7 +51,7 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * routes: Array<Route>;
  * default?: boolean;
  * exact?: boolean;
- * matchAll?: boolean;
+ * break?: boolean;
  * activeWhen: import('single-spa').ActivityFn;
  * }} ResolvedUrlRoute
  *
@@ -249,7 +249,6 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
   } else if (element.nodeName.toLowerCase() === "route") {
     const route = {
       type: "route",
-      matchAll: true,
       routes: [],
     };
     const path = getAttribute(element, "path");
@@ -262,11 +261,8 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
     if (hasAttribute(element, "exact")) {
       route.exact = true;
     }
-    if (
-      hasAttribute(element, "matchAll") &&
-      getAttribute(element, "matchAll") === "false"
-    ) {
-      route.matchAll = false;
+    if (hasAttribute(element, "break")) {
+      route.break = true;
     }
     setProps(element, route, htmlLayoutData);
     for (let i = 0; i < element.childNodes.length; i++) {
@@ -440,15 +436,15 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "path", "routes", "props", "default", "exact", "matchAll"],
+        ["type", "path", "routes", "props", "default", "exact", "break"],
         disableWarnings
       );
 
       if (route.hasOwnProperty("exact"))
         validateBoolean(`${propertyName}.exact`, route.exact);
 
-      if (route.hasOwnProperty("matchAll"))
-        validateBoolean(`${propertyName}.matchAll`, route.matchAll);
+      if (route.hasOwnProperty("break"))
+        validateBoolean(`${propertyName}.break`, route.break);
 
       const hasPath = route.hasOwnProperty("path");
       const hasDefault = route.hasOwnProperty("default");
