@@ -45,8 +45,6 @@ function recurseRoutes(location, routes, parentRoute) {
         return;
       }
       if (route.activeWhen(location)) {
-        /* eslint no-console: "off" */
-        console.log("matched", route);
         matched = true;
         result.push({
           ...route,
