@@ -43,6 +43,24 @@ describe(`matchRoute`, () => {
           },
           {
             type: "route",
+            path: "app3",
+            matchAll: false,
+            routes: [
+              { type: "application", name: "app3" },
+              {
+                type: "route",
+                path: "search",
+                routes: [{ type: "application", name: "search" }],
+              },
+              {
+                type: "route",
+                path: "/:id",
+                routes: [{ type: "application", name: "detail" }],
+              },
+            ],
+          },
+          {
+            type: "route",
             path: "users/:id",
             routes: [
               { type: "application", name: "user-home" },
@@ -71,6 +89,29 @@ describe(`matchRoute`, () => {
             type: "route",
             default: true,
             routes: [{ type: "application", name: "not-found" }],
+          },
+          { type: "application", name: "footer" },
+        ],
+      });
+    });
+
+    it(`matches single routes`, () => {
+      expect(matchRoute(routesConfig, "/app3/search")).toMatchObject({
+        ...routesConfig,
+        routes: [
+          { type: "application", name: "nav" },
+          {
+            type: "route",
+            path: "app3",
+            matchAll: false,
+            routes: [
+              { type: "application", name: "app3" },
+              {
+                type: "route",
+                path: "search",
+                routes: [{ type: "application", name: "search" }],
+              },
+            ],
           },
           { type: "application", name: "footer" },
         ],

@@ -51,6 +51,7 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * routes: Array<Route>;
  * default?: boolean;
  * exact?: boolean;
+ * matchAll?: boolean;
  * activeWhen: import('single-spa').ActivityFn;
  * }} ResolvedUrlRoute
  *
@@ -248,6 +249,7 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
   } else if (element.nodeName.toLowerCase() === "route") {
     const route = {
       type: "route",
+      matchAll: true,
       routes: [],
     };
     const path = getAttribute(element, "path");
@@ -259,6 +261,14 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
     }
     if (hasAttribute(element, "exact")) {
       route.exact = true;
+    }
+    /* eslint no-console: "off" */
+    console.log(element);
+    if (
+      hasAttribute(element, "matchAll") &&
+      getAttribute(element, "matchAll") === "false"
+    ) {
+      route.matchAll = false;
     }
     setProps(element, route, htmlLayoutData);
     for (let i = 0; i < element.childNodes.length; i++) {
@@ -432,12 +442,15 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "path", "routes", "props", "default", "exact"],
+        ["type", "path", "routes", "props", "default", "exact", "matchAll"],
         disableWarnings
       );
 
       if (route.hasOwnProperty("exact"))
         validateBoolean(`${propertyName}.exact`, route.exact);
+
+      if (route.hasOwnProperty("matchAll"))
+        validateBoolean(`${propertyName}.matchAll`, route.matchAll);
 
       const hasPath = route.hasOwnProperty("path");
       const hasDefault = route.hasOwnProperty("default");

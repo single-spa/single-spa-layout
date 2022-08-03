@@ -33,23 +33,30 @@ export function matchRoute(resolvedRoutesConfig, pathMatch) {
  * @param {URL} location
  * @param {Array<import('./constructRoutes').ResolvedRouteChild>} routes
  */
-function recurseRoutes(location, routes) {
+function recurseRoutes(location, routes, parentRoute) {
   const result = [];
 
+  let matched = false;
   routes.forEach((route) => {
     if (route.type === "application") {
       result.push(route);
     } else if (route.type === "route") {
+      if (matched && parentRoute && parentRoute.matchAll === false) {
+        return;
+      }
       if (route.activeWhen(location)) {
+        /* eslint no-console: "off" */
+        console.log("matched", route);
+        matched = true;
         result.push({
           ...route,
-          routes: recurseRoutes(location, route.routes),
+          routes: recurseRoutes(location, route.routes, route),
         });
       }
     } else if (Array.isArray(route.routes)) {
       result.push({
         ...route,
-        routes: recurseRoutes(location, route.routes),
+        routes: recurseRoutes(location, route.routes, route),
       });
     } else {
       result.push(route);
