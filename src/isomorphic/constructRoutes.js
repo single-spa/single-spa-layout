@@ -262,8 +262,6 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
     if (hasAttribute(element, "exact")) {
       route.exact = true;
     }
-    /* eslint no-console: "off" */
-    console.log(element);
     if (
       hasAttribute(element, "matchAll") &&
       getAttribute(element, "matchAll") === "false"
