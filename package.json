@@ -21,6 +21,13 @@
       }
     }
   },
+  "typesVersions": {
+    "*": {
+      "server": [
+        "dist/types/single-spa-layout-server.d.ts"
+      ]
+    }
+  },
   "types": "dist/types/single-spa-layout-interface.d.ts",
   "scripts": {
     "prepublishOnly": "pnpm run build",
