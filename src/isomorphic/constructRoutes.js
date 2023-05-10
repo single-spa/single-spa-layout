@@ -243,6 +243,11 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
       }
     }
 
+    const className = getAttribute(element, "class");
+    if (className) {
+      application.className = className;
+    }
+
     setProps(element, application, htmlLayoutData);
     return [application];
   } else if (element.nodeName.toLowerCase() === "route") {
@@ -421,7 +426,7 @@ function validateAndSanitize(routesConfig) {
       validateKeys(
         propertyName,
         route,
-        ["type", "name", "props", "loader", "error"],
+        ["type", "name", "props", "loader", "error", "className"],
         disableWarnings
       );
       if (route.props) {

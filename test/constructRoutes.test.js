@@ -282,7 +282,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`
+        `Invalid routesConfig.routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error, className`
       );
 
       console.warn.mockReset();
@@ -298,7 +298,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props, loader, error`
+        `Invalid routesConfig.routes[0]: received invalid properties 'routes', but valid properties are type, name, props, loader, error, className`
       );
     });
 
@@ -338,7 +338,7 @@ describe("constructRoutes", () => {
       });
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mock.calls[0][0].message).toEqual(
-        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error`
+        `Invalid routesConfig.routes[0].routes[0]: received invalid properties 'somethingElse', but valid properties are type, name, props, loader, error, className`
       );
     });
 

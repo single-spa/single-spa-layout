@@ -685,6 +685,70 @@ describe(`constructLayoutEngine browser`, () => {
     );
   });
 
+  it("manages classes on the application element", async () => {
+    /** @type {import('../../src/constructRoutes').ResolvedRoutesConfig} */
+    const routes = constructRoutes({
+      containerEl: "body",
+      base: "/",
+      mode: "history",
+      routes: [
+        { type: "application", name: "@org-name/header" },
+        {
+          type: "route",
+          path: "app1",
+          routes: [
+            { type: "application", name: "@org-name/app1", className: "app1" },
+          ],
+        },
+        {
+          type: "route",
+          path: "app2",
+          routes: [
+            { type: "application", name: "@org-name/app2", className: "app2" },
+          ],
+        },
+        {
+          type: "route",
+          path: "app3",
+          routes: [{ type: "application", name: "@org-name/app3" }],
+        },
+        { type: "application", name: "@org-name/footer" },
+      ],
+    });
+
+    const applications = constructApplications({
+      routes,
+      loadApp: (name) => {
+        return new Promise((resolve) => {
+          setTimeout(() => resolve(noopApp()), 5);
+        });
+      },
+    });
+
+    layoutEngine = constructLayoutEngine({
+      routes,
+    });
+    applications.forEach(registerApplication);
+
+    await transition("/app1");
+
+    expect(
+      document.getElementById(`single-spa-application:@org-name/app1`)
+    ).toHaveClass("app1");
+
+    await transition("/app2");
+
+    expect(
+      document.getElementById(`single-spa-application:@org-name/app2`)
+    ).toHaveClass("app2");
+
+    await transition("/app3");
+
+    expect(
+      document.getElementById(`single-spa-application:@org-name/app3`)
+    ).not.toHaveAttribute("class");
+  });
+
   describe(`error handling`, () => {
     beforeEach(reset);
 
