@@ -10,14 +10,14 @@
       "default": {
         "import": "./dist/esm/single-spa-layout.min.js",
         "require": "./dist/umd/single-spa-layout.min.cjs",
-        "types": "dist/types/single-spa-layout-interface.d.ts"
+        "types": "./dist/types/single-spa-layout-interface.d.ts"
       }
     },
     "./server": {
       "node": {
         "import": "./dist/esm/single-spa-layout-server.min.js",
         "require": "./dist/umd/single-spa-layout-server.min.cjs",
-        "types": "dist/types/single-spa-layout-server.d.ts"
+        "types": "./dist/types/single-spa-layout-server.d.ts"
       }
     }
   },
