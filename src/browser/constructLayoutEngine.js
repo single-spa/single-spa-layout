@@ -386,6 +386,18 @@ function recurseRoutes({
           applicationElement = document.createElement("div");
           applicationElement.id = htmlId;
         }
+
+        if (typeof route.className === "string") {
+          applicationElement.className = route.className;
+        } else if (
+          typeof route.className !== "string" &&
+          typeof applicationElement.className === "string"
+        ) {
+          // The application element did already exist with previously added classes,
+          // remove the entire attribute to avoid empty class attributes in the DOM.
+          applicationElement.removeAttribute("class");
+        }
+
         insertNode(applicationElement, parentContainer, previousSibling);
         previousSibling = applicationElement;
       }
