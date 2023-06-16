@@ -5,23 +5,23 @@
   "main": "dist/umd/single-spa-layout.min.cjs",
   "module": "dist/esm/single-spa-layout.min.js",
   "type": "module",
+  "types": "dist/types/single-spa-layout-interface.d.ts",
   "exports": {
     ".": {
       "default": {
+        "types": "./dist/types/single-spa-layout-interface.d.ts",
         "import": "./dist/esm/single-spa-layout.min.js",
-        "require": "./dist/umd/single-spa-layout.min.cjs",
-        "types": "dist/types/single-spa-layout-interface.d.ts"
+        "require": "./dist/umd/single-spa-layout.min.cjs"
       }
     },
     "./server": {
       "node": {
+        "types": "./dist/types/single-spa-layout-server.d.ts",
         "import": "./dist/esm/single-spa-layout-server.min.js",
-        "require": "./dist/umd/single-spa-layout-server.min.cjs",
-        "types": "dist/types/single-spa-layout-server.d.ts"
+        "require": "./dist/umd/single-spa-layout-server.min.cjs"
       }
     }
   },
-  "types": "dist/types/single-spa-layout-interface.d.ts",
   "scripts": {
     "prepublishOnly": "pnpm run build",
     "build": "rimraf dist && concurrently -n w: 'pnpm:build:*'",
