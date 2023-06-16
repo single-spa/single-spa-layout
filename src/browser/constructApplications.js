@@ -17,7 +17,7 @@ import { htmlToParcelConfig } from "../utils/parcel-utils";
  * }} WithLoadFunction
  *
  * @typedef {{
- * [name]: Array<AppRoute>
+ * [name: string]: Array<AppRoute>
  * }} ApplicationMap
  *
  * @typedef {{
