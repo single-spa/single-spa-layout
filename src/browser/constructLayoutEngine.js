@@ -206,15 +206,18 @@ export function constructLayoutEngine({
     });
   }
 
-  function handleRoutingEvent({ detail: { newUrl } }) {
-    getAppsToUnmount(newUrl).forEach((name) => {
-      const applicationElement = document.getElementById(
-        applicationElementId(name)
-      );
-      if (applicationElement && applicationElement.isConnected) {
-        applicationElement.parentNode.removeChild(applicationElement);
-      }
-    });
+  function handleRoutingEvent({ detail: { navigationIsCanceled, newUrl } }) {
+    // only unmount if navigation is not cancelled
+    if (!navigationIsCanceled) {
+      getAppsToUnmount(newUrl).forEach((name) => {
+        const applicationElement = document.getElementById(
+          applicationElementId(name)
+        );
+        if (applicationElement && applicationElement.isConnected) {
+          applicationElement.parentNode.removeChild(applicationElement);
+        }
+      });
+    }
   }
 }
 
