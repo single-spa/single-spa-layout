@@ -1,6 +1,6 @@
 {
   "name": "single-spa-layout",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Layout engine for single-spa applications",
   "main": "dist/umd/single-spa-layout.min.cjs",
   "module": "dist/esm/single-spa-layout.min.js",
