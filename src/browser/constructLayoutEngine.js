@@ -169,10 +169,14 @@ export function constructLayoutEngine({
     });
 
     if (errorParcelUnmountPromises.length > 0) {
-      cancelNavigation();
-      Promise.all(errorParcelUnmountPromises).then(() => {
-        navigateToUrl(newUrl);
-      });
+      // The cancelNavigation function allows us to delay single-spa's performAppChanges behavior,
+      // but without actually canceling the navigation. We use that functionality to wait on the
+      // error parcels to unmount.
+      // See https://github.com/single-spa/single-spa-layout/issues/209
+      const shouldCancel = false;
+      cancelNavigation(
+        Promise.all(errorParcelUnmountPromises).then(() => shouldCancel)
+      );
     }
   }
 
