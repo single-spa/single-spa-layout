@@ -144,7 +144,7 @@ export function constructLayoutEngine({
       if (from === path) {
         if (!cancelNavigation) {
           throw Error(
-            `single-spa-layout: <redirect> requires single-spa@>=5.7.0`
+            `single-spa-layout: <redirect> requires single-spa@>=6.0.0`
           );
         }
 
