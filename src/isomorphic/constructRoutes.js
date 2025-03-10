@@ -67,6 +67,7 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * name: string;
  * props?: object;
  * loader?: string | import('single-spa').ParcelConfig;
+ * className?: string;
  * }} Application
  *
  * @typedef {{
