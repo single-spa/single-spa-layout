@@ -16,7 +16,7 @@
     },
     "./server": {
       "node": {
-        "types": "./dist/types/single-spa-layout-server.d.ts",
+        "types": "./dist/types/single-spa-layout-server-interface.d.ts",
         "import": "./dist/esm/single-spa-layout-server.min.js",
         "require": "./dist/umd/single-spa-layout-server.min.cjs"
       }
