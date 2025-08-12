@@ -70,10 +70,10 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * }} Application
  *
  * @typedef {{
- * loaders: {
+ * loaders?: {
  *   [key: string]: any;
  * },
- * props: {
+ * props?: {
  *   [key: string]: any;
  * },
  * errors?: {
@@ -82,7 +82,7 @@ export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
  * }} HTMLLayoutData
  *
  * @param {RoutesConfig} routesConfig
- * @param {HTMLLayoutData=} htmlLayoutData
+ * @param {HTMLLayoutData} htmlLayoutData
  * @returns {ResolvedRoutesConfig}
  */
 export function constructRoutes(routesConfig, htmlLayoutData) {
