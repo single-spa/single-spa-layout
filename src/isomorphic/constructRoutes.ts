@@ -9,83 +9,78 @@ import {
   validateBoolean,
 } from "../utils/validation-helpers.js";
 import { inBrowser } from "../utils/environment-helpers.js";
-import { pathToActiveWhen } from "single-spa";
+import {
+  pathToActiveWhen,
+  type ActivityFn,
+  type ParcelConfig,
+} from "single-spa";
 import { resolvePath } from "./matchRoute.js";
-import { find } from "../utils/find";
+import { find } from "../utils/find.js";
+import type { Document, Element as Parse5Element } from "parse5";
 
 export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
 
-/**
- * @typedef {InputRoutesConfigObject | Element | import('parse5').Document | string} RoutesConfig
- *
- * @typedef {{
- * mode?: string;
- * base?: string;
- * containerEl?: ContainerEl;
- * disableWarnings?: boolean;
- * routes: Array<Route>;
- * redirects?: Redirects;
- * }} InputRoutesConfigObject
- *
- * @typedef {{
- * mode: string;
- * base: string;
- * containerEl: ContainerEl;
- * routes: Array<ResolvedRouteChild>;
- * redirects: Redirects;
- * }} ResolvedRoutesConfig
- *
- * @typedef {{
- *   [from: string]: string;
- * }} Redirects
- *
- * @typedef {UrlRoute | Application | Node} RouteChild
- *
- * @typedef {ResolvedUrlRoute | Application | Node} ResolvedRouteChild
- *
- * @typedef {string | Element | import('parse5').Element} ContainerEl
- *
- * @typedef {{
- * type: string;
- * path: string;
- * routes: Array<Route>;
- * default?: boolean;
- * exact?: boolean;
- * activeWhen: import('single-spa').ActivityFn;
- * }} ResolvedUrlRoute
- *
- * @typedef {{
- * type: string;
- * path: string;
- * routes: Array<Route>;
- * default?: boolean;
- * exact?: boolean;
- * }} UrlRoute
- *
- * @typedef {{
- * type: string;
- * name: string;
- * props?: object;
- * loader?: string | import('single-spa').ParcelConfig;
- * }} Application
- *
- * @typedef {{
- * loaders: {
- *   [key: string]: any;
- * },
- * props: {
- *   [key: string]: any;
- * },
- * errors?: {
- *   [key: string]: string | import('single-spa').ParcelConfig;
- * }
- * }} HTMLLayoutData
- *
- * @param {RoutesConfig} routesConfig
- * @param {HTMLLayoutData=} htmlLayoutData
- * @returns {ResolvedRoutesConfig}
- */
-export function constructRoutes(routesConfig, htmlLayoutData) {
+type RoutesConfig = InputRoutesConfigObject | Element | Document | string;
+
+interface InputRoutesConfigObject {
+  mode?: string;
+  base?: string;
+  containerEl?: ContainerEl;
+  disableWarnings?: boolean;
+  routes: Route[];
+  redirects?: Redirects;
+}
+
+export interface ResolvedRoutesConfig {
+  mode: string;
+  base: string;
+  containerEl: ContainerEl;
+  routes: ResolvedRouteChild[];
+  redirects: Redirects;
+}
+
+type Redirects = Record<string, string>;
+
+type RouteChild = UrlRoute | Application | Node;
+
+export type ResolvedRouteChild = ResolvedUrlRoute | Application | Node;
+
+type ContainerEl = string | Element | Parse5Element;
+
+export interface ResolvedUrlRoute {
+  type: "route";
+  path: string;
+  routes: Array<Route>;
+  default?: boolean;
+  exact?: boolean;
+  activeWhen: ActivityFn;
+}
+
+interface UrlRoute {
+  type: string;
+  path: string;
+  routes: Route[];
+  default?: boolean;
+  exact?: boolean;
+}
+
+interface Application {
+  type: "application";
+  name: string;
+  props?: object;
+  loader?: string | ParcelConfig;
+}
+
+interface HTMLLayoutData {
+  loaders: Record<string, any>;
+  props: Record<string, any>;
+  errors?: Record<string, string | ParcelConfig>;
+}
+
+export function constructRoutes(
+  routesConfig: RoutesConfig,
+  htmlLayoutData: HTMLLayoutData,
+): ResolvedRoutesConfig {
   if (
     (routesConfig && routesConfig.nodeName) ||
     typeof routesConfig === "string"
@@ -101,12 +96,12 @@ export function constructRoutes(routesConfig, htmlLayoutData) {
           .documentElement.querySelector("single-spa-router");
         if (!routesConfig) {
           throw Error(
-            `constructRoutes should be called with a string HTML document that contains a <single-spa-router> element.`
+            `constructRoutes should be called with a string HTML document that contains a <single-spa-router> element.`,
           );
         }
       } else {
         throw Error(
-          `calling constructRoutes with a string on the server is not yet supported`
+          `calling constructRoutes with a string on the server is not yet supported`,
         );
       }
     }
@@ -114,7 +109,7 @@ export function constructRoutes(routesConfig, htmlLayoutData) {
     routesConfig = domToRoutesConfig(routesConfig, htmlLayoutData);
   } else if (htmlLayoutData) {
     throw Error(
-      `constructRoutes should be called either with an HTMLElement and layoutData, or a single json object.`
+      `constructRoutes should be called either with an HTMLElement and layoutData, or a single json object.`,
     );
   }
 
@@ -122,26 +117,22 @@ export function constructRoutes(routesConfig, htmlLayoutData) {
   return routesConfig;
 }
 
-/**
- * Converts a domElement to a json object routes config
- *
- * @param {HTMLElement} domElement
- * @param {HTMLLayoutData} htmlLayoutData
- * @returns {InputRoutesConfigObject}
- */
-function domToRoutesConfig(domElement, htmlLayoutData = {}) {
+function domToRoutesConfig(
+  domElement: HTMLElement,
+  htmlLayoutData: HTMLLayoutData = {},
+): InputRoutesConfigObject {
   // Support passing in a template element, which are nice because their content is
   // not rendered by browsers
   if (domElement.nodeName.toLowerCase() === "template") {
     // IE11 doesn't support the content property on templates
     domElement = (domElement.content || domElement).querySelector(
-      "single-spa-router"
+      "single-spa-router",
     );
   }
 
   if (domElement.nodeName.toLowerCase() !== "single-spa-router") {
     throw Error(
-      `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router> or a <template> containing the router. Received ${domElement.nodeName}`
+      `single-spa-layout: The HTMLElement passed to constructRoutes must be <single-spa-router> or a <template> containing the router. Received ${domElement.nodeName}`,
     );
   }
 
@@ -168,14 +159,14 @@ function domToRoutesConfig(domElement, htmlLayoutData = {}) {
 
   for (let i = 0; i < domElement.childNodes.length; i++) {
     result.routes.push(
-      ...elementToJson(domElement.childNodes[i], htmlLayoutData, result)
+      ...elementToJson(domElement.childNodes[i], htmlLayoutData, result),
     );
   }
 
   return result;
 }
 
-function getAttribute(element, attrName) {
+function getAttribute(element: HTMLElement, attrName: string): string | null {
   if (inBrowser) {
     // browser
     return element.getAttribute(attrName);
@@ -184,13 +175,13 @@ function getAttribute(element, attrName) {
     // watch out, parse5 converts attribute names to lowercase and not as is => https://github.com/inikulin/parse5/issues/116
     const attr = find(
       element.attrs,
-      (attr) => attr.name === attrName.toLowerCase()
+      (attr) => attr.name === attrName.toLowerCase(),
     );
     return attr ? attr.value : null;
   }
 }
 
-function hasAttribute(element, attrName) {
+function hasAttribute(element: HTMLElement, attrName: string): boolean {
   if (inBrowser) {
     return element.hasAttribute(attrName);
   } else {
@@ -198,17 +189,15 @@ function hasAttribute(element, attrName) {
   }
 }
 
-/**
- * @param {HTMLElement} element
- * @param {HTMLLayoutData} htmlLayoutData
- * @param {ResolvedRoutesConfig} resolvedRoutesConfig
- * @returns {Array<Route>}
- */
-function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
+function elementToJson(
+  element: HTMLElement,
+  htmlLayoutData: HTMLLayoutData,
+  resolvedRoutesConfig: ResolvedRoutesConfig,
+): Route[] {
   if (element.nodeName.toLowerCase() === "application") {
     if (element.childNodes.length > 0) {
       throw Error(
-        `<application> elements must not have childNodes. You must put in a closing </application> - self closing is not allowed`
+        `<application> elements must not have childNodes. You must put in a closing </application> - self closing is not allowed`,
       );
     }
     const application = {
@@ -224,7 +213,7 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
         application.loader = htmlLayoutData.loaders[loaderKey];
       } else if (inBrowser) {
         throw Error(
-          `Application loader '${loaderKey}' was not defined in the htmlLayoutData`
+          `Application loader '${loaderKey}' was not defined in the htmlLayoutData`,
         );
       }
     }
@@ -238,7 +227,7 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
         application.error = htmlLayoutData.errors[errorKey];
       } else if (inBrowser) {
         throw Error(
-          `Application error handler '${loaderKey}' was not defined in the htmlLayoutData`
+          `Application error handler '${loaderKey}' was not defined in the htmlLayoutData`,
         );
       }
     }
@@ -271,8 +260,8 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
         ...elementToJson(
           element.childNodes[i],
           htmlLayoutData,
-          resolvedRoutesConfig
-        )
+          resolvedRoutesConfig,
+        ),
       );
     }
     return [route];
@@ -295,8 +284,8 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
             ...elementToJson(
               element.childNodes[i],
               htmlLayoutData,
-              resolvedRoutesConfig
-            )
+              resolvedRoutesConfig,
+            ),
           );
         }
       }
@@ -313,8 +302,8 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
         ...elementToJson(
           element.childNodes[i],
           htmlLayoutData,
-          resolvedRoutesConfig
-        )
+          resolvedRoutesConfig,
+        ),
       );
     }
     return [result];
@@ -335,12 +324,11 @@ function elementToJson(element, htmlLayoutData, resolvedRoutesConfig) {
   }
 }
 
-/**
- * @param {HTMLElement} element
- * @param {Route} route
- * @param {HTMLLayoutData} htmlLayoutData
- */
-function setProps(element, route, htmlLayoutData) {
+function setProps(
+  element: HTMLElement,
+  route: Route,
+  htmlLayoutData: HTMLLayoutData,
+): void {
   const propNames = (getAttribute(element, "props") || "").split(",");
 
   for (let i = 0; i < propNames.length; i++) {
@@ -358,7 +346,7 @@ function setProps(element, route, htmlLayoutData) {
       route.props[propName] = htmlLayoutData.props[propName];
     } else if (inBrowser) {
       throw Error(
-        `Prop '${propName}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`
+        `Prop '${propName}' was not defined in the htmlLayoutData. Either remove this attribute from the HTML element or provide the prop's value`,
       );
     } else {
       route.props[propName] = MISSING_PROP;
@@ -366,7 +354,7 @@ function setProps(element, route, htmlLayoutData) {
   }
 }
 
-function validateAndSanitize(routesConfig) {
+function validateAndSanitize(routesConfig: InputRoutesConfigObject): void {
   validateObject("routesConfig", routesConfig);
 
   const disableWarnings = routesConfig.disableWarnings;
@@ -375,7 +363,7 @@ function validateAndSanitize(routesConfig) {
     "routesConfig",
     routesConfig,
     ["mode", "base", "containerEl", "routes", "disableWarnings", "redirects"],
-    disableWarnings
+    disableWarnings,
   );
 
   if (routesConfig.hasOwnProperty("containerEl")) {
@@ -418,7 +406,7 @@ function validateAndSanitize(routesConfig) {
   function validateRoute(
     route,
     propertyName,
-    { parentPath, siblingActiveWhens, parentActiveWhen }
+    { parentPath, siblingActiveWhens, parentActiveWhen },
   ) {
     validateObject(propertyName, route);
 
@@ -427,7 +415,7 @@ function validateAndSanitize(routesConfig) {
         propertyName,
         route,
         ["type", "name", "props", "loader", "error", "className"],
-        disableWarnings
+        disableWarnings,
       );
       if (route.props) {
         validateObject(`${propertyName}.props`, route.props);
@@ -438,7 +426,7 @@ function validateAndSanitize(routesConfig) {
         propertyName,
         route,
         ["type", "path", "routes", "props", "default", "exact"],
-        disableWarnings
+        disableWarnings,
       );
 
       if (route.hasOwnProperty("exact"))
@@ -459,13 +447,13 @@ function validateAndSanitize(routesConfig) {
         route.activeWhen = defaultRoute(siblingActiveWhens, parentActiveWhen);
       } else {
         throw Error(
-          `Invalid ${propertyName}: routes must have either a path or default property.`
+          `Invalid ${propertyName}: routes must have either a path or default property.`,
         );
       }
 
       if (hasPath && hasDefault && route.default) {
         throw Error(
-          `Invalid ${propertyName}: cannot have both path and set default to true.`
+          `Invalid ${propertyName}: cannot have both path and set default to true.`,
         );
       }
 
@@ -497,7 +485,10 @@ function validateAndSanitize(routesConfig) {
   delete routesConfig.disableWarnings;
 }
 
-function defaultRoute(siblingActiveWhens, parentActiveWhen) {
+function defaultRoute(
+  siblingActiveWhens: ActivityFn[],
+  parentActiveWhen: ActivityFn,
+): ActivityFn {
   return (location) => {
     return (
       parentActiveWhen(location) &&
@@ -506,7 +497,7 @@ function defaultRoute(siblingActiveWhens, parentActiveWhen) {
   };
 }
 
-function sanitizeBase(base) {
+function sanitizeBase(base: string): string {
   if (base.indexOf("/") !== 0) {
     base = "/" + base;
   }

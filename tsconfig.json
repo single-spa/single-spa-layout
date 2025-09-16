@@ -1,19 +1,9 @@
 {
-  "include": ["src/single-spa-layout-interface.ts"],
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "files": ["src/single-spa-layout.ts"],
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "es5",
-      "scripthost",
-      "es2015",
-      "es2015.promise",
-      "es2016.array.include",
-      "es2018"
-    ],
-    "allowJs": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "esModuleInterop": true,
-    "outDir": "dist/types"
+    "outDir": "lib",
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
   }
 }
