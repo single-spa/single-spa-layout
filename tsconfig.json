@@ -4,6 +4,7 @@
   "compilerOptions": {
     "outDir": "lib",
     "module": "nodenext",
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+    "lib": ["dom"]
   }
 }

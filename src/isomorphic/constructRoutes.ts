@@ -13,22 +13,56 @@ import {
   pathToActiveWhen,
   type ActivityFn,
   type ParcelConfig,
+  type LifeCycles,
 } from "single-spa";
 import { resolvePath } from "./matchRoute.js";
-import { find } from "../utils/find.js";
-import type { Document, Element as Parse5Element } from "parse5";
+import type { DefaultTreeAdapterTypes } from "parse5";
 
-export const MISSING_PROP = typeof Symbol !== "undefined" ? Symbol() : "@";
+export const MISSING_PROP = Symbol();
 
-type RoutesConfig = InputRoutesConfigObject | Element | Document | string;
+type RoutesConfig =
+  | InputRoutesConfigObject
+  | HTMLElement
+  | DefaultTreeAdapterTypes.Document
+  | string;
+
+declare global {
+  interface Window {
+    singleSpaLayoutData?: HTMLLayoutData;
+  }
+}
 
 interface InputRoutesConfigObject {
   mode?: string;
   base?: string;
   containerEl?: ContainerEl;
   disableWarnings?: boolean;
-  routes: Route[];
+  routes: InputRouteChild[];
   redirects?: Redirects;
+}
+
+type InputRouteChild = InputRoute | InputApplication | InputHTMLElement | Node;
+
+interface InputRoute {
+  type: "route";
+  path: string;
+  routes: InputRouteChild[];
+  default?: boolean;
+  exact?: boolean;
+  props?: Record<string, any>;
+}
+
+interface InputApplication {
+  type: "application";
+  name: string;
+  loader?: LifeCycles;
+  props: Record<string, any>;
+}
+
+interface InputHTMLElement {
+  type: string;
+  attrs: { name: string; value: string }[];
+  routes?: InputRouteChild[];
 }
 
 export interface ResolvedRoutesConfig {
@@ -41,34 +75,43 @@ export interface ResolvedRoutesConfig {
 
 type Redirects = Record<string, string>;
 
-type RouteChild = UrlRoute | Application | Node;
+export type ResolvedRouteChild =
+  | ResolvedUrlRoute
+  | Application
+  | HTMLElementAsJSON
+  | NodeWithRoutes;
 
-export type ResolvedRouteChild = ResolvedUrlRoute | Application | Node;
+interface NodeWithRoutes extends Node {
+  routes?: ResolvedRouteChild[];
+  props?: Record<string, any>;
+}
 
-type ContainerEl = string | Element | Parse5Element;
+interface HTMLElementAsJSON {
+  type: string;
+  value?: string;
+  routes?: ResolvedRouteChild[];
+  props?: Record<string, any>;
+}
+
+type ContainerEl = string | Element | DefaultTreeAdapterTypes.Element;
 
 export interface ResolvedUrlRoute {
   type: "route";
   path: string;
-  routes: Array<Route>;
+  routes: Array<ResolvedRouteChild>;
   default?: boolean;
   exact?: boolean;
+  props?: Record<string, any>;
   activeWhen: ActivityFn;
 }
 
-interface UrlRoute {
-  type: string;
-  path: string;
-  routes: Route[];
-  default?: boolean;
-  exact?: boolean;
-}
-
-interface Application {
+export interface Application {
   type: "application";
   name: string;
-  props?: object;
+  className?: string;
+  props?: Record<string, any>;
   loader?: string | ParcelConfig;
+  error?: string | ParcelConfig;
 }
 
 interface HTMLLayoutData {
@@ -82,16 +125,18 @@ export function constructRoutes(
   htmlLayoutData: HTMLLayoutData,
 ): ResolvedRoutesConfig {
   if (
-    (routesConfig && routesConfig.nodeName) ||
+    (routesConfig && (routesConfig as HTMLElement).nodeName) ||
     typeof routesConfig === "string"
   ) {
     if (inBrowser && !htmlLayoutData && window.singleSpaLayoutData) {
       htmlLayoutData = window.singleSpaLayoutData;
     }
 
+    let domInputElement: HTMLElement;
+
     if (typeof routesConfig === "string") {
       if (inBrowser) {
-        routesConfig = new DOMParser()
+        domInputElement = new DOMParser()
           .parseFromString(routesConfig, "text/html")
           .documentElement.querySelector("single-spa-router");
         if (!routesConfig) {
@@ -104,28 +149,30 @@ export function constructRoutes(
           `calling constructRoutes with a string on the server is not yet supported`,
         );
       }
+    } else {
+      domInputElement = routesConfig as HTMLElement;
     }
 
-    routesConfig = domToRoutesConfig(routesConfig, htmlLayoutData);
+    return validateAndSanitize(
+      domToRoutesConfig(domInputElement, htmlLayoutData),
+    );
   } else if (htmlLayoutData) {
     throw Error(
       `constructRoutes should be called either with an HTMLElement and layoutData, or a single json object.`,
     );
+  } else {
+    return validateAndSanitize(routesConfig as InputRoutesConfigObject);
   }
-
-  validateAndSanitize(routesConfig);
-  return routesConfig;
 }
 
 function domToRoutesConfig(
   domElement: HTMLElement,
-  htmlLayoutData: HTMLLayoutData = {},
-): InputRoutesConfigObject {
+  htmlLayoutData: HTMLLayoutData = { loaders: {}, props: {} },
+): ResolvedRoutesConfig {
   // Support passing in a template element, which are nice because their content is
   // not rendered by browsers
   if (domElement.nodeName.toLowerCase() === "template") {
-    // IE11 doesn't support the content property on templates
-    domElement = (domElement.content || domElement).querySelector(
+    domElement = (domElement as HTMLTemplateElement).content.querySelector(
       "single-spa-router",
     );
   }
@@ -140,22 +187,13 @@ function domToRoutesConfig(
     domElement.parentNode.removeChild(domElement);
   }
 
-  const result = {
+  const result: ResolvedRoutesConfig = {
     routes: [],
     redirects: {},
+    mode: getAttribute(domElement, "mode"),
+    base: getAttribute(domElement, "base"),
+    containerEl: getAttribute(domElement, "containerEl"),
   };
-
-  if (getAttribute(domElement, "mode")) {
-    result.mode = getAttribute(domElement, "mode");
-  }
-
-  if (getAttribute(domElement, "base")) {
-    result.base = getAttribute(domElement, "base");
-  }
-
-  if (getAttribute(domElement, "containerEl")) {
-    result.containerEl = getAttribute(domElement, "containerEl");
-  }
 
   for (let i = 0; i < domElement.childNodes.length; i++) {
     result.routes.push(
@@ -166,45 +204,57 @@ function domToRoutesConfig(
   return result;
 }
 
-function getAttribute(element: HTMLElement, attrName: string): string | null {
+function getAttribute(
+  element: HTMLElement | DefaultTreeAdapterTypes.Element,
+  attrName: string,
+): string | null {
   if (inBrowser) {
     // browser
-    return element.getAttribute(attrName);
+    return (element as HTMLElement).getAttribute(attrName);
   } else {
     // NodeJS with parse5
     // watch out, parse5 converts attribute names to lowercase and not as is => https://github.com/inikulin/parse5/issues/116
-    const attr = find(
-      element.attrs,
+    const attr = (element as DefaultTreeAdapterTypes.Element).attrs.find(
       (attr) => attr.name === attrName.toLowerCase(),
     );
     return attr ? attr.value : null;
   }
 }
 
-function hasAttribute(element: HTMLElement, attrName: string): boolean {
+function hasAttribute(
+  element: HTMLElement | DefaultTreeAdapterTypes.Element,
+  attrName: string,
+): boolean {
   if (inBrowser) {
-    return element.hasAttribute(attrName);
+    return (element as HTMLElement).hasAttribute(attrName);
   } else {
-    return element.attrs.some((attr) => attr.name === attrName);
+    return (element as DefaultTreeAdapterTypes.Element).attrs.some(
+      (attr) => attr.name === attrName,
+    );
   }
 }
 
 function elementToJson(
-  element: HTMLElement,
+  element:
+    | HTMLElement
+    | NodeWithRoutes
+    | DefaultTreeAdapterTypes.Element
+    | DefaultTreeAdapterTypes.ChildNode,
   htmlLayoutData: HTMLLayoutData,
   resolvedRoutesConfig: ResolvedRoutesConfig,
-): Route[] {
+): ResolvedRouteChild[] {
   if (element.nodeName.toLowerCase() === "application") {
-    if (element.childNodes.length > 0) {
+    const el: HTMLElement = element as HTMLElement;
+    if (el.childNodes.length > 0) {
       throw Error(
-        `<application> elements must not have childNodes. You must put in a closing </application> - self closing is not allowed`,
+        `<application> els must not have childNodes. You must put in a closing </application> - self closing is not allowed`,
       );
     }
-    const application = {
+    const application: Application = {
       type: "application",
-      name: getAttribute(element, "name"),
+      name: getAttribute(el, "name"),
     };
-    const loaderKey = getAttribute(element, "loader");
+    const loaderKey = getAttribute(el, "loader");
     if (loaderKey) {
       if (
         htmlLayoutData.loaders &&
@@ -218,7 +268,7 @@ function elementToJson(
       }
     }
 
-    const errorKey = getAttribute(element, "error");
+    const errorKey = getAttribute(el, "error");
     if (errorKey) {
       if (
         htmlLayoutData.errors &&
@@ -232,33 +282,28 @@ function elementToJson(
       }
     }
 
-    const className = getAttribute(element, "class");
+    const className = getAttribute(el, "class");
     if (className) {
       application.className = className;
     }
 
-    setProps(element, application, htmlLayoutData);
+    setProps(el, application, htmlLayoutData);
     return [application];
   } else if (element.nodeName.toLowerCase() === "route") {
-    const route = {
+    const el: HTMLElement = element as HTMLElement;
+    const route: ResolvedUrlRoute = {
       type: "route",
       routes: [],
+      path: getAttribute(el, "path"),
+      default: hasAttribute(el, "default"),
+      exact: hasAttribute(el, "exact"),
+      activeWhen: pathToActiveWhen(getAttribute(el, "path")),
     };
-    const path = getAttribute(element, "path");
-    if (path) {
-      route.path = path;
-    }
-    if (hasAttribute(element, "default")) {
-      route.default = true;
-    }
-    if (hasAttribute(element, "exact")) {
-      route.exact = true;
-    }
-    setProps(element, route, htmlLayoutData);
-    for (let i = 0; i < element.childNodes.length; i++) {
+    setProps(el, route, htmlLayoutData);
+    for (let i = 0; i < el.childNodes.length; i++) {
       route.routes.push(
         ...elementToJson(
-          element.childNodes[i],
+          el.childNodes[i],
           htmlLayoutData,
           resolvedRoutesConfig,
         ),
@@ -267,8 +312,8 @@ function elementToJson(
     return [route];
   } else if (element.nodeName.toLowerCase() === "redirect") {
     resolvedRoutesConfig.redirects[
-      resolvePath("/", getAttribute(element, "from"))
-    ] = resolvePath("/", getAttribute(element, "to"));
+      resolvePath("/", getAttribute(element as HTMLElement, "from"))
+    ] = resolvePath("/", getAttribute(element as HTMLElement, "to"));
     return [];
   } else if (typeof Node !== "undefined" && element instanceof Node) {
     if (
@@ -278,9 +323,9 @@ function elementToJson(
       return [];
     } else {
       if (element.childNodes && element.childNodes.length > 0) {
-        element.routes = [];
+        (element as NodeWithRoutes).routes = [];
         for (let i = 0; i < element.childNodes.length; i++) {
-          element.routes.push(
+          (element as NodeWithRoutes).routes.push(
             ...elementToJson(
               element.childNodes[i],
               htmlLayoutData,
@@ -291,16 +336,18 @@ function elementToJson(
       }
       return [element];
     }
-  } else if (element.childNodes) {
+  } else if (element.hasOwnProperty("childNodes")) {
+    const el: DefaultTreeAdapterTypes.Element =
+      element as DefaultTreeAdapterTypes.Element;
     const result = {
-      type: element.nodeName.toLowerCase(),
+      type: el.nodeName.toLowerCase(),
       routes: [],
-      attrs: element.attrs,
+      attrs: el.attrs,
     };
-    for (let i = 0; i < element.childNodes.length; i++) {
+    for (let i = 0; i < el.childNodes.length; i++) {
       result.routes.push(
         ...elementToJson(
-          element.childNodes[i],
+          el.childNodes[i],
           htmlLayoutData,
           resolvedRoutesConfig,
         ),
@@ -311,14 +358,14 @@ function elementToJson(
     return [
       {
         type: "#comment",
-        value: element.data,
+        value: (element as Comment).data,
       },
     ];
   } else if (element.nodeName === "#text") {
     return [
       {
         type: "#text",
-        value: element.value,
+        value: (element as Text).textContent,
       },
     ];
   }
@@ -326,7 +373,7 @@ function elementToJson(
 
 function setProps(
   element: HTMLElement,
-  route: Route,
+  route: ResolvedRouteChild,
   htmlLayoutData: HTMLLayoutData,
 ): void {
   const propNames = (getAttribute(element, "props") || "").split(",");
@@ -354,10 +401,13 @@ function setProps(
   }
 }
 
-function validateAndSanitize(routesConfig: InputRoutesConfigObject): void {
+function validateAndSanitize(
+  routesConfig: InputRoutesConfigObject | ResolvedRoutesConfig,
+): ResolvedRoutesConfig {
   validateObject("routesConfig", routesConfig);
 
-  const disableWarnings = routesConfig.disableWarnings;
+  const disableWarnings = (routesConfig as InputRoutesConfigObject)
+    .disableWarnings;
 
   validateKeys(
     "routesConfig",
@@ -482,7 +532,9 @@ function validateAndSanitize(routesConfig: InputRoutesConfigObject): void {
     }
   }
 
-  delete routesConfig.disableWarnings;
+  delete (routesConfig as InputRoutesConfigObject).disableWarnings;
+
+  return routesConfig as ResolvedRoutesConfig;
 }
 
 function defaultRoute(

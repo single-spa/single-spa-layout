@@ -1,10 +1,10 @@
-import { Application } from "single-spa";
 import { inBrowser } from "../utils/environment-helpers.js";
 import { validateString } from "../utils/validation-helpers.js";
 import {
   type ResolvedRoutesConfig,
   type ResolvedRouteChild,
   type ResolvedUrlRoute,
+  type Application,
 } from "./constructRoutes.js";
 
 export function matchRoute(
@@ -34,12 +34,12 @@ export function matchRoute(
 function recurseRoutes(
   location: URL,
   routes: ResolvedRouteChild[],
-): ResolvedRoutesConfig[] {
+): ResolvedRouteChild[] {
   const result = [];
 
   routes.forEach((route) => {
-    if (route.type) {
-      if ((route as ResolvedUrlRoute | Application).type === "application") {
+    if (route.hasOwnProperty("type")) {
+      if ((route as Application).type === "application") {
         result.push(route);
       } else if ((route as ResolvedUrlRoute).type === "route") {
         if ((route as ResolvedUrlRoute).activeWhen(location)) {
@@ -47,12 +47,12 @@ function recurseRoutes(
             ...route,
             routes: recurseRoutes(location, (route as ResolvedUrlRoute).routes),
           });
+        } else if (Array.isArray((route as ResolvedUrlRoute).routes)) {
+          result.push({
+            ...route,
+            routes: recurseRoutes(location, (route as ResolvedUrlRoute).routes),
+          });
         }
-        // } else if (Array.isArray(route.routes)) {
-        //   result.push({
-        //     ...route,
-        //     routes: recurseRoutes(location, route.routes),
-        //   });
       }
     } else {
       result.push(route);
