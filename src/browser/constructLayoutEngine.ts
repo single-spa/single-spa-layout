@@ -1,4 +1,3 @@
-import { inBrowser } from "../utils/environment-helpers";
 import {
   addErrorHandler,
   mountRootParcel,
@@ -7,43 +6,42 @@ import {
   getAppNames,
   checkActivityFunctions,
   getMountedApps,
+  RegisterApplicationConfig,
+  ParcelConfig,
 } from "single-spa";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
+import { ResolvedRoutesConfig } from "../isomorphic/constructRoutes.js";
 
-/**
- * @typedef {{
- * activate() => void;
- * deactivate() => void;
- * isActive() => boolean;
- * }} LayoutEngine
- *
- * @typedef {{
- * routes: import('../isomorphic/constructRoutes').ResolvedRoutesConfig;
- * applications: Array<import('single-spa').RegisterApplicationConfig & import('./constructApplications').WithLoadFunction>;
- * active?: boolean;
- * }} LayoutEngineOptions
- *
- * @param {LayoutEngineOptions} layoutEngineOptions
- * @returns {LayoutEngine}
- */
+interface LayoutEngine {
+  activate(): void;
+  deactivate(): void;
+  isActive(): boolean;
+}
+
+interface LayoutEngineOptions {
+  routes: ResolvedRoutesConfig;
+  applications: RegisterApplicationConfig;
+  active?: boolean;
+}
+
 export function constructLayoutEngine({
   routes: resolvedRoutes,
   applications,
   active = true,
-}) {
+}: LayoutEngineOptions): LayoutEngine {
   let isActive = false;
-  let errorParcelByAppName = {};
-  const wasServerRendered = inBrowser && Boolean(window.singleSpaLayoutData);
+  let errorParcelByAppName: Record<string, ParcelConfig> = {};
+  const wasServerRendered = Boolean(window.singleSpaLayoutData);
   if (!resolvedRoutes)
     throw Error(
-      `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`
+      `single-spa-layout constructLayoutEngine(opts): opts.routes must be provided. Value was ${typeof resolvedRoutes}`,
     );
   const baseWithoutSlash = resolvedRoutes.base.slice(
     0,
-    resolvedRoutes.base.length - 1
+    resolvedRoutes.base.length - 1,
   );
 
-  const layoutEngine = {
+  const layoutEngine: LayoutEngine = {
     isActive: () => isActive,
     activate() {
       if (isActive) {
@@ -52,24 +50,22 @@ export function constructLayoutEngine({
         isActive = true;
       }
 
-      if (inBrowser) {
-        window.addEventListener("single-spa:before-routing-event", beforeRoute);
+      window.addEventListener("single-spa:before-routing-event", beforeRoute);
 
-        window.addEventListener(
-          "single-spa:before-mount-routing-event",
-          arrangeDomElements
-        );
+      window.addEventListener(
+        "single-spa:before-mount-routing-event",
+        arrangeDomElements,
+      );
 
-        window.addEventListener("single-spa:routing-event", handleRoutingEvent);
+      window.addEventListener("single-spa:routing-event", handleRoutingEvent);
 
-        addErrorHandler(errorHandler);
+      addErrorHandler(errorHandler);
 
-        if (wasServerRendered) {
-          hydrate(getParentContainer(), resolvedRoutes.routes);
-        }
-
-        arrangeDomElements();
+      if (wasServerRendered) {
+        hydrate(getParentContainer(), resolvedRoutes.routes);
       }
+
+      arrangeDomElements();
     },
     deactivate() {
       if (!isActive) {
@@ -78,24 +74,22 @@ export function constructLayoutEngine({
         isActive = false;
       }
 
-      if (inBrowser) {
-        window.removeEventListener(
-          "single-spa:before-routing-event",
-          beforeRoute
-        );
+      window.removeEventListener(
+        "single-spa:before-routing-event",
+        beforeRoute,
+      );
 
-        window.removeEventListener(
-          "single-spa:before-mount-routing-event",
-          arrangeDomElements
-        );
+      window.removeEventListener(
+        "single-spa:before-mount-routing-event",
+        arrangeDomElements,
+      );
 
-        window.removeEventListener(
-          "single-spa:routing-event",
-          handleRoutingEvent
-        );
+      window.removeEventListener(
+        "single-spa:routing-event",
+        handleRoutingEvent,
+      );
 
-        removeErrorHandler(errorHandler);
-      }
+      removeErrorHandler(errorHandler);
     },
   };
 
@@ -105,7 +99,7 @@ export function constructLayoutEngine({
 
   return layoutEngine;
 
-  function errorHandler(err) {
+  function errorHandler(err: SingleSpaError) {
     const applicationRoute = findApplicationRoute({
       applicationName: err.appOrParcelName,
       location: window.location,
@@ -113,7 +107,7 @@ export function constructLayoutEngine({
     });
     if (applicationRoute && applicationRoute.error) {
       const applicationDomContainer = document.getElementById(
-        applicationElementId(applicationRoute.name)
+        applicationElementId(applicationRoute.name),
       );
       const parcelConfig =
         typeof applicationRoute.error === "string"
@@ -124,7 +118,7 @@ export function constructLayoutEngine({
         {
           domElement: applicationDomContainer,
           error: err,
-        }
+        },
       );
     }
 
@@ -144,7 +138,7 @@ export function constructLayoutEngine({
       if (from === path) {
         if (!cancelNavigation) {
           throw Error(
-            `single-spa-layout: <redirect> requires single-spa@>=6.0.0`
+            `single-spa-layout: <redirect> requires single-spa@>=6.0.0`,
           );
         }
 
@@ -175,7 +169,7 @@ export function constructLayoutEngine({
       // See https://github.com/single-spa/single-spa-layout/issues/209
       const shouldCancel = false;
       cancelNavigation(
-        Promise.all(errorParcelUnmountPromises).then(() => shouldCancel)
+        Promise.all(errorParcelUnmountPromises).then(() => shouldCancel),
       );
     }
   }
@@ -192,11 +186,11 @@ export function constructLayoutEngine({
     const applicationContainers = getMountedApps().reduce(
       (applicationContainers, appName) => {
         applicationContainers[appName] = document.getElementById(
-          applicationElementId(appName)
+          applicationElementId(appName),
         );
         return applicationContainers;
       },
-      {}
+      {},
     );
 
     recurseRoutes({
@@ -213,7 +207,7 @@ export function constructLayoutEngine({
     if (!navigationIsCanceled) {
       getAppsToUnmount(newUrl).forEach((name) => {
         const applicationElement = document.getElementById(
-          applicationElementId(name)
+          applicationElementId(name),
         );
         if (applicationElement && applicationElement.isConnected) {
           applicationElement.parentNode.removeChild(applicationElement);
@@ -275,7 +269,7 @@ export function constructLayoutEngine({
 function isDomRoute(route) {
   return !includes(
     ["application", "route", "fragment", "assets", "redirect"],
-    route.type
+    route.type,
   );
 }
 
@@ -343,7 +337,7 @@ function equalAttributes(first, second) {
   return (
     firstAttrNames.length === secondAttrNames.length &&
     !firstAttrNames.some(
-      (a) => first.getAttribute(a) !== second.getAttribute(a)
+      (a) => first.getAttribute(a) !== second.getAttribute(a),
     )
   );
 }
@@ -570,7 +564,7 @@ function strToLocation(str) {
 function getAppsToUnmount(newUrl) {
   const appsToUnmount = [];
   const appsThatShouldBeActive = checkActivityFunctions(
-    newUrl ? strToLocation(newUrl) : location
+    newUrl ? strToLocation(newUrl) : location,
   );
 
   getAppNames().forEach((app) => {

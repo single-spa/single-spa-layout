@@ -3,53 +3,51 @@ import { mountRootParcel } from "single-spa";
 import { inBrowser } from "../utils/environment-helpers.js";
 import { find } from "../utils/find.js";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
+import { ResolvedRoutesConfig } from "../isomorphic/constructRoutes.js";
+import type {
+  ActivityFn,
+  ParcelConfig,
+  LifeCycles,
+  Activity,
+  ResolvedRouteChild,
+} from "single-spa";
+import { ResolvedRouteChild } from "../isomorphic/constructRoutes.js";
 
-/**
- * @typedef {{
- * routes: import('./constructRoutes').ResolvedRoutesConfig;
- * loadApp: LoadApp;
- * }} ApplicationOptions
- *
- * @typedef {(config: import('single-spa').AppProps) => Promise<import('single-spa').Application>} LoadApp
- *
- * @typedef {{
- * app: (config: import('single-spa').AppProps) => Promise<import('single-spa').LifeCycles>
- * }} WithLoadFunction
- *
- * @typedef {{
- * [name: string]: Array<AppRoute>
- * }} ApplicationMap
- *
- * @typedef {{
- * props: object;
- * activeWhen: import('single-spa').ActivityFn;
- * loader?: string | import('single-spa').ParcelConfig;
- * }} AppRoute
- *
- * @param {ApplicationOptions} applicationOptions
- * @returns {Array<import('single-spa').RegisterApplicationConfig & WithLoadFunction>}
- */
-export function constructApplications({ routes, loadApp }) {
-  /** @type {ApplicationMap} */
-  const applicationMap = {};
+interface ConstructApplicationsOptions {
+  routes: ResolvedRoutesConfig;
+  loadApp({ name: string }): Promise<LifeCycles>;
+}
+
+interface AppRoute {
+  props: Record<string, any>;
+  activeWhen: ActivityFn;
+  loader?: string | ParcelConfig;
+}
+
+type ApplicationMap = Recorod<string, AppRoute[]>;
+
+interface SingleSpaLayoutApplication {
+  name: string;
+  customProps(name: string, location: Location | URL): Record<string, any>;
+  activeWhen: Activity;
+  app(): Promise<LifeCycles>;
+}
+
+export function constructApplications({
+  routes,
+  loadApp,
+}: ConstructApplicationsOptions): SingleSpaLayoutApplication[] {
+  const applicationMap: ApplicationMap = {};
 
   recurseRoutes(applicationMap, topLevelActiveWhen, {}, routes.routes);
 
-  /**
-   * @type {Array<{
-   * name: string;
-   * customProps: object;
-   * activeWhen: import('single-spa').Activity
-   * }>}
-   */
   return Object.keys(applicationMap).map((name) => {
-    /** @type {AppRoute} */
-    const appRoutes = applicationMap[name];
+    const appRoutes: AppRoute = applicationMap[name];
     return {
       name,
       customProps: (_name, location) => {
         const appRoute = find(appRoutes, (appRoute) =>
-          appRoute.activeWhen(location)
+          appRoute.activeWhen(location),
         );
         return appRoute ? appRoute.props : {};
       },
@@ -58,7 +56,7 @@ export function constructApplications({ routes, loadApp }) {
         let appRoute;
         if (inBrowser) {
           appRoute = find(appRoutes, (appRoute) =>
-            appRoute.activeWhen(window.location)
+            appRoute.activeWhen(window.location),
           );
         }
 
@@ -71,15 +69,12 @@ export function constructApplications({ routes, loadApp }) {
   });
 }
 
-/**
- *
- * @param {ApplicationMap} applicationMap
- * @param {import('single-spa').ActivityFn} activeWhen
- * @param {object} props
- * @param {Array<import('./constructRoutes').RouteChild>} routes
- * @returns void
- */
-function recurseRoutes(applicationMap, activeWhen, props, routes) {
+function recurseRoutes(
+  applicationMap: ApplicationMap,
+  activeWhen: ActivityFn,
+  props: object,
+  routes: ResolvedRouteChild[],
+): void {
   routes.forEach((route) => {
     if (route.type === "application") {
       if (!applicationMap[route.name]) {
@@ -96,7 +91,7 @@ function recurseRoutes(applicationMap, activeWhen, props, routes) {
         applicationMap,
         route.activeWhen,
         mergeProps(props, route.props),
-        route.routes
+        route.routes,
       );
     } else if (route.routes) {
       recurseRoutes(applicationMap, activeWhen, props, route.routes);
@@ -104,18 +99,22 @@ function recurseRoutes(applicationMap, activeWhen, props, routes) {
   });
 }
 
-function mergeProps(originalProps, newProps = {}) {
+function mergeProps(originalProps: object, newProps: object = {}): object {
   return { ...originalProps, ...newProps };
 }
 
-function topLevelActiveWhen() {
+function topLevelActiveWhen(): boolean {
   // All applications not under routes are active
   return true;
 }
 
-let applicationEl;
+let applicationEl: HTMLElement;
 
-function placeLoader(appName, appRoute, loadingPromise) {
+function placeLoader(
+  appName: string,
+  appRoute: AppRoute,
+  loadingPromise: Promise<void>,
+): void {
   return Promise.resolve().then(() => {
     // We need the application container element to place the loader into
     const htmlId = applicationElementId(appName);
@@ -139,12 +138,12 @@ function placeLoader(appName, appRoute, loadingPromise) {
 
         window.removeEventListener(
           "single-spa:before-mount-routing-event",
-          makeElementVisible
+          makeElementVisible,
         );
       };
       window.addEventListener(
         "single-spa:before-mount-routing-event",
-        makeElementVisible
+        makeElementVisible,
       );
     }
 
@@ -177,7 +176,7 @@ function placeLoader(appName, appRoute, loadingPromise) {
           // remains in rejected status
           throw err;
         });
-      }
+      },
     );
   });
 }

@@ -1,7 +1,5 @@
 .prettierignore
 .gitignore
 LICENSE
-yarn-error.log
-yarn.lock
-dist
+lib
 pnpm-lock.yaml
