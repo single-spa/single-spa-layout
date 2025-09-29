@@ -4,10 +4,13 @@ import { inBrowser } from "../utils/environment-helpers.js";
 import { find } from "../utils/find.js";
 import { htmlToParcelConfig } from "../utils/parcel-utils";
 import { ResolvedRoutesConfig } from "../isomorphic/constructRoutes.js";
-import { ActivityFn } from "single-spa";
-import { ParcelConfig } from "single-spa";
-import { LifeCycles } from "single-spa";
-import { Activity } from "single-spa";
+import type {
+  ActivityFn,
+  ParcelConfig,
+  LifeCycles,
+  Activity,
+  ResolvedRouteChild,
+} from "single-spa";
 import { ResolvedRouteChild } from "../isomorphic/constructRoutes.js";
 
 interface ConstructApplicationsOptions {

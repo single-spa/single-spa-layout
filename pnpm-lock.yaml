@@ -82,8 +82,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       single-spa:
-        specifier: 7.0.0-beta.12
-        version: 7.0.0-beta.12
+        specifier: 7.0.0-beta.13
+        version: 7.0.0-beta.13
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
@@ -2640,8 +2640,8 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  single-spa@7.0.0-beta.12:
-    resolution: {integrity: sha512-nvLQJrfrj+F8AgFRCa4/5Yw755/mDWqM4Hgr5QDA5JIiB8Gi7y0umHFKQQu+LQpgngKG2KFX9NfrjSe2/z78Og==}
+  single-spa@7.0.0-beta.13:
+    resolution: {integrity: sha512-k5XO+MSbAf7rU7Tc2rVYRRCsd8BlUKv0R/Zr3mFnU7vhS7wEnBCMozg4RwX/CQYgN9sNx8v3EJnOsDFEiujbuQ==}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -6050,7 +6050,7 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  single-spa@7.0.0-beta.12: {}
+  single-spa@7.0.0-beta.13: {}
 
   slash@3.0.0: {}
 
